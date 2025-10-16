@@ -1,11 +1,9 @@
 package ru.anastasia.NauJava.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import ru.anastasia.NauJava.console.CommandProcessor;
 import ru.anastasia.NauJava.entity.Contact;
 
@@ -39,7 +37,6 @@ public class AppConfig {
     }
 
     @Bean
-    @Scope(value = BeanDefinition.SCOPE_SINGLETON)
     public List<Contact> contactContainer() {
         return new ArrayList<>();
     }
@@ -48,15 +45,16 @@ public class AppConfig {
     public CommandLineRunner commandScanner(CommandProcessor commandProcessor) {
         return args -> {
             try (Scanner scanner = new Scanner(System.in)) {
-                System.out.println("Введите команду");
-                System.out.println("Доступные команды:");
-                System.out.println("  add <имя> <телефон> <email> - добавить новый контакт");
-                System.out.println("  find <id> - найти контакт по ID");
-                System.out.println("  delete <id> - удалить контакт по ID");
-                System.out.println("  update <id> <имя> <телефон> <email> - обновить контакт");
-                System.out.println("  list - показать все контакты");
-                System.out.println("  search <имя> - искать контакты по имени");
-                System.out.println("  exit - завершение работы программы");
+                System.out.println("""
+                        Введите команду
+                        Доступные команды:
+                          add <имя> <телефон> <email> - добавить новый контакт
+                          find <id> - найти контакт по ID
+                          delete <id> - удалить контакт по ID
+                          update <id> <имя> <телефон> <email> - обновить контакт
+                          list - показать все контакты
+                          search <имя> - искать контакты по имени
+                          exit - завершение работы программы""");
                 while (true) {
                     System.out.print("> ");
                     String input = scanner.nextLine().trim();

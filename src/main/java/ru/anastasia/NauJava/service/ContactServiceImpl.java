@@ -21,7 +21,6 @@ public class ContactServiceImpl implements ContactService {
      */
     private final AppConfig appConfig;
 
-
     @Autowired
     public ContactServiceImpl(ContactRepository contactRepository, AppConfig appConfig) {
         this.contactRepository = contactRepository;
@@ -64,12 +63,12 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
-    public List<Contact> listAll() {
+    public List<Contact> findAll() {
         return contactRepository.findAll();
     }
 
     @Override
-    public List<Contact> searchByName(String name) {
+    public List<Contact> findByName(String name) {
         return contactRepository.findByName(name);
     }
 }

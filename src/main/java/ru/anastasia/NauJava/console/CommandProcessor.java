@@ -73,7 +73,7 @@ public class CommandProcessor {
                 System.out.println("Контакт успешно обновлен");
             }
             case "list" -> {
-                List<Contact> contacts = contactService.listAll();
+                List<Contact> contacts = contactService.findAll();
                 if (contacts.isEmpty()) {
                     System.out.println("Список контактов пуст");
                 } else {
@@ -86,7 +86,7 @@ public class CommandProcessor {
                     return;
                 }
                 String name = cmd[1];
-                List<Contact> contacts = contactService.searchByName(name);
+                List<Contact> contacts = contactService.findByName(name);
                 if (contacts.isEmpty()) {
                     System.out.println("Не найдено контактов с именем, содержащим: " + name);
                 } else {

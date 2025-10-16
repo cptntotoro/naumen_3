@@ -1,11 +1,13 @@
 package ru.anastasia.NauJava.dao;
 
+import ru.anastasia.NauJava.entity.Contact;
+
 import java.util.List;
 
 /**
  * CRUD интерфейс репозитория
  *
- * @param <T> Сущность
+ * @param <T>  Сущность
  * @param <ID> Идентификатор
  */
 public interface CrudRepository<T, ID> {
@@ -38,4 +40,19 @@ public interface CrudRepository<T, ID> {
      * @param id Идентификатор
      */
     void delete(ID id);
+
+    /**
+     * Получить все сущности
+     *
+     * @return Список сущностей
+     */
+    List<Contact> findAll();
+
+    /**
+     * Получить список сущностей по названию
+     *
+     * @param name Название
+     * @return Список сущностей
+     */
+    List<Contact> findByName(String name);
 }

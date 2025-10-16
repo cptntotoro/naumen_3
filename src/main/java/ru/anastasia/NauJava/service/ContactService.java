@@ -12,7 +12,7 @@ public interface ContactService {
     /**
      * Добавить контакт
      *
-     * @param name Имя
+     * @param name  Имя
      * @param phone Телефон
      * @param email Адрес электронной почты
      */
@@ -36,8 +36,8 @@ public interface ContactService {
     /**
      * Обновить контакт
      *
-     * @param id Идентификатор
-     * @param name Имя
+     * @param id    Идентификатор
+     * @param name  Имя
      * @param phone Телефон
      * @param email Адрес электронной почты
      */
@@ -48,7 +48,7 @@ public interface ContactService {
      *
      * @return Список контактов
      */
-    List<Contact> listAll();
+    List<Contact> findAll();
 
     /**
      * Найти контакты по имени
@@ -56,5 +56,5 @@ public interface ContactService {
      * @param name Имя
      * @return Список контактов
      */
-    List<Contact> searchByName(String name);
+    List<Contact> findByName(String name);
 }

@@ -59,21 +59,12 @@ public class ContactRepository implements CrudRepository<Contact, Long> {
         contactContainer.removeIf(c -> c.getId().equals(id));
     }
 
-    /**
-     * Получить все сущности
-     *
-     * @return Список сущностей
-     */
+    @Override
     public List<Contact> findAll() {
         return contactContainer;
     }
 
-    /**
-     * Получить список сущностей по названию
-     *
-     * @param name Название
-     * @return Список сущностей
-     */
+    @Override
     public List<Contact> findByName(String name) {
         return contactContainer.stream()
                 .filter(c -> c.getName().toLowerCase().contains(name.toLowerCase()))
