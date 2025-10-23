@@ -1,10 +1,11 @@
-package ru.anastasia.NauJava.service.contact;
+package ru.anastasia.NauJava.service.contact.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.SocialProfile;
 import ru.anastasia.NauJava.repository.contact.SocialProfileRepository;
+import ru.anastasia.NauJava.service.contact.SocialProfileService;
 
 import java.util.List;
 

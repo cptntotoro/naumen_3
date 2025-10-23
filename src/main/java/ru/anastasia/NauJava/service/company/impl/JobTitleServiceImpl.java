@@ -1,4 +1,4 @@
-package ru.anastasia.NauJava.service.company;
+package ru.anastasia.NauJava.service.company.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.company.JobTitle;
 import ru.anastasia.NauJava.repository.company.JobTitleRepository;
+import ru.anastasia.NauJava.service.company.JobTitleService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +33,9 @@ public class JobTitleServiceImpl implements JobTitleService {
         }
 
         try {
-            JobTitle jobTitle = new JobTitle(title);
+            JobTitle jobTitle = JobTitle.builder()
+                    .title(title)
+                    .build();
             return jobTitleRepository.save(jobTitle);
         } catch (DataIntegrityViolationException e) {
             JobTitle jobTitle = findByName(title);

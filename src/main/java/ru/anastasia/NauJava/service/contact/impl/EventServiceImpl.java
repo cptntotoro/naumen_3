@@ -1,4 +1,4 @@
-package ru.anastasia.NauJava.service.contact;
+package ru.anastasia.NauJava.service.contact.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,6 +8,7 @@ import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
 import ru.anastasia.NauJava.repository.contact.EventRepository;
+import ru.anastasia.NauJava.service.contact.EventService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,7 +38,10 @@ public class EventServiceImpl implements EventService {
     public Event addBirthday(Long contactId, LocalDate birthday) {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new RuntimeException("Не найден контакт с id: " + contactId));
-        Event event = new Event(EventType.BIRTHDAY, birthday);
+        Event event = Event.builder()
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(birthday)
+                .build();
         event.setContact(contact);
         return eventRepository.save(event);
     }

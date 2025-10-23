@@ -9,6 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,12 +30,21 @@ import java.util.Set;
                 @UniqueConstraint(columnNames = "title", name = "uk_job_titles_title")
         }
 )
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class JobTitle {
     /**
      * Идентификатор
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     /**
@@ -41,45 +57,8 @@ public class JobTitle {
      * Контакты
      */
     @OneToMany(mappedBy = "jobTitle", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<ContactCompany> contacts = new HashSet<>();
-
-    public JobTitle() {
-    }
-
-    public JobTitle(String title) {
-        this.title = title;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Set<ContactCompany> getContacts() {
-        return contacts;
-    }
-
-    public void setContacts(Set<ContactCompany> contacts) {
-        this.contacts = contacts;
-    }
-
-    @Override
-    public String toString() {
-        return "JobTitle{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", contacts=" + contacts +
-                '}';
-    }
 }

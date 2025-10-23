@@ -58,7 +58,11 @@ class ContactServiceTest {
 
     @Test
     void testFindById_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         Contact foundContact = contactService.findById(contact.getId());
@@ -78,7 +82,11 @@ class ContactServiceTest {
 
     @Test
     void testDeleteById_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         contactService.deleteById(contact.getId());
@@ -88,7 +96,11 @@ class ContactServiceTest {
 
     @Test
     void testUpdate_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String newFirstName = "Петр";
@@ -114,8 +126,16 @@ class ContactServiceTest {
 
     @Test
     void testFindAll_Success() {
-        Contact contact1 = new Contact("Иван", "Иванов");
-        Contact contact2 = new Contact("Анна", "Петрова");
+        Contact contact1 = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
+        Contact contact2 = Contact.builder()
+                .firstName("Анна")
+                .lastName("Петрова")
+                .build();
+
         contactRepository.save(contact1);
         contactRepository.save(contact2);
 
@@ -128,7 +148,11 @@ class ContactServiceTest {
 
     @Test
     void testFindByName_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> contacts = contactService.findByName("Иван");
@@ -139,7 +163,11 @@ class ContactServiceTest {
 
     @Test
     void testFindAllByFullName_Success() {
-        Contact contact = new Contact("Анна", "Петрова");
+        Contact contact = Contact.builder()
+                .firstName("Анна")
+                .lastName("Петрова")
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> contacts = contactService.findAllByFullName("Анна", "Петрова");
@@ -151,17 +179,24 @@ class ContactServiceTest {
 
     @Test
     void testFindByTag_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String tagName = "Коллега" + UUID.randomUUID();
+
         Tag tag = new Tag();
         tag.setName(tagName);
         tagRepository.save(tag);
 
-        ContactTag contactTag = new ContactTag();
-        contactTag.setContact(contact);
-        contactTag.setTag(tag);
+        ContactTag contactTag = ContactTag.builder()
+                .contact(contact)
+                .tag(tag)
+                .build();
+
         contactTagRepository.save(contactTag);
 
         List<Contact> contacts = contactService.findByTag(tagName);
@@ -172,7 +207,11 @@ class ContactServiceTest {
 
     @Test
     void testUpdateAvatar_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String avatarUrl = "http://example.com/avatar.jpg";
@@ -195,7 +234,11 @@ class ContactServiceTest {
 
     @Test
     void testSearch_Success() {
-        Contact contact = new Contact("Анна", "Петрова");
+        Contact contact = Contact.builder()
+                .firstName("Анна")
+                .lastName("Петрова")
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> contacts = contactService.search("Анна");
@@ -206,8 +249,16 @@ class ContactServiceTest {
 
     @Test
     void testSearch_EmptySearchTerm() {
-        Contact contact1 = new Contact("Иван", "Иванов");
-        Contact contact2 = new Contact("Анна", "Петрова");
+        Contact contact1 = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
+        Contact contact2 = Contact.builder()
+                .firstName("Анна")
+                .lastName("Петрова")
+                .build();
+
         contactRepository.save(contact1);
         contactRepository.save(contact2);
 
@@ -220,7 +271,11 @@ class ContactServiceTest {
 
     @Test
     void testAddToFavorites_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         contactService.addToFavorites(contact.getId());
@@ -231,7 +286,11 @@ class ContactServiceTest {
 
     @Test
     void testRemoveFromFavorites_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contact.setIsFavorite(true);
         contactRepository.save(contact);
 
@@ -243,9 +302,17 @@ class ContactServiceTest {
 
     @Test
     void testFindFavorites_Success() {
-        Contact contact1 = new Contact("Иван", "Иванов");
-        contact1.setIsFavorite(true);
-        Contact contact2 = new Contact("Анна", "Петрова");
+        Contact contact1 = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .isFavorite(true)
+                .build();
+
+        Contact contact2 = Contact.builder()
+                .firstName("Анна")
+                .lastName("Петрова")
+                .build();
+
         contactRepository.save(contact1);
         contactRepository.save(contact2);
 
@@ -258,13 +325,19 @@ class ContactServiceTest {
 
     @Test
     void testFindBirthdaysThisMonth_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        Event event = new Event();
-        event.setContact(contact);
-        event.setEventType(EventType.BIRTHDAY);
-        event.setEventDate(LocalDate.now());
+        Event event = Event.builder()
+                .contact(contact)
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(LocalDate.now())
+                .build();
+
         eventRepository.save(event);
 
         List<Contact> birthdayContacts = contactService.findBirthdaysThisMonth();
@@ -275,7 +348,11 @@ class ContactServiceTest {
 
     @Test
     void testFindBirthdaysThisMonth_NoBirthdays() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> birthdayContacts = contactService.findBirthdaysThisMonth();

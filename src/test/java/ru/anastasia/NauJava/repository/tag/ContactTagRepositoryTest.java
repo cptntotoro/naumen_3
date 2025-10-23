@@ -31,17 +31,25 @@ class ContactTagRepositoryTest {
 
     @Test
     void testFindByContactId_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String tagName = "Коллега" + UUID.randomUUID();
+
         Tag tag = new Tag();
         tag.setName(tagName);
+
         tagRepository.save(tag);
 
-        ContactTag contactTag = new ContactTag();
-        contactTag.setContact(contact);
-        contactTag.setTag(tag);
+        ContactTag contactTag = ContactTag.builder()
+                .contact(contact)
+                .tag(tag)
+                .build();
+
         contactTagRepository.save(contactTag);
 
         List<ContactTag> contactTags = contactTagRepository.findByContactId(contact.getId());
@@ -53,7 +61,11 @@ class ContactTagRepositoryTest {
 
     @Test
     void testFindByContactId_NoTags() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+        
         contactRepository.save(contact);
 
         List<ContactTag> contactTags = contactTagRepository.findByContactId(contact.getId());

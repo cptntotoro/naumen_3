@@ -50,7 +50,7 @@ class JobTitleServiceTest {
     @Test
     void testFindByName_Found() {
         String title = "Менеджер" + UUID.randomUUID();
-        JobTitle jobTitle = jobTitleService.create(title);
+        jobTitleService.create(title);
 
         JobTitle foundJobTitle = jobTitleService.findByName(title);
 

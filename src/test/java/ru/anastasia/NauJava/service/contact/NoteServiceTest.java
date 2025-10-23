@@ -33,7 +33,11 @@ class NoteServiceTest {
 
     @Test
     void testCreate_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String content = "Заметка о встрече" + UUID.randomUUID();
@@ -58,7 +62,11 @@ class NoteServiceTest {
 
     @Test
     void testFindByContactId_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String content = "Заметка о встрече" + UUID.randomUUID();
@@ -73,7 +81,11 @@ class NoteServiceTest {
 
     @Test
     void testFindByContactId_NoNotes() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<Note> notes = noteService.findByContactId(contact.getId());

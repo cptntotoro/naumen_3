@@ -26,24 +26,36 @@ class NoteRepositoryTest {
 
     @Test
     void testFindByContactId_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        Note note = new Note();
-        note.setContact(contact);
-        note.setContent("Встреча в офисе");
+        String noteContent = "Заметка";
+
+        Note note = Note.builder()
+                .contact(contact)
+                .content(noteContent)
+                .build();
+
         noteRepository.save(note);
 
         List<Note> notes = noteRepository.findByContactId(contact.getId());
 
         assertFalse(notes.isEmpty());
-        assertEquals("Встреча в офисе", notes.getFirst().getContent());
+        assertEquals(noteContent, notes.getFirst().getContent());
         assertEquals(contact.getId(), notes.getFirst().getContact().getId());
     }
 
     @Test
     void testFindByContactId_NoNotes() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<Note> notes = noteRepository.findByContactId(contact.getId());
@@ -53,12 +65,18 @@ class NoteRepositoryTest {
 
     @Test
     void testFindByContentContainingIgnoreCase_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        Note note = new Note();
-        note.setContact(contact);
-        note.setContent("Заметка о встрече" + UUID.randomUUID());
+        Note note = Note.builder()
+                .contact(contact)
+                .content("Заметка о встрече" + UUID.randomUUID())
+                .build();
+
         noteRepository.save(note);
 
         List<Note> notes = noteRepository.findByContentContainingIgnoreCase("встрече");
@@ -69,12 +87,18 @@ class NoteRepositoryTest {
 
     @Test
     void testFindByContentContainingIgnoreCase_NoMatches() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        Note note = new Note();
-        note.setContact(contact);
-        note.setContent("Заметка о встрече" + UUID.randomUUID());
+        Note note = Note.builder()
+                .contact(contact)
+                .content("Заметка о встрече" + UUID.randomUUID())
+                .build();
+
         noteRepository.save(note);
 
         List<Note> notes = noteRepository.findByContentContainingIgnoreCase("несуществующий текст");

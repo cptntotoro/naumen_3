@@ -36,7 +36,11 @@ class EventServiceTest {
 
     @Test
     void testAddBirthday_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         LocalDate birthday = LocalDate.now();
@@ -62,14 +66,21 @@ class EventServiceTest {
 
     @Test
     void testGetUpcomingEvents_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         LocalDate eventDate = LocalDate.now().plusDays(3);
-        Event event = new Event();
-        event.setContact(contact);
-        event.setEventType(EventType.ANNIVERSARY);
-        event.setEventDate(eventDate);
+
+        Event event = Event.builder()
+                .contact(contact)
+                .eventType(EventType.ANNIVERSARY)
+                .eventDate(eventDate)
+                .build();
+
         eventRepository.save(event);
 
         Map<LocalDate, List<Event>> upcomingEvents = eventService.getUpcomingEvents(5);
@@ -88,14 +99,21 @@ class EventServiceTest {
 
     @Test
     void testGetBirthdaysThisWeek_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         LocalDate birthday = LocalDate.now().plusDays(2);
-        Event event = new Event();
-        event.setContact(contact);
-        event.setEventType(EventType.BIRTHDAY);
-        event.setEventDate(birthday);
+
+        Event event = Event.builder()
+                .contact(contact)
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(birthday)
+                .build();
+
         eventRepository.save(event);
 
         List<Contact> birthdayContacts = eventService.getBirthdaysThisWeek();
@@ -106,13 +124,19 @@ class EventServiceTest {
 
     @Test
     void testGetBirthdaysThisWeek_NoBirthdays() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        Event event = new Event();
-        event.setContact(contact);
-        event.setEventType(EventType.ANNIVERSARY);
-        event.setEventDate(LocalDate.now().plusDays(2));
+        Event event = Event.builder()
+                .contact(contact)
+                .eventType(EventType.ANNIVERSARY)
+                .eventDate(LocalDate.now().plusDays(2))
+                .build();
+
         eventRepository.save(event);
 
         List<Contact> birthdayContacts = eventService.getBirthdaysThisWeek();
@@ -122,14 +146,20 @@ class EventServiceTest {
 
     @Test
     void testCreateEvent_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        Event event = new Event();
-        event.setContact(contact);
-        event.setEventType(EventType.ANNIVERSARY);
-        event.setEventDate(LocalDate.now());
-        event.setNotes("Встреча с клиентом" + UUID.randomUUID());
+        Event event = Event.builder()
+                .contact(contact)
+                .eventType(EventType.ANNIVERSARY)
+                .eventDate(LocalDate.now())
+                .notes("Встреча с клиентом" + UUID.randomUUID())
+                .build();
+
         Event savedEvent = eventService.createEvent(event);
 
         assertNotNull(savedEvent.getId());
@@ -141,14 +171,21 @@ class EventServiceTest {
 
     @Test
     void testFindByEventTypeAndEventDateBetween_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         LocalDate eventDate = LocalDate.now();
-        Event event = new Event();
-        event.setContact(contact);
-        event.setEventType(EventType.BIRTHDAY);
-        event.setEventDate(eventDate);
+
+        Event event = Event.builder()
+                .contact(contact)
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(eventDate)
+                .build();
+
         eventRepository.save(event);
 
         LocalDate start = eventDate.minusDays(1);

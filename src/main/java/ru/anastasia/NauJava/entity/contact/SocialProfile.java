@@ -11,6 +11,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import ru.anastasia.NauJava.entity.enums.SocialPlatform;
 
 /**
@@ -18,12 +25,21 @@ import ru.anastasia.NauJava.entity.enums.SocialPlatform;
  */
 @Entity
 @Table(name = "social_profiles")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class SocialProfile {
     /**
      * Идентификатор
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     /**
@@ -31,6 +47,8 @@ public class SocialProfile {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Contact contact;
 
     /**
@@ -56,60 +74,4 @@ public class SocialProfile {
      */
     @Column(name = "profile_url")
     private String profileUrl;
-
-    public SocialProfile() {
-    }
-
-    public SocialProfile(SocialPlatform platform, String username) {
-        this.platform = platform;
-        this.username = username;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Contact getContact() {
-        return contact;
-    }
-
-    public void setContact(Contact contact) {
-        this.contact = contact;
-    }
-
-    public SocialPlatform getPlatform() {
-        return platform;
-    }
-
-    public void setPlatform(SocialPlatform platform) {
-        this.platform = platform;
-    }
-
-    public String getCustomPlatformName() {
-        return customPlatformName;
-    }
-
-    public void setCustomPlatformName(String customPlatformName) {
-        this.customPlatformName = customPlatformName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getProfileUrl() {
-        return profileUrl;
-    }
-
-    public void setProfileUrl(String profileUrl) {
-        this.profileUrl = profileUrl;
-    }
 }

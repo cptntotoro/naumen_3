@@ -87,7 +87,11 @@ class TagServiceTest {
 
     @Test
     void testAddToContact_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String tagName = "Коллега" + UUID.randomUUID();
@@ -114,7 +118,11 @@ class TagServiceTest {
 
     @Test
     void testFindByContactId_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String tagName = "Работа" + UUID.randomUUID();
@@ -128,7 +136,11 @@ class TagServiceTest {
 
     @Test
     void testFindByContactId_NoTags() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<Tag> tags = tagService.findByContactId(contact.getId());

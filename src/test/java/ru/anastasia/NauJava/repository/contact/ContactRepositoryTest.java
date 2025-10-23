@@ -27,10 +27,12 @@ class ContactRepositoryTest {
         String lastName = "TestLastName" + UUID.randomUUID();
         String displayName = "CustomDisplay" + UUID.randomUUID();
 
-        Contact contact = new Contact();
-        contact.setFirstName(firstName);
-        contact.setLastName(lastName);
-        contact.setDisplayName(displayName);
+        Contact contact = Contact.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .displayName(displayName)
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> foundContacts = contactRepository
@@ -55,16 +57,20 @@ class ContactRepositoryTest {
 
     @Test
     void testFindByIsFavoriteTrue() {
-        Contact favoriteContact = new Contact();
-        favoriteContact.setFirstName("Favorite");
-        favoriteContact.setLastName("Contact");
-        favoriteContact.setIsFavorite(true);
+        Contact favoriteContact = Contact.builder()
+                .firstName("Favorite")
+                .lastName("Contact")
+                .isFavorite(true)
+                .build();
+
         contactRepository.save(favoriteContact);
 
-        Contact regularContact = new Contact();
-        regularContact.setFirstName("Regular");
-        regularContact.setLastName("Contact");
-        regularContact.setIsFavorite(false);
+        Contact regularContact = Contact.builder()
+                .firstName("Regular")
+                .lastName("Contact")
+                .isFavorite(false)
+                .build();
+
         contactRepository.save(regularContact);
 
         List<Contact> favorites = contactRepository.findByIsFavoriteTrue();

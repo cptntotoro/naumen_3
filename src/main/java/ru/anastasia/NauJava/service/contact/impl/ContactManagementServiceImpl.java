@@ -1,4 +1,4 @@
-package ru.anastasia.NauJava.service.contact;
+package ru.anastasia.NauJava.service.contact.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +9,11 @@ import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.contact.SocialProfile;
 import ru.anastasia.NauJava.entity.tag.Tag;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
+import ru.anastasia.NauJava.service.contact.ContactDetailService;
+import ru.anastasia.NauJava.service.contact.ContactManagementService;
+import ru.anastasia.NauJava.service.contact.EventService;
+import ru.anastasia.NauJava.service.contact.NoteService;
+import ru.anastasia.NauJava.service.contact.SocialProfileService;
 import ru.anastasia.NauJava.service.tag.TagService;
 
 import java.util.List;

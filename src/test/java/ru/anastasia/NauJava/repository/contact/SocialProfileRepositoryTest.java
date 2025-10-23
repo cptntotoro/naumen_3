@@ -24,16 +24,21 @@ class SocialProfileRepositoryTest {
 
     @Test
     void testFindByPlatformAndUsernameContainingIgnoreCase() {
-        Contact contact = new Contact();
-        contact.setFirstName("Social");
-        contact.setLastName("Test");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         Contact savedContact = contactRepository.save(contact);
 
         String username = "testuser" + UUID.randomUUID();
-        SocialProfile profile = new SocialProfile();
-        profile.setContact(savedContact);
-        profile.setPlatform(SocialPlatform.TELEGRAM);
-        profile.setUsername(username);
+
+        SocialProfile profile = SocialProfile.builder()
+                .contact(savedContact)
+                .platform(SocialPlatform.TELEGRAM)
+                .username(username)
+                .build();
+
         socialProfileRepository.save(profile);
 
         List<SocialProfile> foundProfiles = socialProfileRepository
@@ -45,16 +50,20 @@ class SocialProfileRepositoryTest {
 
     @Test
     void testFindByFavoriteContacts() {
-        Contact favoriteContact = new Contact();
-        favoriteContact.setFirstName("Favorite");
-        favoriteContact.setLastName("User");
-        favoriteContact.setIsFavorite(true);
+        Contact favoriteContact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .isFavorite(true)
+                .build();
+
         Contact savedFavorite = contactRepository.save(favoriteContact);
 
-        SocialProfile profile = new SocialProfile();
-        profile.setContact(savedFavorite);
-        profile.setPlatform(SocialPlatform.VK);
-        profile.setUsername("favorite_user");
+        SocialProfile profile = SocialProfile.builder()
+                .contact(savedFavorite)
+                .platform(SocialPlatform.VK)
+                .username("favorite_user")
+                .build();
+
         socialProfileRepository.save(profile);
 
         List<SocialProfile> foundProfiles = socialProfileRepository.findByFavoriteContacts();

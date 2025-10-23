@@ -24,31 +24,39 @@ class EventRepositoryTest {
 
     @Test
     void testFindByEventDateBetween() {
-        Contact contact = new Contact();
-        contact.setFirstName("Event");
-        contact.setLastName("Test");
+        Contact contact = Contact.builder()
+                .firstName("Event")
+                .lastName("Test")
+                .build();
+
         Contact savedContact = contactRepository.save(contact);
 
         LocalDate startDate = LocalDate.of(2024, 1, 1);
         LocalDate middleDate = LocalDate.of(2024, 1, 15);
         LocalDate endDate = LocalDate.of(2024, 1, 31);
 
-        Event event1 = new Event();
-        event1.setContact(savedContact);
-        event1.setEventType(EventType.BIRTHDAY);
-        event1.setEventDate(startDate);
+        Event event1 = Event.builder()
+                .contact(savedContact)
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(startDate)
+                .build();
+
         eventRepository.save(event1);
 
-        Event event2 = new Event();
-        event2.setContact(savedContact);
-        event2.setEventType(EventType.ANNIVERSARY);
-        event2.setEventDate(middleDate);
+        Event event2 = Event.builder()
+                .contact(savedContact)
+                .eventType(EventType.ANNIVERSARY)
+                .eventDate(middleDate)
+                .build();
+
         eventRepository.save(event2);
 
-        Event event3 = new Event();
-        event3.setContact(savedContact);
-        event3.setEventType(EventType.CUSTOM);
-        event3.setEventDate(endDate);
+        Event event3 = Event.builder()
+                .contact(savedContact)
+                .eventType(EventType.CUSTOM)
+                .eventDate(endDate)
+                .build();
+
         eventRepository.save(event3);
 
         LocalDate searchStart = LocalDate.of(2024, 1, 10);
@@ -62,21 +70,27 @@ class EventRepositoryTest {
 
     @Test
     void testFindByEventType() {
-        Contact contact = new Contact();
-        contact.setFirstName("Type");
-        contact.setLastName("Test");
+        Contact contact = Contact.builder()
+                .firstName("Type")
+                .lastName("Test")
+                .build();
+
         Contact savedContact = contactRepository.save(contact);
 
-        Event birthdayEvent = new Event();
-        birthdayEvent.setContact(savedContact);
-        birthdayEvent.setEventType(EventType.BIRTHDAY);
-        birthdayEvent.setEventDate(LocalDate.now());
+        Event birthdayEvent = Event.builder()
+                .contact(savedContact)
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(LocalDate.now())
+                .build();
+
         eventRepository.save(birthdayEvent);
 
-        Event anniversaryEvent = new Event();
-        anniversaryEvent.setContact(savedContact);
-        anniversaryEvent.setEventType(EventType.ANNIVERSARY);
-        anniversaryEvent.setEventDate(LocalDate.now());
+        Event anniversaryEvent = Event.builder()
+                .contact(savedContact)
+                .eventType(EventType.ANNIVERSARY)
+                .eventDate(LocalDate.now())
+                .build();
+
         eventRepository.save(anniversaryEvent);
 
         List<Event> birthdayEvents = eventRepository.findByEventType(EventType.BIRTHDAY);

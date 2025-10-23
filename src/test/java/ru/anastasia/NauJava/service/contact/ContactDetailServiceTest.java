@@ -35,10 +35,19 @@ class ContactDetailServiceTest {
 
     @Test
     void testFindByContactId_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "ivan@example.com");
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value("ivan@example.com")
+                .build();
+
         detail.setContact(contact);
         contactDetailService.create(detail);
 
@@ -50,7 +59,11 @@ class ContactDetailServiceTest {
 
     @Test
     void testFindByContactId_NoDetails() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<ContactDetail> details = contactDetailService.findByContactId(contact.getId());
@@ -60,10 +73,19 @@ class ContactDetailServiceTest {
 
     @Test
     void testFindByDetailType_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.PHONE, DetailLabel.MOBILE, "+79991234567");
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.MOBILE)
+                .value("+79991234567")
+                .build();
+
         detail.setContact(contact);
         contactDetailService.create(detail);
 
@@ -82,29 +104,49 @@ class ContactDetailServiceTest {
 
     @Test
     void testFindPrimaryByContactId_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "ivan@example.com");
-        detail.setContact(contact);
-        detail.setIsPrimary(true);
+        String contactDetailValue = "ivan@example.com";
+
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value(contactDetailValue)
+                .contact(contact)
+                .isPrimary(true)
+                .build();
+
         contactDetailService.create(detail);
 
         List<ContactDetail> primaryDetails = contactDetailService.findPrimaryByContactId(contact.getId());
 
         assertFalse(primaryDetails.isEmpty());
         assertTrue(primaryDetails.getFirst().getIsPrimary());
-        assertEquals("ivan@example.com", primaryDetails.getFirst().getValue());
+        assertEquals(contactDetailValue, primaryDetails.getFirst().getValue());
     }
 
     @Test
     void testFindPrimaryByContactId_NoPrimary() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "ivan@example.com");
-        detail.setContact(contact);
-        detail.setIsPrimary(false);
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value("ivan@example.com")
+                .contact(contact)
+                .isPrimary(false)
+                .build();
+
         contactDetailService.create(detail);
 
         List<ContactDetail> primaryDetails = contactDetailService.findPrimaryByContactId(contact.getId());
@@ -114,25 +156,45 @@ class ContactDetailServiceTest {
 
     @Test
     void testCreate_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.PHONE, DetailLabel.MOBILE, "+79991234567");
-        detail.setContact(contact);
+        String contactDetailValue = "+79991234567";
+
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.MOBILE)
+                .value(contactDetailValue)
+                .contact(contact)
+                .build();
+
         ContactDetail savedDetail = contactDetailService.create(detail);
 
         assertNotNull(savedDetail.getId());
-        assertEquals("+79991234567", savedDetail.getValue());
+        assertEquals(contactDetailValue, savedDetail.getValue());
         assertTrue(contactDetailRepository.findById(savedDetail.getId()).isPresent());
     }
 
     @Test
     void testDelete_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "ivan@example.com");
-        detail.setContact(contact);
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value("ivan@example.com")
+                .contact(contact)
+                .build();
+
         ContactDetail savedDetail = contactDetailService.create(detail);
 
         contactDetailService.delete(savedDetail.getId());
@@ -142,27 +204,48 @@ class ContactDetailServiceTest {
 
     @Test
     void testUpdate_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "ivan@example.com");
-        detail.setContact(contact);
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value("ivan@example.com")
+                .contact(contact)
+                .build();
+
         ContactDetail savedDetail = contactDetailService.create(detail);
 
-        ContactDetail updatedDetail = new ContactDetail(DetailType.PHONE, DetailLabel.MOBILE, "+79991234567");
-        updatedDetail.setIsPrimary(true);
+        String updatedContactDetailValue = "+79991234567";
+
+        ContactDetail updatedDetail = ContactDetail.builder()
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.MOBILE)
+                .value(updatedContactDetailValue)
+                .isPrimary(true)
+                .build();
+
         ContactDetail result = contactDetailService.update(savedDetail.getId(), updatedDetail);
 
         assertEquals(DetailType.PHONE, result.getDetailType());
         assertEquals(DetailLabel.MOBILE, result.getLabel());
-        assertEquals("+79991234567", result.getValue());
+        assertEquals(updatedContactDetailValue, result.getValue());
         assertTrue(result.getIsPrimary());
     }
 
     @Test
     void testUpdate_NotFound() {
         Long nonExistentId = 999L;
-        ContactDetail updatedDetail = new ContactDetail(DetailType.PHONE, DetailLabel.MOBILE, "+79991234567");
+
+        ContactDetail updatedDetail = ContactDetail.builder()
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.MOBILE)
+                .value("+79991234567")
+                .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 contactDetailService.update(nonExistentId, updatedDetail));
@@ -172,17 +255,28 @@ class ContactDetailServiceTest {
 
     @Test
     void testFindById_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "ivan@example.com");
-        detail.setContact(contact);
+        String contactDetailValue = "ivan@example.com";
+
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value(contactDetailValue)
+                .contact(contact)
+                .build();
+
         ContactDetail savedDetail = contactDetailService.create(detail);
 
         Optional<ContactDetail> foundDetail = contactDetailService.findById(savedDetail.getId());
 
         assertTrue(foundDetail.isPresent());
-        assertEquals("ivan@example.com", foundDetail.get().getValue());
+        assertEquals(contactDetailValue, foundDetail.get().getValue());
     }
 
     @Test
@@ -196,18 +290,29 @@ class ContactDetailServiceTest {
 
     @Test
     void testFindByDetailTypeAndLabelString_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "ivan@example.com");
-        detail.setContact(contact);
-        detail.setIsPrimary(true);
+        String contactDetailValue = "ivan@example.com";
+
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value(contactDetailValue)
+                .contact(contact)
+                .isPrimary(true)
+                .build();
+
         contactDetailService.create(detail);
 
         List<ContactDetail> details = contactDetailService.findByDetailTypeAndLabel(DetailType.EMAIL, "WORK");
 
         assertFalse(details.isEmpty());
-        assertEquals("ivan@example.com", details.getFirst().getValue());
+        assertEquals(contactDetailValue, details.getFirst().getValue());
     }
 
     @Test
@@ -219,17 +324,28 @@ class ContactDetailServiceTest {
 
     @Test
     void testFindByDetailTypeAndLabelEnum_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        ContactDetail detail = new ContactDetail(DetailType.PHONE, DetailLabel.MOBILE, "+79991234567");
-        detail.setContact(contact);
-        detail.setIsPrimary(true);
+        String contactDetailValue = "+79991234567";
+
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.MOBILE)
+                .value(contactDetailValue)
+                .contact(contact)
+                .isPrimary(true)
+                .build();
+
         contactDetailService.create(detail);
 
         List<ContactDetail> details = contactDetailService.findByDetailTypeAndLabel(DetailType.PHONE, DetailLabel.MOBILE);
 
         assertFalse(details.isEmpty());
-        assertEquals("+79991234567", details.getFirst().getValue());
+        assertEquals(contactDetailValue, details.getFirst().getValue());
     }
 }

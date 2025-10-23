@@ -11,6 +11,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import ru.anastasia.NauJava.entity.enums.EventType;
 
 import java.time.LocalDate;
@@ -20,12 +27,21 @@ import java.time.LocalDate;
  */
 @Entity
 @Table(name = "events")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Event {
     /**
      * Идентификатор
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     /**
@@ -33,6 +49,8 @@ public class Event {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Contact contact;
 
     /**
@@ -63,69 +81,6 @@ public class Event {
      * Флаг, повторяется ли событие ежегодно
      */
     @Column(name = "yearly_recurrence")
+    @Builder.Default
     private Boolean yearlyRecurrence = false;
-
-    public Event() {
-    }
-
-    public Event(EventType eventType, LocalDate eventDate) {
-        this.eventType = eventType;
-        this.eventDate = eventDate;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Contact getContact() {
-        return contact;
-    }
-
-    public void setContact(Contact contact) {
-        this.contact = contact;
-    }
-
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public String getCustomEventName() {
-        return customEventName;
-    }
-
-    public void setCustomEventName(String customEventName) {
-        this.customEventName = customEventName;
-    }
-
-    public LocalDate getEventDate() {
-        return eventDate;
-    }
-
-    public void setEventDate(LocalDate eventDate) {
-        this.eventDate = eventDate;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public Boolean getYearlyRecurrence() {
-        return yearlyRecurrence;
-    }
-
-    public void setYearlyRecurrence(Boolean yearlyRecurrence) {
-        this.yearlyRecurrence = yearlyRecurrence;
-    }
 }

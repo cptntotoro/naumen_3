@@ -1,4 +1,4 @@
-package ru.anastasia.NauJava.service.contact;
+package ru.anastasia.NauJava.service.contact.impl;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,8 @@ import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
+import ru.anastasia.NauJava.service.contact.ContactService;
+import ru.anastasia.NauJava.service.contact.EventService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -47,7 +49,10 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public Contact add(String firstName, String lastName) {
-        Contact contact = new Contact(firstName, lastName);
+        Contact contact = Contact.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .build();
         return contactRepository.save(contact);
     }
 
@@ -108,8 +113,7 @@ public class ContactServiceImpl implements ContactService {
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return findAll();
         }
-        return contactRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-                searchTerm, searchTerm);
+        return contactRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm);
     }
 
     @Override

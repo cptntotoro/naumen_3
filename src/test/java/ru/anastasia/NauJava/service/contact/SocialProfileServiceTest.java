@@ -33,13 +33,19 @@ class SocialProfileServiceTest {
 
     @Test
     void testCreate_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        SocialProfile socialProfile = new SocialProfile();
-        socialProfile.setContact(contact);
-        socialProfile.setPlatform(SocialPlatform.TELEGRAM);
-        socialProfile.setUsername("@ivanov" + UUID.randomUUID());
+        SocialProfile socialProfile = SocialProfile.builder()
+                .contact(contact)
+                .platform(SocialPlatform.TELEGRAM)
+                .username("@ivanov" + UUID.randomUUID())
+                .build();
+
         SocialProfile savedProfile = socialProfileService.create(socialProfile);
 
         assertNotNull(savedProfile.getId());
@@ -51,13 +57,19 @@ class SocialProfileServiceTest {
 
     @Test
     void testFindByContactId_Success() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
-        SocialProfile socialProfile = new SocialProfile();
-        socialProfile.setContact(contact);
-        socialProfile.setPlatform(SocialPlatform.TELEGRAM);
-        socialProfile.setUsername("@ivanov" + UUID.randomUUID());
+        SocialProfile socialProfile = SocialProfile.builder()
+                .contact(contact)
+                .platform(SocialPlatform.TELEGRAM)
+                .username("@ivanov" + UUID.randomUUID())
+                .build();
+
         socialProfileService.create(socialProfile);
 
         List<SocialProfile> profiles = socialProfileService.findByContactId(contact.getId());
@@ -69,7 +81,11 @@ class SocialProfileServiceTest {
 
     @Test
     void testFindByContactId_NoProfiles() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<SocialProfile> profiles = socialProfileService.findByContactId(contact.getId());

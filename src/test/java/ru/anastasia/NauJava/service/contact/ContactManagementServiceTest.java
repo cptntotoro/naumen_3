@@ -40,9 +40,23 @@ class ContactManagementServiceTest {
         String lastName = "Иванов";
         String company = "ООО Ромашка";
         String jobTitle = "Разработчик";
-        ContactDetail detail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "ivan@example.com");
-        SocialProfile profile = new SocialProfile(SocialPlatform.TELEGRAM, "@ivanov");
-        Event event = new Event(EventType.BIRTHDAY, LocalDate.now());
+
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value("ivan@example.com")
+                .build();
+
+        SocialProfile profile = SocialProfile.builder()
+                .platform(SocialPlatform.TELEGRAM)
+                .username("@ivanov")
+                .build();
+
+        Event event = Event.builder()
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(LocalDate.now())
+                .build();
+
         List<String> tagNames = List.of("друг", "коллега");
         List<String> notes = List.of("Заметка 1");
 
@@ -53,6 +67,7 @@ class ContactManagementServiceTest {
         assertNotNull(savedContact.getId());
         assertEquals(firstName, savedContact.getFirstName());
         assertEquals(lastName, savedContact.getLastName());
+
         Contact dbContact = contactRepository.findById(savedContact.getId()).orElseThrow();
         assertEquals(1, dbContact.getContactDetails().size());
         assertEquals(1, dbContact.getSocialProfiles().size());
@@ -68,7 +83,11 @@ class ContactManagementServiceTest {
 
     @Test
     void delete_SuccessfullyRemovesContact() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         Contact savedContact = contactRepository.save(contact);
 
         contactManagementService.delete(savedContact.getId());
@@ -84,11 +103,23 @@ class ContactManagementServiceTest {
 
     @Test
     void duplicate_SuccessfullyCreatesCopyWithDetailsAndTags() {
-        Contact original = new Contact("Иван", "Иванов");
-        ContactDetail detail = new ContactDetail(DetailType.PHONE, DetailLabel.MOBILE, "+1234567890");
+        Contact original = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
+        String contactDetailValue = "+1234567890";
+
+        ContactDetail detail = ContactDetail.builder()
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.MOBILE)
+                .value(contactDetailValue)
+                .build();
+
         original = contactManagementService.createWithDetails(
                 original.getFirstName(), original.getLastName(), null, null,
                 List.of(detail), null, null, List.of("друг"), null);
+
         String newFirstName = "Петр";
         String newLastName = "Петров";
 
@@ -98,10 +129,11 @@ class ContactManagementServiceTest {
         assertNotEquals(original.getId(), duplicate.getId());
         assertEquals(newFirstName, duplicate.getFirstName());
         assertEquals(newLastName, duplicate.getLastName());
+
         Contact dbDuplicate = contactRepository.findById(duplicate.getId()).orElseThrow();
         assertEquals(1, dbDuplicate.getContactDetails().size());
         assertEquals(1, dbDuplicate.getContactTags().size());
-        assertEquals("+1234567890", dbDuplicate.getContactDetails().stream().findFirst().orElseThrow().getValue());
+        assertEquals(contactDetailValue, dbDuplicate.getContactDetails().stream().findFirst().orElseThrow().getValue());
         assertTrue(dbDuplicate.getContactTags().stream().anyMatch(ct -> ct.getTag().getName().equals("друг")));
     }
 
@@ -113,7 +145,11 @@ class ContactManagementServiceTest {
 
     @Test
     void searchComplex_ReturnsMatchingContacts() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> result = contactManagementService.searchComplex("Иван", "Иванов", null, null);
@@ -125,7 +161,11 @@ class ContactManagementServiceTest {
 
     @Test
     void searchComplex_ReturnsEmptyListForNonMatchingCriteria() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> result = contactManagementService.searchComplex("Петр", "Петров", null, null);
@@ -135,8 +175,16 @@ class ContactManagementServiceTest {
 
     @Test
     void findWithUpcomingBirthdays_ReturnsContactsWithBirthdays() {
-        Contact contact = new Contact("Иван", "Иванов");
-        Event birthday = new Event(EventType.BIRTHDAY, LocalDate.now());
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
+        Event birthday = Event.builder()
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(LocalDate.now())
+                .build();
+
         contact = contactManagementService.createWithDetails(
                 contact.getFirstName(), contact.getLastName(), null, null,
                 null, null, List.of(birthday), null, null);
@@ -149,7 +197,11 @@ class ContactManagementServiceTest {
 
     @Test
     void findWithUpcomingBirthdays_ReturnsEmptyListForNoBirthdays() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> result = contactManagementService.findWithUpcomingBirthdays(7);
@@ -159,18 +211,34 @@ class ContactManagementServiceTest {
 
     @Test
     void updateWithDetails_SuccessfullyUpdatesContactAndDetails() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         Contact savedContact = contactRepository.save(contact);
-        ContactDetail originalDetail = new ContactDetail(DetailType.EMAIL, DetailLabel.WORK, "old@example.com");
+
+        ContactDetail originalDetail = ContactDetail.builder()
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value("old@example.com")
+                .build();
+
         contactManagementService.createWithDetails(
                 savedContact.getFirstName(), savedContact.getLastName(), null, null,
                 List.of(originalDetail), null, null, null, null);
 
-        Contact updatedContactData = new Contact();
-        updatedContactData.setFirstName("Петр");
-        updatedContactData.setLastName("Петров");
-        updatedContactData.setIsFavorite(true);
-        ContactDetail newDetail = new ContactDetail(DetailType.PHONE, DetailLabel.MOBILE, "+1234567890");
+        Contact updatedContactData = Contact.builder()
+                .firstName("Петр")
+                .lastName("Петров")
+                .isFavorite(true)
+                .build();
+
+        ContactDetail newDetail = ContactDetail.builder()
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.MOBILE)
+                .value("+1234567890")
+                .build();
 
         contactManagementService.updateWithDetails(savedContact.getId(), updatedContactData, List.of(newDetail));
 
@@ -184,9 +252,10 @@ class ContactManagementServiceTest {
 
     @Test
     void updateWithDetails_ThrowsExceptionForNonExistentContact() {
-        Contact contactData = new Contact();
-        contactData.setFirstName("Петр");
-        contactData.setLastName("Петров");
+        Contact contactData = Contact.builder()
+                .firstName("Петр")
+                .lastName("Петров")
+                .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> contactManagementService.updateWithDetails(999L, contactData, null));
         assertEquals("Не найден контакт с id: 999", exception.getMessage());

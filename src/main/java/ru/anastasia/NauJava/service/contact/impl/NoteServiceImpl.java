@@ -1,4 +1,4 @@
-package ru.anastasia.NauJava.service.contact;
+package ru.anastasia.NauJava.service.contact.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.contact.Note;
 import ru.anastasia.NauJava.repository.contact.NoteRepository;
+import ru.anastasia.NauJava.service.contact.ContactService;
+import ru.anastasia.NauJava.service.contact.NoteService;
 
 import java.util.List;
 
@@ -34,9 +36,10 @@ public class NoteServiceImpl implements NoteService {
         if (contact == null) {
             throw new RuntimeException("Не найден контакт с id: " + contactId);
         }
-        Note note = new Note();
-        note.setContact(contact);
-        note.setContent(content);
+        Note note = Note.builder()
+                .contact(contact)
+                .content(content)
+                .build();
         return noteRepository.save(note);
     }
 

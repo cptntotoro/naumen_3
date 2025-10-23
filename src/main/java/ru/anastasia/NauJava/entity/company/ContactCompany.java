@@ -9,6 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import ru.anastasia.NauJava.entity.contact.Contact;
 
 /**
@@ -16,12 +23,21 @@ import ru.anastasia.NauJava.entity.contact.Contact;
  */
 @Entity
 @Table(name = "contact_companies")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class ContactCompany {
     /**
      * Идентификатор
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     /**
@@ -29,6 +45,8 @@ public class ContactCompany {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Contact contact;
 
     /**
@@ -36,6 +54,8 @@ public class ContactCompany {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Company company;
 
     /**
@@ -43,54 +63,14 @@ public class ContactCompany {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_title_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private JobTitle jobTitle;
 
     /**
      * Является ли текущей
      */
+    @Builder.Default
     @Column(name = "is_current")
     private Boolean isCurrent = true;
-
-    public ContactCompany() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Contact getContact() {
-        return contact;
-    }
-
-    public void setContact(Contact contact) {
-        this.contact = contact;
-    }
-
-    public Company getCompany() {
-        return company;
-    }
-
-    public void setCompany(Company company) {
-        this.company = company;
-    }
-
-    public JobTitle getJobTitle() {
-        return jobTitle;
-    }
-
-    public void setJobTitle(JobTitle jobTitle) {
-        this.jobTitle = jobTitle;
-    }
-
-    public Boolean getCurrent() {
-        return isCurrent;
-    }
-
-    public void setCurrent(Boolean current) {
-        isCurrent = current;
-    }
 }

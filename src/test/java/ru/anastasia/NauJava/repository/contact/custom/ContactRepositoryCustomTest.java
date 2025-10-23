@@ -28,10 +28,12 @@ class ContactRepositoryCustomTest {
         String lastName = "Test" + UUID.randomUUID();
         String displayName = "CustomDisplay" + UUID.randomUUID();
 
-        Contact contact = new Contact();
-        contact.setFirstName(firstName);
-        contact.setLastName(lastName);
-        contact.setDisplayName(displayName);
+        Contact contact = Contact.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .displayName(displayName)
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> foundContacts = contactRepository
@@ -46,9 +48,11 @@ class ContactRepositoryCustomTest {
         String firstName = "Complex" + UUID.randomUUID();
         String lastName = "Search" + UUID.randomUUID();
 
-        Contact contact = new Contact();
-        contact.setFirstName(firstName);
-        contact.setLastName(lastName);
+        Contact contact = Contact.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .build();
+
         contactRepository.save(contact);
 
         List<Contact> foundContacts = contactRepository

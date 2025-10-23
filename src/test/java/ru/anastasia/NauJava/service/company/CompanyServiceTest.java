@@ -50,7 +50,7 @@ class CompanyServiceTest {
     @Test
     void testFindByName_Found() {
         String companyName = "ООО Лютик" + UUID.randomUUID();
-        Company company = companyService.create(companyName);
+        companyService.create(companyName);
 
         Company foundCompany = companyService.findByName(companyName);
 

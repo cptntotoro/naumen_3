@@ -1,4 +1,4 @@
-package ru.anastasia.NauJava.service.company;
+package ru.anastasia.NauJava.service.company.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.company.Company;
 import ru.anastasia.NauJava.repository.company.CompanyRepository;
+import ru.anastasia.NauJava.service.company.CompanyService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +34,9 @@ public class CompanyServiceImpl implements CompanyService {
         }
 
         try {
-            Company company = new Company(name);
+            Company company = Company.builder()
+                    .name(name)
+                    .build();
             return companyRepository.save(company);
         } catch (DataIntegrityViolationException e) {
             Company company = findByName(name);

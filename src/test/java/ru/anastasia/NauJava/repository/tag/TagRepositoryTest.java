@@ -32,9 +32,11 @@ class TagRepositoryTest {
         String tagName = "Important" + UUID.randomUUID();
         String color = "#FF0000";
 
-        Tag tag = new Tag();
-        tag.setName(tagName);
-        tag.setColor(color);
+        Tag tag = Tag.builder()
+                .name(tagName)
+                .color(color)
+                .build();
+
         tagRepository.save(tag);
 
         List<Tag> foundByName = tagRepository.findByNameContainingIgnoreCaseOrColorContainingIgnoreCase(
@@ -65,6 +67,7 @@ class TagRepositoryTest {
     @Test
     void testFindByNameContainingIgnoreCase() {
         String tagName = "Работа" + UUID.randomUUID();
+
         Tag tag = new Tag();
         tag.setName(tagName);
         tagRepository.save(tag);
@@ -77,7 +80,11 @@ class TagRepositoryTest {
 
     @Test
     void testFindByContactId() {
-        Contact contact = new Contact("Иван", "Иванов");
+        Contact contact = Contact.builder()
+                .firstName("Иван")
+                .lastName("Иванов")
+                .build();
+
         contactRepository.save(contact);
 
         String tagName = "Коллега" + UUID.randomUUID();
@@ -85,9 +92,11 @@ class TagRepositoryTest {
         tag.setName(tagName);
         tagRepository.save(tag);
 
-        ContactTag contactTag = new ContactTag();
-        contactTag.setContact(contact);
-        contactTag.setTag(tag);
+        ContactTag contactTag = ContactTag.builder()
+                .contact(contact)
+                .tag(tag)
+                .build();
+
         contact.getContactTags().add(contactTag);
         tag.getContactTags().add(contactTag);
         contactRepository.save(contact);

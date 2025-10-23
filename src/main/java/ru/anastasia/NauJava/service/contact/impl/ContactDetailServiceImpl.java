@@ -1,4 +1,4 @@
-package ru.anastasia.NauJava.service.contact;
+package ru.anastasia.NauJava.service.contact.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,6 +7,7 @@ import ru.anastasia.NauJava.entity.contact.ContactDetail;
 import ru.anastasia.NauJava.entity.enums.DetailLabel;
 import ru.anastasia.NauJava.entity.enums.DetailType;
 import ru.anastasia.NauJava.repository.contact.ContactDetailRepository;
+import ru.anastasia.NauJava.service.contact.ContactDetailService;
 
 import java.util.List;
 import java.util.Optional;

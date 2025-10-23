@@ -24,33 +24,41 @@ class ContactDetailRepositoryTest {
 
     @Test
     void testFindByDetailTypeAndIsPrimaryTrueOrLabel() {
-        Contact contact = new Contact();
-        contact.setFirstName("Detail");
-        contact.setLastName("Test");
+        Contact contact = Contact.builder()
+                .firstName("Detail")
+                .lastName("Test")
+                .build();
+
         Contact savedContact = contactRepository.save(contact);
 
-        ContactDetail primaryEmail = new ContactDetail();
-        primaryEmail.setContact(savedContact);
-        primaryEmail.setDetailType(DetailType.EMAIL);
-        primaryEmail.setLabel(DetailLabel.WORK);
-        primaryEmail.setValue("primary@test.com");
-        primaryEmail.setIsPrimary(true);
+        ContactDetail primaryEmail = ContactDetail.builder()
+                .contact(savedContact)
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value("primary@test.com")
+                .isPrimary(true)
+                .build();
+
         contactDetailRepository.save(primaryEmail);
 
-        ContactDetail secondaryEmail = new ContactDetail();
-        secondaryEmail.setContact(savedContact);
-        secondaryEmail.setDetailType(DetailType.EMAIL);
-        secondaryEmail.setLabel(DetailLabel.HOME);
-        secondaryEmail.setValue("secondary@test.com");
-        secondaryEmail.setIsPrimary(false);
+        ContactDetail secondaryEmail = ContactDetail.builder()
+                .contact(savedContact)
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.HOME)
+                .value("secondary@test.com")
+                .isPrimary(false)
+                .build();
+
         contactDetailRepository.save(secondaryEmail);
 
-        ContactDetail mobilePhone = new ContactDetail();
-        mobilePhone.setContact(savedContact);
-        mobilePhone.setDetailType(DetailType.PHONE);
-        mobilePhone.setLabel(DetailLabel.MOBILE);
-        mobilePhone.setValue("+1234567890");
-        mobilePhone.setIsPrimary(false);
+        ContactDetail mobilePhone = ContactDetail.builder()
+                .contact(savedContact)
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.MOBILE)
+                .value("+1234567890")
+                .isPrimary(false)
+                .build();
+
         contactDetailRepository.save(mobilePhone);
 
         List<ContactDetail> foundDetails = contactDetailRepository
@@ -62,25 +70,31 @@ class ContactDetailRepositoryTest {
 
     @Test
     void testFindPrimaryContactDetailsByContactId() {
-        Contact contact = new Contact();
-        contact.setFirstName("Primary");
-        contact.setLastName("Test");
+        Contact contact = Contact.builder()
+                .firstName("Primary")
+                .lastName("Test")
+                .build();
+
         Contact savedContact = contactRepository.save(contact);
 
-        ContactDetail primaryDetail = new ContactDetail();
-        primaryDetail.setContact(savedContact);
-        primaryDetail.setDetailType(DetailType.EMAIL);
-        primaryDetail.setLabel(DetailLabel.WORK);
-        primaryDetail.setValue("primary@test.com");
-        primaryDetail.setIsPrimary(true);
+        ContactDetail primaryDetail = ContactDetail.builder()
+                .contact(savedContact)
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.WORK)
+                .value("primary@test.com")
+                .isPrimary(true)
+                .build();
+
         contactDetailRepository.save(primaryDetail);
 
-        ContactDetail secondaryDetail = new ContactDetail();
-        secondaryDetail.setContact(savedContact);
-        secondaryDetail.setDetailType(DetailType.PHONE);
-        secondaryDetail.setLabel(DetailLabel.HOME);
-        secondaryDetail.setValue("+1234567890");
-        secondaryDetail.setIsPrimary(false);
+        ContactDetail secondaryDetail = ContactDetail.builder()
+                .contact(savedContact)
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.HOME)
+                .value("+1234567890")
+                .isPrimary(false)
+                .build();
+
         contactDetailRepository.save(secondaryDetail);
 
         List<ContactDetail> primaryDetails = contactDetailRepository

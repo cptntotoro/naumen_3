@@ -1,4 +1,4 @@
-package ru.anastasia.NauJava.service.tag;
+package ru.anastasia.NauJava.service.tag.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +9,7 @@ import ru.anastasia.NauJava.entity.tag.Tag;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
 import ru.anastasia.NauJava.repository.tag.ContactTagRepository;
 import ru.anastasia.NauJava.repository.tag.TagRepository;
+import ru.anastasia.NauJava.service.tag.TagService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +42,13 @@ public class TagServiceImpl implements TagService {
     @Override
     public Tag create(String name, String color) {
         return tagRepository.findByName(name)
-                .orElseGet(() -> tagRepository.save(new Tag(name, color)));
+                .orElseGet(() -> tagRepository.save(
+                                Tag.builder()
+                                        .name(name)
+                                        .color(color)
+                                        .build()
+                        )
+                );
     }
 
     @Override
@@ -55,7 +62,10 @@ public class TagServiceImpl implements TagService {
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new RuntimeException("Не найден контакт с id: " + contactId));
         Tag tag = create(tagName, "#808080");
-        ContactTag contactTag = new ContactTag(contact, tag);
+        ContactTag contactTag = ContactTag.builder()
+                .contact(contact)
+                .tag(tag)
+                .build();
         return contactTagRepository.save(contactTag);
     }
 
