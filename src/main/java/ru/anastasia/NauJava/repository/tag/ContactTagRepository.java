@@ -18,4 +18,13 @@ public interface ContactTagRepository extends CrudRepository<ContactTag, Long> {
      * @return Список связей тегов
      */
     List<ContactTag> findByContactId(Long contactId);
+
+    /**
+     * Проверить, привязан ли тег к контакту
+     *
+     * @param contactId Идентификатор контакта
+     * @param id        Идентификатор тега
+     * @return Да / Нет
+     */
+    boolean existsByContactIdAndTagId(Long contactId, Long id);
 }

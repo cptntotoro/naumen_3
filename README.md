@@ -13,6 +13,7 @@ git clone https://github.com/cptntotoro/naumen_3.git
 ```
 mvn clean install
 ```
+3. Создайте базу данных Postgres согласно найтройкам application.properties
 
 ## Запуск приложения
 1. Соберите исполняемый JAR-файл:
@@ -24,6 +25,18 @@ mvn clean package
 java -jar target/NauJava-0.0.1-SNAPSHOT.jar
 ```
 
+Приложение будет доступно по адресу:
+
+```
+http://localhost:8080/
+```
+
 ## Мониторинг
 http://localhost:8080/actuator/health — статус здоровья приложения
 http://localhost:8080/actuator/metrics — метрики производительности
+
+## Swagger API
+
+```
+http://localhost:8080/swagger-ui/index.html
+```

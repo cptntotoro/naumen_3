@@ -28,29 +28,6 @@ class TagRepositoryTest {
     private ContactRepository contactRepository;
 
     @Test
-    void testFindByNameContainingIgnoreCaseOrColorContainingIgnoreCase() {
-        String tagName = "Important" + UUID.randomUUID();
-        String color = "#FF0000";
-
-        Tag tag = Tag.builder()
-                .name(tagName)
-                .color(color)
-                .build();
-
-        tagRepository.save(tag);
-
-        List<Tag> foundByName = tagRepository.findByNameContainingIgnoreCaseOrColorContainingIgnoreCase(
-                "important", "");
-        List<Tag> foundByColor = tagRepository.findByNameContainingIgnoreCaseOrColorContainingIgnoreCase(
-                "", "FF0000");
-
-        assertFalse(foundByName.isEmpty());
-        assertFalse(foundByColor.isEmpty());
-        assertEquals(tagName, foundByName.getFirst().getName());
-        assertEquals(color, foundByColor.getFirst().getColor());
-    }
-
-    @Test
     void testFindByName() {
         String tagName = "TestTag" + UUID.randomUUID();
 

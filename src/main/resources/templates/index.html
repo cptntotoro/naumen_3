@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Manager - Главная</title>
+
+    <div th:replace="fragments/styles :: base-styles"></div>
+    <div th:replace="fragments/styles :: page-styles('home')"></div>
+</head>
+<body class="app-container">
+<div th:replace="fragments/header :: header('Главная', null, null, 'home')"></div>
+
+<!--&lt;!&ndash; Hero Section &ndash;&gt;-->
+<!--<section class="dashboard-hero">-->
+<!--    <div class="container">-->
+<!--        <div class="hero-content">-->
+<!--            <div class="hero-text">-->
+<!--                <h1 class="hero-title">Управляйте контактами профессионально</h1>-->
+<!--                <p class="hero-description">Мощная система для управления контактами, компаниями и событиями. Все в-->
+<!--                    одном месте.</p>-->
+<!--                <a th:href="@{/contacts}" class="btn btn-primary btn-lg hero-cta">-->
+<!--                    <i class="fas fa-rocket me-2"></i>Начать работу-->
+<!--                </a>-->
+<!--            </div>-->
+<!--            <div class="hero-visual">-->
+<!--                <i class="fas fa-address-book hero-icon"></i>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</section>-->
+
+<!-- Statistics Section -->
+<section class="dashboard-stats">
+    <div class="container">
+        <div class="stats-grid">
+            <!-- Статистика контактов -->
+            <div class="stat-item">
+                <div class="stat-card stat-card--primary">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <div class="stat-number" th:text="${stats?.contactsCount ?: 0}">0</div>
+                            <div class="stat-label">Контактов</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <a th:href="@{/contacts}" class="stat-link">
+                        Управление контактами <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Остальная статистика -->
+            <div class="stat-item">
+                <div class="stat-card stat-card--success">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <div class="stat-number" th:text="${stats?.companiesCount ?: 0}">0</div>
+                            <div class="stat-label">Компаний</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                    <a th:href="@{/companies}" class="stat-link">
+                        Управление компаниями <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-card stat-card--warning">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <div class="stat-number" th:text="${stats?.favoritesCount ?: 0}">0</div>
+                            <div class="stat-label">Избранных</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <a th:href="@{/contacts/favorites}" class="stat-link">
+                        Просмотр избранных <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-card stat-card--info">
+                    <div class="stat-content">
+                        <div class="stat-info">
+                            <div class="stat-number" th:text="${stats?.upcomingBirthdays ?: 0}">0</div>
+                            <div class="stat-label">Дней рождения</div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-birthday-cake"></i>
+                        </div>
+                    </div>
+                    <a th:href="@{/contacts/birthdays}" class="stat-link">
+                        Предстоящие дни рождения <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Actions Section -->
+<section class="dashboard-actions">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Быстрый доступ</h2>
+            <p class="section-subtitle">Часто используемые действия</p>
+        </div>
+        <div class="actions-grid">
+            <a th:href="@{/contacts/new}" class="action-card action-card--primary">
+                <div class="action-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="action-content">
+                    <h3 class="action-title">Добавить контакт</h3>
+                    <p class="action-description">Создать новый контакт в системе</p>
+                </div>
+                <div class="action-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a th:href="@{/companies/new}" class="action-card action-card--success">
+                <div class="action-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="action-content">
+                    <h3 class="action-title">Добавить компанию</h3>
+                    <p class="action-description">Зарегистрировать новую компанию</p>
+                </div>
+                <div class="action-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a th:href="@{/tags/new}" class="action-card action-card--warning">
+                <div class="action-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="action-content">
+                    <h3 class="action-title">Создать тег</h3>
+                    <p class="action-description">Добавить новый тег для категоризации</p>
+                </div>
+                <div class="action-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a th:href="@{/contacts/birthdays}" class="action-card action-card--info link-inactive">
+                <div class="action-icon">
+                    <i class="fas fa-birthday-cake"></i>
+                </div>
+                <div class="action-content">
+                    <h3 class="action-title">Дни рождения</h3>
+                    <p class="action-description">Предстоящие дни рождения контактов</p>
+                </div>
+                <div class="action-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/scripts :: base-scripts"></div>
+</body>
+</html>

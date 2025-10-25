@@ -1,9 +1,9 @@
 package ru.anastasia.NauJava.service.contact;
 
+import ru.anastasia.NauJava.dto.contact.ContactCreateDto;
+import ru.anastasia.NauJava.dto.contact.ContactUpdateDto;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.ContactDetail;
-import ru.anastasia.NauJava.entity.contact.Event;
-import ru.anastasia.NauJava.entity.contact.SocialProfile;
+import ru.anastasia.NauJava.service.facade.dto.ContactFullDetails;
 
 import java.util.List;
 
@@ -13,25 +13,6 @@ import java.util.List;
 public interface ContactManagementService {
 
     /**
-     * Создать контакт
-     *
-     * @param firstName      Имя
-     * @param lastName       Фамилия
-     * @param company        Название компании
-     * @param jobTitle       Название должности
-     * @param contactDetails Способы связи
-     * @param socialProfiles Профили в соцсетях
-     * @param events         События
-     * @param tagNames       Теги
-     * @param notes          Заметки
-     * @return Контакт
-     */
-    Contact createWithDetails(
-            String firstName, String lastName, String company, String jobTitle,
-            List<ContactDetail> contactDetails, List<SocialProfile> socialProfiles,
-            List<Event> events, List<String> tagNames, List<String> notes);
-
-    /**
      * Удалить контакт
      *
      * @param contactId Идентификатор контакта
@@ -39,41 +20,59 @@ public interface ContactManagementService {
     void delete(Long contactId);
 
     /**
-     * Создать дубликат контакта
+     * Получить контакт со всеми связанными сущностями
+     *
+     * @param contactId Идентификатор контакта
+     * @return Контакт со всеми связанными сущностями
+     */
+    ContactFullDetails getWithAllDetails(Long contactId);
+
+    /**
+     * Получить контакт с основной информацией
+     *
+     * @param contactId Идентификатор контакта
+     * @return Контакт с основной информацией
+     */
+    ContactFullDetails getSummary(Long contactId);
+
+    /**
+     * Дублировать контакт
      *
      * @param contactId    Идентификатор контакта
-     * @param newFirstName Новое значение имени
-     * @param newLastName  Новое значение фамилии
-     * @return Контакт
+     * @param newFirstName Новое имя
+     * @param newLastName  Новая фамилия
+     * @return Дубликат контакта
      */
     Contact duplicate(Long contactId, String newFirstName, String newLastName);
 
     /**
-     * Получить контакты по параметрам
+     * Получить контакты с предстоящими днями рождения
      *
-     * @param firstName Имя
-     * @param lastName  Фамилия
-     * @param company   Название компании
-     * @param jobTitle  Название должности
-     * @return Список контактов
+     * @param daysAhead Количество дней вперед для поиска
+     * @return Список контактов с предстоящими днями рождения
      */
-    List<Contact> searchComplex(String firstName, String lastName, String company, String jobTitle);
+    List<ContactFullDetails> getListWithUpcomingBirthdays(int daysAhead);
 
     /**
-     * Получить контакты с наступающими днями рождения
+     * Получить избранные контакты с основной информацией
      *
-     * @param daysAhead Дней до дня рождения
-     * @return Список контактов
+     * @return Список избранных контактов
      */
-    List<Contact> findWithUpcomingBirthdays(int daysAhead);
+    List<ContactFullDetails> getListFavoriteWithDetails();
 
     /**
-     * Обновить контакт и способы связи
+     * Создать контакт
      *
-     * @param contactId      Идентификатор контакта
-     * @param contact        Обновленные данные контакта
-     * @param contactDetails Обновленные способы связи
+     * @param contactCreateDto DTO создания контакта
      * @return Контакт
      */
-    Contact updateWithDetails(Long contactId, Contact contact, List<ContactDetail> contactDetails);
+    Contact create(ContactCreateDto contactCreateDto);
+
+    /**
+     * Обновить контакт
+     *
+     * @param contactUpdateDto DTO обновления контакта
+     * @return Контакт
+     */
+    Contact update(ContactUpdateDto contactUpdateDto);
 }

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' - Contact Manager'">Contact Manager</title>
+</head>
+<body>
+
+<!-- Header Fragment -->
+<div th:fragment="header(pageTitle, addButtonUrl, addButtonText, currentPage)">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <!-- Логотип и бренд -->
+            <div class="navbar-brand-section">
+                <a class="navbar-brand" th:href="@{/}">
+                    <i class="fas fa-address-book brand-icon"></i>
+                    <span class="brand-text">Contact Manager</span>
+                </a>
+            </div>
+
+            <!-- Кнопка мобильного меню -->
+            <button class="navbar-toggler" type="button" id="navbarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Основное меню -->
+            <div class="navbar-menu" id="navbarMenu">
+                <ul class="navbar-nav main-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/contacts}"
+                           th:classappend="${currentPage == 'contacts'} ? 'active'">
+                            <i class="fas fa-users nav-icon"></i>
+                            <span class="nav-text">Контакты</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/companies}"
+                           th:classappend="${currentPage == 'companies'} ? 'active'">
+                            <i class="fas fa-building nav-icon"></i>
+                            <span class="nav-text">Компании</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/jobtitles}"
+                           th:classappend="${currentPage == 'jobtitles'} ? 'active'">
+                            <i class="fas fa-briefcase nav-icon"></i>
+                            <span class="nav-text">Должности</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/tags}"
+                           th:classappend="${currentPage == 'tags'} ? 'active'">
+                            <i class="fas fa-tags nav-icon"></i>
+                            <span class="nav-text">Теги</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Дополнительное меню -->
+                <ul class="navbar-nav utility-nav">
+                    <li class="nav-item">
+                        <a class="nav-link link-inactive" th:href="@{/contacts/favorites}">
+                            <i class="fas fa-star nav-icon"></i>
+                            <span class="nav-text">Избранные</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link link-inactive" th:href="@{/contacts/birthdays}">
+                            <i class="fas fa-birthday-cake nav-icon"></i>
+                            <span class="nav-text">Дни рождения</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="page-container">
+        <div class="page-header">
+            <div class="page-title-section">
+                <h1 class="page-title" th:text="${pageTitle}">Page Title</h1>
+                <nav class="breadcrumb">
+                    <a th:href="@{/}" class="breadcrumb-link">Главная</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-current" th:text="${pageTitle}"></span>
+                </nav>
+            </div>
+            <div class="page-actions" th:if="${addButtonUrl}">
+                <a th:href="@{${addButtonUrl}}" class="btn btn-primary btn-lg action-button">
+                    <i class="fas fa-plus btn-icon"></i>
+                    <span th:text="${addButtonText ?: 'Добавить'}"></span>
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggler = document.getElementById('navbarToggle');
+        const navbar = document.getElementById('navbarMenu');
+
+        if (toggler && navbar) {
+            toggler.addEventListener('click', function () {
+                navbar.classList.toggle('active');
+                const icon = toggler.querySelector('i');
+                icon.className = navbar.classList.contains('active') ? 'fas fa-times' : 'fas fa-bars';
+            });
+
+            // Close menu when clicking on links
+            const navLinks = navbar.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    navbar.classList.remove('active');
+                    toggler.querySelector('i').className = 'fas fa-bars';
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function (event) {
+                const isClickInsideNavbar = navbar.contains(event.target);
+                const isClickInsideToggler = toggler.contains(event.target);
+
+                if (!isClickInsideNavbar && !isClickInsideToggler && navbar.classList.contains('active')) {
+                    navbar.classList.remove('active');
+                    toggler.querySelector('i').className = 'fas fa-bars';
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

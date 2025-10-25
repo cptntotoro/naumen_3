@@ -22,7 +22,7 @@ import ru.anastasia.NauJava.entity.contact.Contact;
 import java.time.LocalDateTime;
 
 /**
- * Теги контактов
+ * Тег контакта
  */
 @Entity
 @Table(name = "contact_tags")
@@ -48,8 +48,6 @@ public class ContactTag {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Contact contact;
 
     /**
@@ -57,8 +55,6 @@ public class ContactTag {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id", nullable = false)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Tag tag;
 
     /**
