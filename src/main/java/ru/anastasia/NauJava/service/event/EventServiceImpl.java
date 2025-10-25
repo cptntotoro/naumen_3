@@ -1,14 +1,13 @@
-package ru.anastasia.NauJava.service.contact.impl;
+package ru.anastasia.NauJava.service.event;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.enums.EventType;
+import ru.anastasia.NauJava.entity.event.Event;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
-import ru.anastasia.NauJava.repository.contact.EventRepository;
-import ru.anastasia.NauJava.service.contact.EventService;
+import ru.anastasia.NauJava.repository.event.EventRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     /**
      * Репозиторий событий
@@ -26,12 +26,6 @@ public class EventServiceImpl implements EventService {
      * Репозиторий контактов
      */
     private final ContactRepository contactRepository;
-
-    @Autowired
-    public EventServiceImpl(EventRepository eventRepository, ContactRepository contactRepository) {
-        this.eventRepository = eventRepository;
-        this.contactRepository = contactRepository;
-    }
 
     @Override
     @Transactional
@@ -75,5 +69,24 @@ public class EventServiceImpl implements EventService {
     @Transactional(readOnly = true)
     public List<Event> findByEventTypeAndEventDateBetween(EventType type, LocalDate start, LocalDate end) {
         return eventRepository.findByEventTypeAndEventDateBetween(type, start, end);
+    }
+
+    @Override
+    public Event findById(Long id) {
+        return eventRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Event update(Event event) {
+        Long id = event.getId();
+
+        return eventRepository.findById(id)
+                .map(ev -> eventRepository.save(event))
+                .orElseThrow(() -> new RuntimeException("Не найден контакт с id: " + id));
+    }
+
+    @Override
+    public void delete(Long id) {
+        eventRepository.deleteById(id);
     }
 }

@@ -1,16 +1,16 @@
 package ru.anastasia.NauJava.service.contact.impl;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.config.AppConfig;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.enums.EventType;
+import ru.anastasia.NauJava.entity.event.Event;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
 import ru.anastasia.NauJava.service.contact.ContactService;
-import ru.anastasia.NauJava.service.contact.EventService;
+import ru.anastasia.NauJava.service.event.EventService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
+@RequiredArgsConstructor
 public class ContactServiceImpl implements ContactService {
     /**
      * Репозиторий контактов
@@ -33,13 +34,6 @@ public class ContactServiceImpl implements ContactService {
      * Конфигурация приложения
      */
     private final AppConfig appConfig;
-
-    @Autowired
-    public ContactServiceImpl(ContactRepository contactRepository, EventService eventService, AppConfig appConfig) {
-        this.contactRepository = contactRepository;
-        this.eventService = eventService;
-        this.appConfig = appConfig;
-    }
 
     @PostConstruct
     public void init() {

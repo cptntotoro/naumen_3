@@ -2,8 +2,8 @@ package ru.anastasia.NauJava.service.contact;
 
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.contact.ContactDetail;
-import ru.anastasia.NauJava.entity.contact.Event;
-import ru.anastasia.NauJava.entity.contact.SocialProfile;
+import ru.anastasia.NauJava.entity.event.Event;
+import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 
 import java.util.List;
 

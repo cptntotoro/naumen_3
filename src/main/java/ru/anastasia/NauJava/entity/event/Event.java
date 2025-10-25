@@ -1,7 +1,9 @@
-package ru.anastasia.NauJava.entity.contact;
+package ru.anastasia.NauJava.entity.event;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,12 +18,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import ru.anastasia.NauJava.entity.contact.Contact;
+import ru.anastasia.NauJava.entity.enums.EventType;
+
+import java.time.LocalDate;
 
 /**
- * Заметка
+ * Событие
  */
 @Entity
-@Table(name = "notes")
+@Table(name = "events")
 @Getter
 @Setter
 @Builder
@@ -29,7 +35,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Note {
+public class Event {
     /**
      * Идентификатор
      */
@@ -49,8 +55,33 @@ public class Note {
     private Contact contact;
 
     /**
-     * Тело заметки
+     * Тип события
      */
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String content;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "event_type", nullable = false)
+    private EventType eventType;
+
+    /**
+     * Кастомный тип события
+     */
+    @Column(name = "custom_event_name")
+    private String customEventName;
+
+    /**
+     * Дата события
+     */
+    @Column(name = "event_date", nullable = false)
+    private LocalDate eventDate;
+
+    /**
+     * Заметка
+     */
+    private String notes;
+
+    /**
+     * Флаг, повторяется ли событие ежегодно
+     */
+    @Column(name = "yearly_recurrence")
+    @Builder.Default
+    private Boolean yearlyRecurrence = false;
 }

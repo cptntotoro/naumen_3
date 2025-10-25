@@ -1,10 +1,10 @@
-package ru.anastasia.NauJava.repository.contact;
+package ru.anastasia.NauJava.repository.socialprofile;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-import ru.anastasia.NauJava.entity.contact.SocialProfile;
 import ru.anastasia.NauJava.entity.enums.SocialPlatform;
+import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 
 import java.util.List;
 

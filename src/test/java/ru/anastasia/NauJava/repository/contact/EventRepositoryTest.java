@@ -6,8 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.enums.EventType;
+import ru.anastasia.NauJava.entity.event.Event;
+import ru.anastasia.NauJava.repository.event.EventRepository;
 
 import java.time.LocalDate;
 import java.util.List;

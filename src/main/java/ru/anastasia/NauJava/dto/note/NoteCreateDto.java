@@ -1,0 +1,23 @@
+package ru.anastasia.NauJava.dto.note;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * DTO создания заметки
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class NoteCreateDto {
+
+
+    private Long contactId;
+
+    @NotBlank(message = "Содержимое заметки обязательно")
+    private String content;
+}

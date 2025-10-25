@@ -18,6 +18,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import ru.anastasia.NauJava.entity.company.ContactCompany;
+import ru.anastasia.NauJava.entity.event.Event;
+import ru.anastasia.NauJava.entity.note.Note;
+import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 import ru.anastasia.NauJava.entity.tag.ContactTag;
 
 import java.time.LocalDateTime;

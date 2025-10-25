@@ -1,6 +1,6 @@
 package ru.anastasia.NauJava.service.company.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,36 +14,26 @@ import java.util.stream.StreamSupport;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CompanyServiceImpl implements CompanyService {
     /**
      * Репозиторий компаний
      */
     private final CompanyRepository companyRepository;
 
-    @Autowired
-    public CompanyServiceImpl(CompanyRepository companyRepository) {
-        this.companyRepository = companyRepository;
-    }
-
     @Override
     @Transactional
-    public Company create(String name) {
-        Company existingCompany = findByName(name);
-        if (existingCompany != null) {
-            return existingCompany;
-        }
+    public Company create(Company company) {
+        String companyName = company.getName();
 
         try {
-            Company company = Company.builder()
-                    .name(name)
+            Company companyToSave = Company.builder()
+                    .name(companyName)
                     .build();
-            return companyRepository.save(company);
+            return companyRepository.save(companyToSave);
         } catch (DataIntegrityViolationException e) {
-            Company company = findByName(name);
-            if (company != null) {
-                return company;
-            }
-            throw new RuntimeException("Не удалось создать компанию: " + name);
+            throw new RuntimeException("Не удалось создать компанию: " + companyName + ". " +
+                    "Компания с таким именем уже существует");
         }
     }
 
@@ -63,19 +53,26 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional
-    public Company update(Long id, String name, String website) {
-        return companyRepository.findById(id)
-                .map(company -> {
-                    company.setName(name);
-                    company.setWebsite(website);
-                    return companyRepository.save(company);
+    public Company update(Company company) {
+        Long companyId = company.getId();
+
+        return companyRepository.findById(companyId)
+                .map(comp -> {
+                    comp.setName(company.getName());
+                    comp.setWebsite(company.getWebsite());
+                    return companyRepository.save(comp);
                 })
-                .orElseThrow(() -> new RuntimeException("Не найдена компания с id: " + id));
+                .orElseThrow(() -> new RuntimeException("Не найдена компания с id: " + companyId));
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
         companyRepository.deleteById(id);
+    }
+
+    @Override
+    public Company findById(Long id) {
+        return companyRepository.findById(id).orElse(null);
     }
 }

@@ -1,8 +1,8 @@
-package ru.anastasia.NauJava.repository.contact;
+package ru.anastasia.NauJava.repository.note;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-import ru.anastasia.NauJava.entity.contact.Note;
+import ru.anastasia.NauJava.entity.note.Note;
 
 import java.util.List;
 

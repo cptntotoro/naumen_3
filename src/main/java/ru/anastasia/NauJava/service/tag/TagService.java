@@ -13,11 +13,10 @@ public interface TagService {
     /**
      * Создать тег
      *
-     * @param name  Название тега
-     * @param color Цвет тега
+     * @param tag Тег
      * @return Тег
      */
-    Tag create(String name, String color);
+    Tag create(Tag tag);
 
     /**
      * Найти тег по имени
@@ -42,4 +41,34 @@ public interface TagService {
      * @return Список тегов
      */
     List<Tag> findByContactId(Long contactId);
+
+    /**
+     * Получить все теги
+     *
+     * @return Список тегов
+     */
+    List<Tag> findAll();
+
+    /**
+     * Получить тег по идентификатору
+     *
+     * @param id Идентификатор
+     * @return Тег
+     */
+    Tag findById(Long id);
+
+    /**
+     * Обновить тег по идентификатору
+     *
+     * @param tag Тег
+     * @return Тег
+     */
+    Tag update(Tag tag);
+
+    /**
+     * Удалить тег по идентификатору
+     *
+     * @param id Идентификатор
+     */
+    void delete(Long id);
 }

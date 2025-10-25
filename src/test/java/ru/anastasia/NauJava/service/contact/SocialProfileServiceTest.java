@@ -5,10 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.SocialProfile;
 import ru.anastasia.NauJava.entity.enums.SocialPlatform;
+import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
-import ru.anastasia.NauJava.repository.contact.SocialProfileRepository;
+import ru.anastasia.NauJava.repository.socialprofile.SocialProfileRepository;
+import ru.anastasia.NauJava.service.socialprofile.SocialProfileService;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,9 +1,9 @@
-package ru.anastasia.NauJava.repository.contact;
+package ru.anastasia.NauJava.repository.event;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.enums.EventType;
+import ru.anastasia.NauJava.entity.event.Event;
 
 import java.time.LocalDate;
 import java.util.List;

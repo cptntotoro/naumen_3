@@ -6,12 +6,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.contact.ContactDetail;
-import ru.anastasia.NauJava.entity.contact.Event;
-import ru.anastasia.NauJava.entity.contact.SocialProfile;
 import ru.anastasia.NauJava.entity.enums.DetailLabel;
 import ru.anastasia.NauJava.entity.enums.DetailType;
 import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.entity.enums.SocialPlatform;
+import ru.anastasia.NauJava.entity.event.Event;
+import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
 
 import java.time.LocalDate;

@@ -85,4 +85,11 @@ public interface ContactDetailService {
      * @return Список способов связи
      */
     List<ContactDetail> findByDetailTypeAndLabel(DetailType detailType, DetailLabel label);
+
+    /**
+     * Получить все способы связи
+     *
+     * @return Список способов связи
+     */
+    List<ContactDetail> findAll();
 }

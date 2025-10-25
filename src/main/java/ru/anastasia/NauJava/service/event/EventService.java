@@ -1,8 +1,8 @@
-package ru.anastasia.NauJava.service.contact;
+package ru.anastasia.NauJava.service.event;
 
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.enums.EventType;
+import ru.anastasia.NauJava.entity.event.Event;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -54,4 +54,27 @@ public interface EventService {
      * @return Список событий
      */
     List<Event> findByEventTypeAndEventDateBetween(EventType type, LocalDate start, LocalDate end);
+
+    /**
+     * Получить событие по идентификатору
+     *
+     * @param id Идентификатор
+     * @return Событие
+     */
+    Event findById(Long id);
+
+    /**
+     * Обновить событие
+     *
+     * @param event Событие
+     * @return Событие
+     */
+    Event update(Event event);
+
+    /**
+     * Удаллить событие
+     *
+     * @param id Идентификатор
+     */
+    void delete(Long id);
 }

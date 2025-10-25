@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -23,7 +24,10 @@ import java.util.Set;
  * Тег
  */
 @Entity
-@Table(name = "tags")
+@Table(name = "tags",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "name", name = "uk_tags_name")
+        })
 @Getter
 @Setter
 @Builder

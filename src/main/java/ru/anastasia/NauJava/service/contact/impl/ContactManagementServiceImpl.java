@@ -1,24 +1,25 @@
 package ru.anastasia.NauJava.service.contact.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.contact.ContactDetail;
-import ru.anastasia.NauJava.entity.contact.Event;
-import ru.anastasia.NauJava.entity.contact.SocialProfile;
+import ru.anastasia.NauJava.entity.event.Event;
+import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 import ru.anastasia.NauJava.entity.tag.Tag;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
 import ru.anastasia.NauJava.service.contact.ContactDetailService;
 import ru.anastasia.NauJava.service.contact.ContactManagementService;
-import ru.anastasia.NauJava.service.contact.EventService;
-import ru.anastasia.NauJava.service.contact.NoteService;
-import ru.anastasia.NauJava.service.contact.SocialProfileService;
+import ru.anastasia.NauJava.service.event.EventService;
+import ru.anastasia.NauJava.service.note.NoteService;
+import ru.anastasia.NauJava.service.socialprofile.SocialProfileService;
 import ru.anastasia.NauJava.service.tag.TagService;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ContactManagementServiceImpl implements ContactManagementService {
     /**
      * Репозиторий контактов
@@ -49,21 +50,6 @@ public class ContactManagementServiceImpl implements ContactManagementService {
      * Сервис управления заметками
      */
     private final NoteService noteService;
-
-    @Autowired
-    public ContactManagementServiceImpl(ContactRepository contactRepository,
-                                        ContactDetailService contactDetailService,
-                                        TagService tagService,
-                                        EventService eventService,
-                                        SocialProfileService socialProfileService,
-                                        NoteService noteService) {
-        this.contactRepository = contactRepository;
-        this.contactDetailService = contactDetailService;
-        this.tagService = tagService;
-        this.eventService = eventService;
-        this.socialProfileService = socialProfileService;
-        this.noteService = noteService;
-    }
 
     @Transactional
     @Override
