@@ -5,7 +5,6 @@ import ru.anastasia.NauJava.entity.enums.DetailLabel;
 import ru.anastasia.NauJava.entity.enums.DetailType;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Сервис способов связи
@@ -66,7 +65,7 @@ public interface ContactDetailService {
      * @param id Идентификатор
      * @return Способ связи
      */
-    Optional<ContactDetail> findById(Long id);
+    ContactDetail findById(Long id);
 
     /**
      * Получить способы связи по типу и строковому значению лейбла
@@ -85,4 +84,11 @@ public interface ContactDetailService {
      * @return Список способов связи
      */
     List<ContactDetail> findByDetailTypeAndLabel(DetailType detailType, DetailLabel label);
+
+    /**
+     * Получить все способы связи
+     *
+     * @return Список способов связи
+     */
+    List<ContactDetail> findAll();
 }

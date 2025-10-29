@@ -5,7 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.Note;
+import ru.anastasia.NauJava.entity.note.Note;
+import ru.anastasia.NauJava.repository.note.NoteRepository;
 
 import java.util.List;
 import java.util.UUID;

@@ -58,7 +58,5 @@ public class JobTitle {
      */
     @OneToMany(mappedBy = "jobTitle", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<ContactCompany> contacts = new HashSet<>();
 }

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ошибка - Contact Manager</title>
+
+    <div th:replace="fragments/styles :: base-styles"></div>
+    <style>
+        .error-container {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-8) 0;
+        }
+
+        .error-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+            padding: var(--space-8);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: var(--space-6);
+        }
+
+        .error-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .error-code {
+            display: inline-block;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius);
+            font-family: monospace;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+        }
+
+        .error-message {
+            color: var(--gray-600);
+            margin-bottom: var(--space-4);
+            line-height: 1.6;
+        }
+
+        .error-details {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: var(--space-4);
+            margin-bottom: var(--space-6);
+            text-align: left;
+        }
+
+        .error-details summary {
+            font-weight: 600;
+            color: var(--gray-700);
+            cursor: pointer;
+            margin-bottom: var(--space-2);
+        }
+
+        .error-details pre {
+            background: var(--white);
+            padding: var(--space-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: var(--space-3);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-error {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-error:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .error-card {
+                padding: var(--space-6);
+                margin: 0 var(--space-4);
+            }
+
+            .error-actions {
+                flex-direction: column;
+            }
+
+            .error-actions .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="app-container">
+<div th:replace="fragments/header :: header('Ошибка', null, null, null)"></div>
+
+<div class="main-content">
+    <div class="container">
+        <div class="error-container">
+            <div class="error-card">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+
+                <h1 class="error-title">Произошла ошибка</h1>
+
+                <div class="error-code" th:text="${error.status}"></div>
+
+                <p class="error-message" th:text="${error.reason}"></p>
+
+                <div class="error-details" th:if="${error.message}">
+                    <summary>Подробности ошибки</summary>
+                    <pre th:text="${error.message}"></pre>
+                </div>
+
+                <div class="error-details" th:if="${error.timestamp}">
+                    <summary>Время возникновения</summary>
+                    <pre th:text="${#temporals.format(error.timestamp, 'dd.MM.yyyy HH:mm:ss')}"></pre>
+                </div>
+
+                <div class="error-actions">
+                    <a th:href="@{/}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                    <a th:href="@{/contacts}" class="btn btn-outline-primary">
+                        <i class="fas fa-users me-2"></i>К контактам
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline">
+                        <i class="fas fa-arrow-left me-2"></i>Назад
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/scripts :: base-scripts"></div>
+</body>
+</html>

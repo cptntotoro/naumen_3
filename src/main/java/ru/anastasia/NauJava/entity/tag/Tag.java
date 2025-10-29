@@ -1,13 +1,6 @@
 package ru.anastasia.NauJava.entity.tag;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -23,7 +16,10 @@ import java.util.Set;
  * Тег
  */
 @Entity
-@Table(name = "tags")
+@Table(name = "tags",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "name", name = "uk_tags_name")
+        })
 @Getter
 @Setter
 @Builder
@@ -60,9 +56,7 @@ public class Tag {
     /**
      * Теги
      */
-    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Set<ContactTag> contactTags = new HashSet<>();
 }

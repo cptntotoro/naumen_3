@@ -1,16 +1,17 @@
 package ru.anastasia.NauJava.service.contact.impl;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.config.AppConfig;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.Event;
 import ru.anastasia.NauJava.entity.enums.EventType;
+import ru.anastasia.NauJava.entity.event.Event;
+import ru.anastasia.NauJava.exception.contact.ContactNotFoundException;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
 import ru.anastasia.NauJava.service.contact.ContactService;
-import ru.anastasia.NauJava.service.contact.EventService;
+import ru.anastasia.NauJava.service.event.EventService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,7 +19,9 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
+@RequiredArgsConstructor
 public class ContactServiceImpl implements ContactService {
+
     /**
      * Репозиторий контактов
      */
@@ -33,13 +36,6 @@ public class ContactServiceImpl implements ContactService {
      * Конфигурация приложения
      */
     private final AppConfig appConfig;
-
-    @Autowired
-    public ContactServiceImpl(ContactRepository contactRepository, EventService eventService, AppConfig appConfig) {
-        this.contactRepository = contactRepository;
-        this.eventService = eventService;
-        this.appConfig = appConfig;
-    }
 
     @PostConstruct
     public void init() {
@@ -58,7 +54,8 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public Contact findById(Long id) {
-        return contactRepository.findById(id).orElse(null);
+        return contactRepository.findById(id)
+                .orElseThrow(() -> new ContactNotFoundException("Не найден контакт с id: " + id));
     }
 
     @Override
@@ -72,7 +69,20 @@ public class ContactServiceImpl implements ContactService {
             contact.setFirstName(firstName);
             contact.setLastName(lastName);
             return contactRepository.save(contact);
-        }).orElseThrow(() -> new RuntimeException("Не найден контакт с id: " + id));
+        }).orElseThrow(() -> new ContactNotFoundException("Не найден контакт с id: " + id));
+    }
+
+    @Override
+    public Contact update(Long id, String firstName, String lastName, String displayName,
+                          String avatarUrl, Boolean isFavorite) {
+        return contactRepository.findById(id).map(contact -> {
+            contact.setFirstName(firstName);
+            contact.setLastName(lastName);
+            contact.setDisplayName(displayName);
+            contact.setAvatarUrl(avatarUrl);
+            contact.setIsFavorite(isFavorite);
+            return contactRepository.save(contact);
+        }).orElseThrow(() -> new ContactNotFoundException("Не найден контакт с id: " + id));
     }
 
     @Override
@@ -102,7 +112,7 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public Contact updateAvatar(Long contactId, String avatarUrl) {
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new RuntimeException("Контакт не найден"));
+                .orElseThrow(() -> new ContactNotFoundException("Не найден контакт с id: " + contactId));
         contact.setAvatarUrl(avatarUrl);
         return contactRepository.save(contact);
     }
@@ -114,6 +124,11 @@ public class ContactServiceImpl implements ContactService {
             return findAll();
         }
         return contactRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm);
+    }
+
+    @Override
+    public Contact save(Contact contact) {
+        return contactRepository.save(contact);
     }
 
     @Override

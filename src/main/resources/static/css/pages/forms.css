@@ -1,0 +1,94 @@
+/* Form Sections */
+.form-section {
+    border-radius: 15px;
+    border: 1px solid var(--gray-200);
+    margin-bottom: var(--space-6);
+    overflow: hidden;
+}
+
+.form-section__header {
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    padding: var(--space-5);
+}
+
+.form-control-color {
+    height: 100px;
+}
+
+.form-section__title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.form-section__body {
+    padding: var(--space-5);
+}
+
+/* Dynamic Fields */
+.dynamic-field {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    margin-bottom: var(--space-4);
+    background: var(--gray-50);
+    position: relative;
+    transition: var(--transition);
+}
+
+.dynamic-field:hover {
+    border-color: var(--primary);
+    background: var(--white);
+}
+
+.dynamic-field__remove {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    opacity: 0.6;
+    transition: var(--transition);
+    color: var(--danger);
+}
+
+.dynamic-field__remove:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.add-field-btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+}
+
+.section-header {
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: var(--space-2);
+}
+
+/* Form specific styles */
+.contact-form .form-control,
+.contact-form .form-select {
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-300);
+}
+
+.contact-form .form-control:focus,
+.contact-form .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+@media (max-width: 768px) {
+    .form-section__body {
+        padding: var(--space-4);
+    }
+
+    .dynamic-field {
+        padding: var(--space-4);
+    }
+}

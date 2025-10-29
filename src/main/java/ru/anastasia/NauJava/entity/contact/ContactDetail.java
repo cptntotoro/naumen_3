@@ -48,8 +48,6 @@ public class ContactDetail {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Contact contact;
 
     /**
@@ -60,7 +58,7 @@ public class ContactDetail {
     private DetailType detailType;
 
     /**
-     * Тип лейбла способа связи
+     * Лейбл способа связи
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "label", nullable = false)

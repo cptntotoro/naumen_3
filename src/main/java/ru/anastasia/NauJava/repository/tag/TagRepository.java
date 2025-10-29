@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.anastasia.NauJava.entity.tag.Tag;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,4 +48,12 @@ public interface TagRepository extends CrudRepository<Tag, Long> {
      * @return Список тегов
      */
     List<Tag> findByNameContainingIgnoreCaseOrColorContainingIgnoreCase(String name, String color);
+
+    /**
+     * Получить теги по идентификаторам
+     *
+     * @param ids Список идентификаторов тегов
+     * @return Список тегов
+     */
+    List<Tag> getTagsByIdIsIn(Collection<Long> ids);
 }

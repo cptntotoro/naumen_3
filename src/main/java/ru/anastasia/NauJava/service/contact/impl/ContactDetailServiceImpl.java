@@ -1,29 +1,27 @@
 package ru.anastasia.NauJava.service.contact.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.ContactDetail;
 import ru.anastasia.NauJava.entity.enums.DetailLabel;
 import ru.anastasia.NauJava.entity.enums.DetailType;
+import ru.anastasia.NauJava.exception.contact.ContactDetailNotFoundException;
 import ru.anastasia.NauJava.repository.contact.ContactDetailRepository;
 import ru.anastasia.NauJava.service.contact.ContactDetailService;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ContactDetailServiceImpl implements ContactDetailService {
     /**
      * Репозиторий способов связи
      */
     private final ContactDetailRepository contactDetailRepository;
-
-    @Autowired
-    public ContactDetailServiceImpl(ContactDetailRepository contactDetailRepository) {
-        this.contactDetailRepository = contactDetailRepository;
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -63,13 +61,14 @@ public class ContactDetailServiceImpl implements ContactDetailService {
                     existingDetail.setIsPrimary(contactDetail.getIsPrimary());
                     return contactDetailRepository.save(existingDetail);
                 })
-                .orElseThrow(() -> new RuntimeException("Не найден способ связи с id: " + id));
+                .orElseThrow(() -> new ContactDetailNotFoundException("Не найден способ связи с id: " + id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<ContactDetail> findById(Long id) {
-        return contactDetailRepository.findById(id);
+    public ContactDetail findById(Long id) {
+        return contactDetailRepository.findById(id)
+                .orElseThrow(() -> new ContactDetailNotFoundException("Не найден способ связи с id: " + id));
     }
 
     @Override
@@ -87,5 +86,11 @@ public class ContactDetailServiceImpl implements ContactDetailService {
     @Transactional(readOnly = true)
     public List<ContactDetail> findByDetailTypeAndLabel(DetailType detailType, DetailLabel label) {
         return contactDetailRepository.findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, label);
+    }
+
+    @Override
+    public List<ContactDetail> findAll() {
+        return StreamSupport.stream(contactDetailRepository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
     }
 }

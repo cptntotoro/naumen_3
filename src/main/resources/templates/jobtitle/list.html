@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Должности - Contact Manager</title>
+
+    <!-- Подключение стилей -->
+    <div th:replace="fragments/styles :: base-styles"></div>
+    <div th:replace="fragments/styles :: page-styles('jobtitles')"></div>
+    <style>
+        .jobtitle-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .jobtitle-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-light">
+<div th:replace="fragments/header :: header('Должности', '/jobtitles/new', 'Добавить должность', 'jobtitles')"></div>
+
+<div class="container">
+    <!-- Job Titles List -->
+    <div class="row g-4" th:if="${!jobTitles.empty}">
+        <div th:each="jobTitle : ${jobTitles}" class="col-xl-3 col-lg-4 col-md-6">
+            <div class="jobtitle-card card h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-briefcase fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold" th:text="${jobTitle.title}"></h5>
+                    </div>
+
+                    <div class="mt-auto">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-users me-1"></i>
+                            Контактов: <span class="fw-semibold" th:text="${jobTitle.contacts.size()}"></span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 pt-0">
+                    <div class="btn-group w-100">
+                        <a th:href="@{/jobtitles/{id}/edit(id=${jobTitle.id})}"
+                           class="btn btn-outline-secondary btn-sm flex-fill">
+                            <i class="fas fa-edit me-1"></i>Редактировать
+                        </a>
+                        <form th:action="@{/jobtitles/{id}/delete(id=${jobTitle.id})}" method="post"
+                              class="d-inline flex-fill" data-confirm="Удалить должность?">
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="fas fa-trash me-1"></i>Удалить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${jobTitles.empty}" class="text-center py-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body py-5">
+                <i class="fas fa-briefcase fa-4x text-muted mb-4"></i>
+                <h3 class="h4 text-muted mb-3">Должности не найдены</h3>
+                <p class="text-muted mb-4">Добавьте первую должность для организации контактов</p>
+                <a th:href="@{/jobtitles/new}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Добавить должность
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="fragments/scripts :: base-scripts"></div>
+</body>
+</html>

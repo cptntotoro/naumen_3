@@ -1,95 +1,143 @@
 package ru.anastasia.NauJava.service.contact;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.contact.Note;
-import ru.anastasia.NauJava.repository.contact.ContactRepository;
-import ru.anastasia.NauJava.repository.contact.NoteRepository;
+import ru.anastasia.NauJava.entity.note.Note;
+import ru.anastasia.NauJava.exception.note.NoteNotFoundException;
+import ru.anastasia.NauJava.repository.note.NoteRepository;
+import ru.anastasia.NauJava.service.note.NoteServiceImpl;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@Transactional
+@ExtendWith(MockitoExtension.class)
 class NoteServiceTest {
 
-    @Autowired
-    private NoteService noteService;
-
-    @Autowired
+    @Mock
     private NoteRepository noteRepository;
 
-    @Autowired
-    private ContactRepository contactRepository;
+    @Mock
+    private ContactService contactService;
+
+    @InjectMocks
+    private NoteServiceImpl noteService;
 
     @Test
-    void testCreate_Success() {
-        Contact contact = Contact.builder()
-                .firstName("Иван")
-                .lastName("Иванов")
-                .build();
+    void create_ShouldReturnSavedNote() {
+        Long contactId = 1L;
+        Contact contact = Contact.builder().id(contactId).build();
+        Note note = Note.builder().content("Test note").build();
+        Note savedNote = Note.builder().id(1L).content("Test note").contact(contact).build();
 
-        contactRepository.save(contact);
+        when(contactService.findById(contactId)).thenReturn(contact);
+        when(noteRepository.save(note)).thenReturn(savedNote);
 
-        String content = "Заметка о встрече" + UUID.randomUUID();
-        Note note = noteService.create(contact.getId(), content);
+        Note result = noteService.create(contactId, note);
 
-        assertNotNull(note.getId());
-        assertEquals(content, note.getContent());
-        assertEquals(contact.getId(), note.getContact().getId());
-        assertTrue(noteRepository.findById(note.getId()).isPresent());
+        assertNotNull(result.getId());
+        assertEquals(contact, result.getContact());
+        assertEquals("Test note", result.getContent());
+        verify(contactService).findById(contactId);
+        verify(noteRepository).save(note);
     }
 
     @Test
-    void testCreate_ContactNotFound() {
-        Long nonExistentContactId = 999L;
-        String content = "Заметка о встрече" + UUID.randomUUID();
+    void findByContactId_ShouldReturnNotes() {
+        Long contactId = 1L;
+        Note note1 = Note.builder().id(1L).content("Note 1").build();
+        Note note2 = Note.builder().id(2L).content("Note 2").build();
+        List<Note> expectedNotes = List.of(note1, note2);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                noteService.create(nonExistentContactId, content));
+        when(noteRepository.findByContactId(contactId)).thenReturn(expectedNotes);
 
-        assertEquals("Не найден контакт с id: " + nonExistentContactId, exception.getMessage());
+        List<Note> result = noteService.findByContactId(contactId);
+
+        assertEquals(expectedNotes, result);
+        verify(noteRepository).findByContactId(contactId);
     }
 
     @Test
-    void testFindByContactId_Success() {
-        Contact contact = Contact.builder()
-                .firstName("Иван")
-                .lastName("Иванов")
-                .build();
+    void findById_ShouldReturnNote_WhenExists() {
+        Long id = 1L;
+        Note note = Note.builder().id(id).content("Test note").build();
 
-        contactRepository.save(contact);
+        when(noteRepository.findById(id)).thenReturn(Optional.of(note));
 
-        String content = "Заметка о встрече" + UUID.randomUUID();
-        noteService.create(contact.getId(), content);
+        Note result = noteService.findById(id);
 
-        List<Note> notes = noteService.findByContactId(contact.getId());
-
-        assertFalse(notes.isEmpty());
-        assertEquals(content, notes.getFirst().getContent());
-        assertEquals(contact.getId(), notes.getFirst().getContact().getId());
+        assertEquals(note, result);
+        verify(noteRepository).findById(id);
     }
 
     @Test
-    void testFindByContactId_NoNotes() {
-        Contact contact = Contact.builder()
-                .firstName("Иван")
-                .lastName("Иванов")
-                .build();
+    void findById_ShouldThrowNoteNotFoundException_WhenNotExists() {
+        Long id = 999L;
 
-        contactRepository.save(contact);
+        when(noteRepository.findById(id)).thenReturn(Optional.empty());
 
-        List<Note> notes = noteService.findByContactId(contact.getId());
+        NoteNotFoundException exception = assertThrows(
+                NoteNotFoundException.class,
+                () -> noteService.findById(id)
+        );
 
-        assertTrue(notes.isEmpty());
+        assertTrue(exception.getMessage().contains("Не найдена заметка с id: " + id));
+        verify(noteRepository).findById(id);
+    }
+
+    @Test
+    void update_ShouldReturnUpdatedNote_WhenExists() {
+        Long id = 1L;
+        Note existingNote = Note.builder().id(id).content("Old content").build();
+        Note updateNote = Note.builder().id(id).content("New content").build();
+        Note updatedNote = Note.builder().id(id).content("New content").build();
+
+        when(noteRepository.findById(id)).thenReturn(Optional.of(existingNote));
+        when(noteRepository.save(existingNote)).thenReturn(updatedNote);
+
+        Note result = noteService.update(updateNote);
+
+        assertEquals("New content", result.getContent());
+        verify(noteRepository).findById(id);
+        verify(noteRepository).save(existingNote);
+    }
+
+    @Test
+    void update_ShouldThrowNoteNotFoundException_WhenNotExists() {
+        Note note = Note.builder().id(999L).build();
+
+        when(noteRepository.findById(999L)).thenReturn(Optional.empty());
+
+        NoteNotFoundException exception = assertThrows(
+                NoteNotFoundException.class,
+                () -> noteService.update(note)
+        );
+
+        assertTrue(exception.getMessage().contains("Не найдена заметка с id: " + note.getId()));
+        verify(noteRepository).findById(999L);
+        verify(noteRepository, never()).save(any(Note.class));
+    }
+
+    @Test
+    void delete_ShouldCallRepositoryDelete() {
+        Long id = 1L;
+        doNothing().when(noteRepository).deleteById(id);
+
+        noteService.delete(id);
+
+        verify(noteRepository).deleteById(id);
     }
 }

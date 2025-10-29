@@ -1,10 +1,12 @@
 package ru.anastasia.NauJava.service.company.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.company.JobTitle;
+import ru.anastasia.NauJava.exception.company.IllegalJobTitleStateException;
+import ru.anastasia.NauJava.exception.company.JobTitleNotFoundException;
 import ru.anastasia.NauJava.repository.company.JobTitleRepository;
 import ru.anastasia.NauJava.service.company.JobTitleService;
 
@@ -13,25 +15,16 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
+@RequiredArgsConstructor
 public class JobTitleServiceImpl implements JobTitleService {
     /**
      * Репозиторий должностей
      */
     private final JobTitleRepository jobTitleRepository;
 
-    @Autowired
-    public JobTitleServiceImpl(JobTitleRepository jobTitleRepository) {
-        this.jobTitleRepository = jobTitleRepository;
-    }
-
     @Override
     @Transactional
     public JobTitle create(String title) {
-        JobTitle existingJobTitle = findByName(title);
-        if (existingJobTitle != null) {
-            return existingJobTitle;
-        }
-
         try {
             JobTitle jobTitle = JobTitle.builder()
                     .title(title)
@@ -42,7 +35,8 @@ public class JobTitleServiceImpl implements JobTitleService {
             if (jobTitle != null) {
                 return jobTitle;
             }
-            throw new RuntimeException("Не удалось создать название должности: " + title);
+            throw new IllegalJobTitleStateException("Не удалось создать название должности: " + title + ". " +
+                    "Название должности с таким именем уже существует");
         }
     }
 
@@ -61,18 +55,26 @@ public class JobTitleServiceImpl implements JobTitleService {
 
     @Override
     @Transactional
-    public JobTitle update(Long id, String title) {
+    public JobTitle update(JobTitle jobTitle) {
+        Long id = jobTitle.getId();
+
         return jobTitleRepository.findById(id)
-                .map(jobTitle -> {
-                    jobTitle.setTitle(title);
-                    return jobTitleRepository.save(jobTitle);
+                .map(jt -> {
+                    jt.setTitle(jobTitle.getTitle());
+                    return jobTitleRepository.save(jt);
                 })
-                .orElseThrow(() -> new RuntimeException("Не найдена должность с id: " + id));
+                .orElseThrow(() -> new JobTitleNotFoundException("Не найдена должность с id: " + id));
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
         jobTitleRepository.deleteById(id);
+    }
+
+    @Override
+    public JobTitle findById(Long id) {
+        return jobTitleRepository.findById(id)
+                .orElseThrow(() -> new JobTitleNotFoundException("Не найдена должность с id: " + id));
     }
 }

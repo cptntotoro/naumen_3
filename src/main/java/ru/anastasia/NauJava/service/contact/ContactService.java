@@ -44,6 +44,20 @@ public interface ContactService {
     Contact update(Long id, String firstName, String lastName);
 
     /**
+     * Обновить контакт
+     *
+     * @param id          Идентификатор контакта
+     * @param firstName   Имя
+     * @param lastName    Фамилия
+     * @param displayName Отображаемое имя
+     * @param avatarUrl   URL аватара
+     * @param isFavorite  Флаг избранного
+     * @return Обновленный контакт
+     */
+    Contact update(Long id, String firstName, String lastName, String displayName,
+                   String avatarUrl, Boolean isFavorite);
+
+    /**
      * Получить все контакты
      *
      * @return Список контактов
@@ -119,4 +133,12 @@ public interface ContactService {
      * @return Список контактов
      */
     List<Contact> search(String searchTerm);
+
+    /**
+     * Сохранить контакт
+     *
+     * @param contact Контакт
+     * @return Контакт
+     */
+    Contact save(Contact contact);
 }

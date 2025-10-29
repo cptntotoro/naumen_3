@@ -45,8 +45,6 @@ public class ContactCompany {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Contact contact;
 
     /**
@@ -54,8 +52,6 @@ public class ContactCompany {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Company company;
 
     /**
@@ -63,8 +59,6 @@ public class ContactCompany {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_title_id", nullable = false)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private JobTitle jobTitle;
 
     /**

@@ -5,7 +5,7 @@ import ru.anastasia.NauJava.entity.company.JobTitle;
 import java.util.List;
 
 /**
- * Сервис управления должностями
+ * Сервис должностей
  */
 public interface JobTitleService {
 
@@ -35,11 +35,10 @@ public interface JobTitleService {
     /**
      * Обновить должность
      *
-     * @param id    Идентификатор должности
-     * @param title Новое название должности
+     * @param jobTitle Должность
      * @return Обновленная должность
      */
-    JobTitle update(Long id, String title);
+    JobTitle update(JobTitle jobTitle);
 
     /**
      * Удалить должность
@@ -47,4 +46,12 @@ public interface JobTitleService {
      * @param id Идентификатор должности
      */
     void delete(Long id);
+
+    /**
+     * Получить должность по идентификатору
+     *
+     * @param id Идентификатор должности
+     * @return Должность
+     */
+    JobTitle findById(Long id);
 }
