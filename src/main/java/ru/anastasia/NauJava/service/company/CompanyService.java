@@ -5,17 +5,17 @@ import ru.anastasia.NauJava.entity.company.Company;
 import java.util.List;
 
 /**
- * Сервис управления компаниями
+ * Сервис компаний
  */
 public interface CompanyService {
 
     /**
      * Создать компанию
      *
-     * @param name Название компании
+     * @param company Компания
      * @return Компания
      */
-    Company create(String name);
+    Company create(Company company);
 
     /**
      * Получить компанию по названию
@@ -35,12 +35,10 @@ public interface CompanyService {
     /**
      * Обновить компанию
      *
-     * @param id      Идентификатор компании
-     * @param name    Новое название компании
-     * @param website Новый адрес сайта
+     * @param company Компания
      * @return Обновленная компания
      */
-    Company update(Long id, String name, String website);
+    Company update(Company company);
 
     /**
      * Удалить компанию
@@ -48,4 +46,12 @@ public interface CompanyService {
      * @param id Идентификатор компании
      */
     void delete(Long id);
+
+    /**
+     * Получить компанию по идентификатору
+     *
+     * @param id Идентификатор компании
+     * @return Компания
+     */
+    Company findById(Long id);
 }

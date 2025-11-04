@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <th:block th:fragment="base-styles">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+              rel="stylesheet">
+
+        <link th:href="@{/css/app.css}" rel="stylesheet">
+        <link th:href="@{/css/components.css}" rel="stylesheet">
+        <link th:href="@{/css/utilities.css}" rel="stylesheet">
+    </th:block>
+
+    <th:block th:fragment="page-styles(page)">
+        <th:block th:switch="${page}">
+            <th:block th:case="'home'">
+                <link th:href="@{/css/pages/dashboard.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'contacts'">
+                <link th:href="@{/css/pages/contacts.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'companies'">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'jobtitles'">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'tags'">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'forms'">
+                <link th:href="@{/css/pages/forms.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/contacts.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'lists'">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+            </th:block>
+        </th:block>
+    </th:block>
+</head>
+<body>
+</body>
+</html>

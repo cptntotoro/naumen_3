@@ -10,14 +10,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+import ru.anastasia.NauJava.entity.company.Company;
 import ru.anastasia.NauJava.entity.company.ContactCompany;
+import ru.anastasia.NauJava.entity.event.Event;
+import ru.anastasia.NauJava.entity.note.Note;
+import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 import ru.anastasia.NauJava.entity.tag.ContactTag;
 
 import java.time.LocalDateTime;
@@ -94,8 +92,7 @@ public class Contact {
      */
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @Setter(AccessLevel.NONE)
     private Set<ContactCompany> companies = new HashSet<>();
 
     /**
@@ -103,8 +100,7 @@ public class Contact {
      */
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @Setter(AccessLevel.NONE)
     private Set<ContactDetail> contactDetails = new HashSet<>();
 
     /**
@@ -112,8 +108,7 @@ public class Contact {
      */
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @Setter(AccessLevel.NONE)
     private Set<SocialProfile> socialProfiles = new HashSet<>();
 
     /**
@@ -121,8 +116,7 @@ public class Contact {
      */
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @Setter(AccessLevel.NONE)
     private Set<Event> events = new HashSet<>();
 
     /**
@@ -130,8 +124,7 @@ public class Contact {
      */
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @Setter(AccessLevel.NONE)
     private Set<Note> notes = new HashSet<>();
 
     /**
@@ -139,8 +132,7 @@ public class Contact {
      */
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
+    @Setter(AccessLevel.NONE)
     private Set<ContactTag> contactTags = new HashSet<>();
 
     @PrePersist
@@ -155,5 +147,65 @@ public class Contact {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void addCompany(ContactCompany company) {
+        this.companies.add(company);
+        company.setContact(this);
+    }
+
+    public void removeCompany(ContactCompany company) {
+        this.companies.remove(company);
+        company.setContact(null);
+    }
+
+    public void addContactDetail(ContactDetail detail) {
+        this.contactDetails.add(detail);
+        detail.setContact(this);
+    }
+
+    public void removeContactDetail(ContactDetail detail) {
+        this.contactDetails.remove(detail);
+        detail.setContact(null);
+    }
+
+    public void addSocialProfile(SocialProfile profile) {
+        this.socialProfiles.add(profile);
+        profile.setContact(this);
+    }
+
+    public void removeSocialProfile(SocialProfile profile) {
+        this.socialProfiles.remove(profile);
+        profile.setContact(null);
+    }
+
+    public void addEvent(Event event) {
+        this.events.add(event);
+        event.setContact(this);
+    }
+
+    public void removeEvent(Event event) {
+        this.events.remove(event);
+        event.setContact(null);
+    }
+
+    public void addNote(Note note) {
+        this.notes.add(note);
+        note.setContact(this);
+    }
+
+    public void removeNote(Note note) {
+        this.notes.remove(note);
+        note.setContact(null);
+    }
+
+    public void addContactTag(ContactTag tag) {
+        this.contactTags.add(tag);
+        tag.setContact(this);
+    }
+
+    public void removeContactTag(ContactTag tag) {
+        this.contactTags.remove(tag);
+        tag.setContact(null);
     }
 }
