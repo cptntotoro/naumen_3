@@ -31,12 +31,12 @@ java -jar target/NauJava-0.0.1-SNAPSHOT.jar
 http://localhost:8080/
 ```
 
+При первом запуске приложения автоматически создается профиль админа,
+которому доступна своя панель управления и доступ к Swagger:
+
+Имя пользователя: ```admin```
+Пароль: ```admin```
+
 ## Мониторинг
 http://localhost:8080/actuator/health — статус здоровья приложения
 http://localhost:8080/actuator/metrics — метрики производительности
-
-## Swagger API
-
-```
-http://localhost:8080/swagger-ui/index.html
-```

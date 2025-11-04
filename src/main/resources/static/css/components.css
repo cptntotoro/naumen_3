@@ -346,10 +346,6 @@
     z-index: 5;
 }
 
-.search-box__input {
-    padding-left: var(--space-10) !important;
-}
-
 .filter-group {
     display: flex;
     gap: var(--space-4);
