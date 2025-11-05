@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.anastasia.NauJava.dto.contact.ContactCreateDto;
 import ru.anastasia.NauJava.dto.contact.ContactUpdateDto;
+import ru.anastasia.NauJava.entity.company.Company;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.enums.DetailLabel;
 import ru.anastasia.NauJava.entity.enums.DetailType;
 import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.entity.enums.SocialPlatform;
+import ru.anastasia.NauJava.entity.tag.Tag;
 import ru.anastasia.NauJava.mapper.contact.ContactManagementMapper;
 import ru.anastasia.NauJava.service.company.CompanyService;
 import ru.anastasia.NauJava.service.company.JobTitleService;
@@ -65,7 +67,12 @@ public class ContactController {
     @GetMapping
     public String listContacts(Model model) {
         List<Contact> contacts = contactService.findAll();
+        List<Company> companies = companyService.findAll();
+        List<Tag> tags = tagService.findAll();
+
         model.addAttribute("contacts", contacts);
+        model.addAttribute("companies", companies);
+        model.addAttribute("tags", tags);
         return "contact/list";
     }
 

@@ -1,0 +1,21 @@
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
+
+.info-card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.action-btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+}
+
+.badge-custom {
+    font-size: 0.8em;
+    padding: 0.5em 0.75em;
+}
