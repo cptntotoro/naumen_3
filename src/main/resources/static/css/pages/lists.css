@@ -1,8 +1,6 @@
-/* List specific styles */
 .tag-card,
 .jobtitle-card {
     transition: all 0.3s ease;
-    border: none;
     border-radius: 15px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--gray-200);

@@ -667,14 +667,6 @@ p {
 }
 
 /* ===== CARDS ===== */
-.card {
-    background: var(--white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition-slow);
-    border: 1px solid var(--gray-200);
-    overflow: hidden;
-}
 
 .card:hover {
     box-shadow: var(--shadow-md);

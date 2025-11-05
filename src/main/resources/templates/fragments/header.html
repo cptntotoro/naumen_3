@@ -7,7 +7,6 @@
 </head>
 <body>
 
-<!-- Header Fragment -->
 <div th:fragment="header(pageTitle, addButtonUrl, addButtonText, currentPage)">
     <nav class="navbar">
         <div class="navbar-container">
@@ -55,10 +54,6 @@
                             <span class="nav-text">Теги</span>
                         </a>
                     </li>
-                </ul>
-
-                <!-- Дополнительное меню -->
-                <ul class="navbar-nav utility-nav">
                     <li class="nav-item">
                         <a class="nav-link link-inactive" th:href="@{/contacts/favorites}">
                             <i class="fas fa-star nav-icon"></i>
@@ -69,6 +64,12 @@
                         <a class="nav-link link-inactive" th:href="@{/contacts/birthdays}">
                             <i class="fas fa-birthday-cake nav-icon"></i>
                             <span class="nav-text">Дни рождения</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/logout}">
+                            <i class="fas fa-sign-out nav-icon"></i>
+                            <span class="nav-text">Выход</span>
                         </a>
                     </li>
                 </ul>

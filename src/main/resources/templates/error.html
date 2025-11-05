@@ -89,17 +89,6 @@
             flex-wrap: wrap;
         }
 
-        .btn-error {
-            background: var(--danger);
-            border-color: var(--danger);
-            color: var(--white);
-        }
-
-        .btn-error:hover {
-            background: #dc2626;
-            border-color: #dc2626;
-        }
-
         @media (max-width: 768px) {
             .error-card {
                 padding: var(--space-6);
@@ -129,30 +118,38 @@
 
                 <h1 class="error-title">Произошла ошибка</h1>
 
-                <div class="error-code" th:text="${error.status}"></div>
+                <div class="error-code" th:text="${status} ?: '500'">500</div>
 
-                <p class="error-message" th:text="${error.reason}"></p>
+                <p class="error-message" th:text="${message} ?: 'Произошла непредвиденная ошибка'">
+                    Произошла непредвиденная ошибка
+                </p>
 
-                <div class="error-details" th:if="${error.message}">
+                <!-- Упрощенные проверки -->
+                <div class="error-details" th:if="${error}">
                     <summary>Подробности ошибки</summary>
-                    <pre th:text="${error.message}"></pre>
+                    <pre th:text="${error}"></pre>
                 </div>
 
-                <div class="error-details" th:if="${error.timestamp}">
+                <div class="error-details" th:if="${timestamp}">
                     <summary>Время возникновения</summary>
-                    <pre th:text="${#temporals.format(error.timestamp, 'dd.MM.yyyy HH:mm:ss')}"></pre>
+                    <pre th:text="${#temporals.format(timestamp, 'dd.MM.yyyy HH:mm:ss')}"></pre>
+                </div>
+
+                <div class="error-details" th:if="${path}">
+                    <summary>Запрошенный путь</summary>
+                    <pre th:text="${path}"></pre>
                 </div>
 
                 <div class="error-actions">
                     <a th:href="@{/}" class="btn btn-primary">
                         <i class="fas fa-home me-2"></i>На главную
                     </a>
-                    <a th:href="@{/contacts}" class="btn btn-outline-primary">
-                        <i class="fas fa-users me-2"></i>К контактам
-                    </a>
                     <button onclick="history.back()" class="btn btn-outline">
                         <i class="fas fa-arrow-left me-2"></i>Назад
                     </button>
+                    <a th:href="@{/login}" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Войти снова
+                    </a>
                 </div>
             </div>
         </div>

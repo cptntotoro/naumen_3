@@ -47,5 +47,6 @@ public interface CompanyMapper {
      * @param jobTitleFormDto DTO создания и обновления должности
      * @return Должность
      */
+    @Mapping(target = "contacts", ignore = true)
     JobTitle jobTitleFormDtoToJobTitle(JobTitleFormDto jobTitleFormDto);
 }

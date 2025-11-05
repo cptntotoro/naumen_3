@@ -5,32 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Новый контакт</title>
 
+    <!-- Подключение стилей -->
     <div th:replace="fragments/styles :: base-styles"></div>
     <div th:replace="fragments/styles :: page-styles('forms')"></div>
-    <style>
-        .form-section {
-            border-radius: 15px;
-            border: 1px solid #e9ecef;
-        }
-
-        .dynamic-field {
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            background: #f8f9fa;
-        }
-
-        .add-field-btn {
-            border-radius: 10px;
-            padding: 0.75rem 1.5rem;
-        }
-
-        .section-header {
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 0.5rem;
-        }
-    </style>
 </head>
 <body class="bg-light">
 <div th:replace="fragments/header :: header('Новый контакт',
@@ -76,9 +53,6 @@
                     <div class="col-md-6">
                         <label for="avatarUrl" class="form-label fw-semibold">URL аватара</label>
                         <div class="input-group">
-                            <!--                            <span class="input-group-text bg-light">-->
-                            <!--                                <i class="fas fa-link text-muted"></i>-->
-                            <!--                            </span>-->
                             <input type="url" class="form-control" id="avatarUrl"
                                    th:field="*{avatarUrl}" placeholder="https://example.com/avatar.jpg">
                         </div>

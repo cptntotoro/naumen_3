@@ -19,25 +19,37 @@
         <th:block th:switch="${page}">
             <th:block th:case="'home'">
                 <link th:href="@{/css/pages/dashboard.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'contacts'">
                 <link th:href="@{/css/pages/contacts.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/contacts-list.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'companies'">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/companies.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'jobtitles'">
+                <link th:href="@{/css/pages/jobtitles.css}" rel="stylesheet">
                 <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'tags'">
+                <link th:href="@{/css/pages/tags.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'birthdays'">
+                <link th:href="@{/css/pages/birthdays.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'favorites'">
+                <link th:href="@{/css/pages/favorites.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+            </th:block>
+            <th:block th:case="'contact-details'">
+                <link th:href="@{/css/pages/contact-details.css}" rel="stylesheet">
                 <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'forms'">
                 <link th:href="@{/css/pages/forms.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/contacts.css}" rel="stylesheet">
-            </th:block>
-            <th:block th:case="'lists'">
                 <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
             </th:block>
         </th:block>

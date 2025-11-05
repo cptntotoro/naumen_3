@@ -11,26 +11,7 @@
 <body class="app-container">
 <div th:replace="fragments/header :: header('Главная', null, null, 'home')"></div>
 
-<!--&lt;!&ndash; Hero Section &ndash;&gt;-->
-<!--<section class="dashboard-hero">-->
-<!--    <div class="container">-->
-<!--        <div class="hero-content">-->
-<!--            <div class="hero-text">-->
-<!--                <h1 class="hero-title">Управляйте контактами профессионально</h1>-->
-<!--                <p class="hero-description">Мощная система для управления контактами, компаниями и событиями. Все в-->
-<!--                    одном месте.</p>-->
-<!--                <a th:href="@{/contacts}" class="btn btn-primary btn-lg hero-cta">-->
-<!--                    <i class="fas fa-rocket me-2"></i>Начать работу-->
-<!--                </a>-->
-<!--            </div>-->
-<!--            <div class="hero-visual">-->
-<!--                <i class="fas fa-address-book hero-icon"></i>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</section>-->
-
-<!-- Statistics Section -->
+<!-- Статистика -->
 <section class="dashboard-stats">
     <div class="container">
         <div class="stats-grid">
@@ -81,7 +62,7 @@
                             <i class="fas fa-star"></i>
                         </div>
                     </div>
-                    <a th:href="@{/contacts/favorites}" class="stat-link">
+                    <a th:href="@{/contacts/favorites}" class="stat-link link-inactive">
                         Просмотр избранных <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -98,7 +79,7 @@
                             <i class="fas fa-birthday-cake"></i>
                         </div>
                     </div>
-                    <a th:href="@{/contacts/birthdays}" class="stat-link">
+                    <a th:href="@{/contacts/birthdays}" class="stat-link link-inactive">
                         Предстоящие дни рождения <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -107,7 +88,7 @@
     </div>
 </section>
 
-<!-- Quick Actions Section -->
+<!-- Быстрые действия -->
 <section class="dashboard-actions">
     <div class="container">
         <div class="section-header">

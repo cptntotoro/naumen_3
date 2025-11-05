@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.anastasia.NauJava.dto.company.CompanyFormDto;
 import ru.anastasia.NauJava.entity.company.Company;
+import ru.anastasia.NauJava.entity.tag.Tag;
 import ru.anastasia.NauJava.mapper.company.CompanyMapper;
 import ru.anastasia.NauJava.service.company.CompanyService;
+import ru.anastasia.NauJava.service.tag.TagService;
 
 import java.util.List;
 
@@ -31,10 +33,18 @@ public class CompanyController {
      */
     private final CompanyMapper companyMapper;
 
+    /**
+     * Сервис управления тегами
+     */
+    private final TagService tagService;
+
     @GetMapping
     public String listCompanies(Model model) {
         List<Company> companies = companyService.findAll();
+        List<Tag> tags = tagService.findAll();
+
         model.addAttribute("companies", companies);
+        model.addAttribute("tags", tags);
         return "company/list";
     }
 
