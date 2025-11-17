@@ -40,7 +40,7 @@ public interface EventRepository extends CrudRepository<Event, Long> {
     List<Event> findByEventDateBetween(LocalDate startDate, LocalDate endDate);
 
     /**
-     * Получить события по типу и месяц
+     * Получить события по типу и датам "от" и "до"
      *
      * @param eventType Тип события
      * @param startDate Дата начала (включительно)
@@ -50,6 +50,16 @@ public interface EventRepository extends CrudRepository<Event, Long> {
     List<Event> findByEventTypeAndEventDateBetween(EventType eventType, LocalDate startDate, LocalDate endDate);
 
     /**
+     * Получить число событий по типу и датам "от" и "до"
+     *
+     * @param eventType Тип события
+     * @param startDate Дата начала (включительно)
+     * @param endDate   Дата окончания (включительно)
+     * @return Количество событий
+     */
+    Long countByEventTypeAndEventDateBetween(EventType eventType, LocalDate startDate, LocalDate endDate);
+
+    /**
      * Получить события контакта по типу события
      *
      * @param contactId Идентификатор контакта
@@ -57,16 +67,6 @@ public interface EventRepository extends CrudRepository<Event, Long> {
      * @return Список событий
      */
     List<Event> findByContactIdAndEventType(Long contactId, EventType eventType);
-
-    /**
-     * Проверить существование события контакта по типу события и идентификатору
-     *
-     * @param contactId      Идентификатор контакта
-     * @param eventType      Тип события
-     * @param currentEventId Идентификатор события
-     * @return Да / Нет
-     */
-    boolean existsByContactIdAndEventTypeAndIdNot(Long contactId, EventType eventType, Long currentEventId);
 
     /**
      * Проверить существование события контакта по типу события

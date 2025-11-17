@@ -79,4 +79,9 @@ public class CompanyServiceImpl implements CompanyService {
         return companyRepository.findById(id)
                 .orElseThrow(() -> new CompanyNotFoundException("Компания не найдена с id: " + id));
     }
+
+    @Override
+    public Long countTotal() {
+        return companyRepository.count();
+    }
 }

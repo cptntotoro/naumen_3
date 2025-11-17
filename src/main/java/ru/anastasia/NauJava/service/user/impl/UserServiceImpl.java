@@ -46,4 +46,9 @@ public class UserServiceImpl implements UserService {
     public boolean userExists(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
+
+    @Override
+    public Long countTotal() {
+        return userRepository.count();
+    }
 }

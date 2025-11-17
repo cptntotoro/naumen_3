@@ -46,6 +46,14 @@ public interface EventService {
     Event findBirthdayByContactId(Long contactId);
 
     /**
+     * Поучить предстоящих число дней рождения от текущей даты и на N дней вперед
+     *
+     * @param daysAhead Число дней
+     * @return Число предстоящих дней рождения
+     */
+    Long countUpcomingBirthdays(int daysAhead);
+
+    /**
      * Получить события по типу и диапазону дат
      *
      * @param type  Тип события

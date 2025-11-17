@@ -54,4 +54,11 @@ public interface CompanyService {
      * @return Компания
      */
     Company findById(Long id);
+
+    /**
+     * Получить число компаний
+     *
+     * @return Количество компаний
+     */
+    Long countTotal();
 }

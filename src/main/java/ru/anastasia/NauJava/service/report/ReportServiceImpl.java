@@ -8,17 +8,15 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.report.Report;
 import ru.anastasia.NauJava.entity.report.ReportStatus;
-import ru.anastasia.NauJava.repository.contact.ContactRepository;
 import ru.anastasia.NauJava.repository.report.ReportRepository;
-import ru.anastasia.NauJava.repository.user.UserRepository;
+import ru.anastasia.NauJava.service.contact.ContactService;
+import ru.anastasia.NauJava.service.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -30,14 +28,14 @@ public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
 
     /**
-     * Репозиторий пользователей
+     * Сервис пользователей
      */
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     /**
-     * Репозиторий контактов
+     * Сервис контактов
      */
-    private final ContactRepository contactRepository;
+    private final ContactService contactService;
 
     private final SpringTemplateEngine templateEngine;
 
@@ -60,51 +58,55 @@ public class ReportServiceImpl implements ReportService {
 
             try {
                 AtomicLong userCount = new AtomicLong(0);
+                AtomicLong userTime = new AtomicLong(0);
                 AtomicReference<Exception> userError = new AtomicReference<>();
-                long startUsers = System.currentTimeMillis();
-
-                Thread userThread = new Thread(() -> {
-                    try {
-                        userCount.set(userRepository.count());
-                    } catch (Exception e) {
-                        userError.set(e);
-                    }
-                });
-                userThread.start();
-                userThread.join();
-
-                if (userError.get() != null) {
-                    throw new RuntimeException("Ошибка подсчета пользоватеей: " + userError.get().getMessage(), userError.get());
-                }
-                long timeUsers = System.currentTimeMillis() - startUsers;
 
                 AtomicReference<List<Contact>> contactsRef = new AtomicReference<>();
+                AtomicLong contactTime = new AtomicLong(0);
                 AtomicReference<Exception> contactError = new AtomicReference<>();
-                long startContacts = System.currentTimeMillis();
 
-                Thread contactThread = new Thread(() -> {
+                Thread userThread = new Thread(() -> {
+                    long startUser = System.currentTimeMillis();
                     try {
-                        contactsRef.set(StreamSupport.stream(contactRepository.findAll().spliterator(), false)
-                                .collect(Collectors.toList()));
+                        userCount.set(userService.countTotal());
                     } catch (Exception e) {
-                        contactError.set(e);
+                        userError.set(e);
+                    } finally {
+                        userTime.set(System.currentTimeMillis() - startUser);
                     }
                 });
+
+                Thread contactThread = new Thread(() -> {
+                    long startContact = System.currentTimeMillis();
+                    try {
+                        contactsRef.set(contactService.findAll());
+                    } catch (Exception e) {
+                        contactError.set(e);
+                    } finally {
+                        contactTime.set(System.currentTimeMillis() - startContact);
+                    }
+                });
+
+                userThread.start();
                 contactThread.start();
+
+                userThread.join();
                 contactThread.join();
 
-                if (contactError.get() != null) {
-                    throw new RuntimeException("Ошибка подсчета контактов: " + contactError.get().getMessage(), contactError.get());
+                if (userError.get() != null) {
+                    throw new RuntimeException("Ошибка подсчета пользователей: " + userError.get().getMessage(), userError.get());
                 }
-                long timeContacts = System.currentTimeMillis() - startContacts;
+                if (contactError.get() != null) {
+                    throw new RuntimeException("Ошибка загрузки контактов: " + contactError.get().getMessage(), contactError.get());
+                }
 
                 long totalTime = System.currentTimeMillis() - startTotal;
 
                 Context context = new Context();
                 context.setVariable("userCount", userCount.get());
                 context.setVariable("contacts", contactsRef.get());
-                context.setVariable("timeUsers", timeUsers);
-                context.setVariable("timeContacts", timeContacts);
+                context.setVariable("timeUsers", userTime.get());
+                context.setVariable("timeContacts", contactTime.get());
                 context.setVariable("totalTime", totalTime);
                 context.setVariable("generationTime", generationTime);
 
@@ -132,7 +134,7 @@ public class ReportServiceImpl implements ReportService {
     @Transactional(readOnly = true)
     public Report getReport(Long id) {
         return reportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Report not found: " + id));
+                .orElseThrow(() -> new RuntimeException("Отчет не найден: " + id));
     }
 
     private String escapeHtml(String s) {
