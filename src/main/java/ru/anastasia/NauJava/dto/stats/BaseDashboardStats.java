@@ -16,18 +16,10 @@ public abstract class BaseDashboardStats {
     /**
      * Число контактов
      */
-    private Long contactsCount;
+    private long contactsCount;
 
     /**
      * Число компаний
      */
-    private Long companiesCount;
-
-    public Long getContactsCount() {
-        return contactsCount != null ? contactsCount : 0L;
-    }
-
-    public Long getCompaniesCount() {
-        return companiesCount != null ? companiesCount : 0L;
-    }
+    private long companiesCount;
 }

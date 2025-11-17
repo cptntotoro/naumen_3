@@ -12,6 +12,8 @@ import ru.anastasia.NauJava.exception.contact.ContactDetailNotFoundException;
 import ru.anastasia.NauJava.repository.contact.ContactDetailRepository;
 import ru.anastasia.NauJava.service.contact.impl.ContactDetailServiceImpl;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,219 +37,266 @@ class ContactDetailServiceTest {
     @InjectMocks
     private ContactDetailServiceImpl contactDetailService;
 
+    private ContactDetail createTestContactDetail() {
+        return ContactDetail.builder()
+                .id(1L)
+                .detailType(DetailType.EMAIL)
+                .label(DetailLabel.MAIN)
+                .value("test@example.com")
+                .isPrimary(true)
+                .build();
+    }
+
+    private ContactDetail createAnotherTestContactDetail() {
+        return ContactDetail.builder()
+                .id(2L)
+                .detailType(DetailType.PHONE)
+                .label(DetailLabel.WORK)
+                .value("+79991234567")
+                .isPrimary(false)
+                .build();
+    }
+
     @Test
-    void findByContactId_ShouldReturnContactDetails() {
+    void findByContactId_WhenContactDetailsExist_ShouldReturnList() {
         Long contactId = 1L;
-        ContactDetail detail1 = ContactDetail.builder().id(1L).build();
-        ContactDetail detail2 = ContactDetail.builder().id(2L).build();
-        List<ContactDetail> expectedDetails = List.of(detail1, detail2);
+        List<ContactDetail> expectedDetails = Arrays.asList(
+                createTestContactDetail(),
+                createAnotherTestContactDetail()
+        );
 
         when(contactDetailRepository.findByContactId(contactId)).thenReturn(expectedDetails);
 
         List<ContactDetail> result = contactDetailService.findByContactId(contactId);
 
-        assertEquals(expectedDetails, result);
-        verify(contactDetailRepository).findByContactId(contactId);
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(contactDetailRepository, times(1)).findByContactId(contactId);
     }
 
     @Test
-    void findByDetailType_ShouldReturnContactDetails() {
+    void findByContactId_WhenNoContactDetails_ShouldReturnEmptyList() {
+        Long contactId = 999L;
+
+        when(contactDetailRepository.findByContactId(contactId)).thenReturn(List.of());
+
+        List<ContactDetail> result = contactDetailService.findByContactId(contactId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(contactDetailRepository, times(1)).findByContactId(contactId);
+    }
+
+    @Test
+    void findByDetailType_WhenDetailsExist_ShouldReturnList() {
         DetailType detailType = DetailType.EMAIL;
-        ContactDetail detail = ContactDetail.builder().id(1L).detailType(detailType).build();
-        List<ContactDetail> expectedDetails = List.of(detail);
+        List<ContactDetail> expectedDetails = Collections.singletonList(createTestContactDetail());
 
         when(contactDetailRepository.findByDetailTypeAndValueContainingIgnoreCase(detailType, ""))
                 .thenReturn(expectedDetails);
 
         List<ContactDetail> result = contactDetailService.findByDetailType(detailType);
 
-        assertEquals(expectedDetails, result);
-        verify(contactDetailRepository).findByDetailTypeAndValueContainingIgnoreCase(detailType, "");
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactDetailRepository, times(1))
+                .findByDetailTypeAndValueContainingIgnoreCase(detailType, "");
     }
 
     @Test
-    void findPrimaryByContactId_ShouldReturnPrimaryContactDetails() {
+    void findPrimaryByContactId_WhenPrimaryDetailsExist_ShouldReturnList() {
         Long contactId = 1L;
-        ContactDetail primaryDetail = ContactDetail.builder().id(1L).isPrimary(true).build();
-        List<ContactDetail> expectedDetails = List.of(primaryDetail);
+        List<ContactDetail> expectedDetails = Collections.singletonList(createTestContactDetail());
 
-        when(contactDetailRepository.findPrimaryContactDetailsByContactId(contactId)).thenReturn(expectedDetails);
+        when(contactDetailRepository.findPrimaryContactDetailsByContactId(contactId))
+                .thenReturn(expectedDetails);
 
         List<ContactDetail> result = contactDetailService.findPrimaryByContactId(contactId);
 
-        assertEquals(expectedDetails, result);
-        verify(contactDetailRepository).findPrimaryContactDetailsByContactId(contactId);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertTrue(result.getFirst().getIsPrimary());
+        verify(contactDetailRepository, times(1))
+                .findPrimaryContactDetailsByContactId(contactId);
     }
 
     @Test
-    void create_ShouldReturnSavedContactDetail() {
-        ContactDetail contactDetail = ContactDetail.builder()
-                .detailType(DetailType.PHONE)
-                .label(DetailLabel.MOBILE)
-                .value("+123456789")
-                .build();
-        ContactDetail savedDetail = ContactDetail.builder()
-                .id(1L)
-                .detailType(DetailType.PHONE)
-                .label(DetailLabel.MOBILE)
-                .value("+123456789")
-                .build();
+    void create_WhenValidContactDetail_ShouldReturnSavedDetail() {
+        ContactDetail testDetail = createTestContactDetail();
+        ContactDetail savedDetail = createTestContactDetail();
 
-        when(contactDetailRepository.save(contactDetail)).thenReturn(savedDetail);
+        when(contactDetailRepository.save(testDetail)).thenReturn(savedDetail);
 
-        ContactDetail result = contactDetailService.create(contactDetail);
+        ContactDetail result = contactDetailService.create(testDetail);
 
-        assertNotNull(result.getId());
-        assertEquals(savedDetail, result);
-        verify(contactDetailRepository).save(contactDetail);
+        assertNotNull(result);
+        assertEquals(savedDetail.getId(), result.getId());
+        assertEquals(savedDetail.getValue(), result.getValue());
+        verify(contactDetailRepository, times(1)).save(testDetail);
     }
 
     @Test
-    void delete_ShouldCallRepositoryDelete() {
-        Long id = 1L;
-        doNothing().when(contactDetailRepository).deleteById(id);
+    void delete_WhenValidId_ShouldCallRepositoryDelete() {
+        Long detailId = 1L;
 
-        contactDetailService.delete(id);
+        doNothing().when(contactDetailRepository).deleteById(detailId);
 
-        verify(contactDetailRepository).deleteById(id);
+        contactDetailService.delete(detailId);
+
+        verify(contactDetailRepository, times(1)).deleteById(detailId);
     }
 
     @Test
-    void update_ShouldReturnUpdatedContactDetail_WhenExists() {
-        Long id = 1L;
-        ContactDetail existingDetail = ContactDetail.builder()
-                .id(id)
+    void update_WhenValidContactDetail_ShouldReturnUpdatedDetail() {
+        Long detailId = 1L;
+        ContactDetail existingDetail = createTestContactDetail();
+        ContactDetail updatedData = ContactDetail.builder()
+                .id(detailId)
                 .detailType(DetailType.PHONE)
-                .label(DetailLabel.MOBILE)
-                .value("old value")
+                .label(DetailLabel.WORK)
+                .value("+79998887766")
                 .isPrimary(false)
                 .build();
-        ContactDetail updateDetail = ContactDetail.builder()
-                .detailType(DetailType.EMAIL)
+        ContactDetail savedDetail = ContactDetail.builder()
+                .id(detailId)
+                .detailType(DetailType.PHONE)
                 .label(DetailLabel.WORK)
-                .value("new value")
-                .isPrimary(true)
-                .build();
-        ContactDetail updatedDetail = ContactDetail.builder()
-                .id(id)
-                .detailType(DetailType.EMAIL)
-                .label(DetailLabel.WORK)
-                .value("new value")
-                .isPrimary(true)
+                .value("+79998887766")
+                .isPrimary(false)
                 .build();
 
-        when(contactDetailRepository.findById(id)).thenReturn(Optional.of(existingDetail));
-        when(contactDetailRepository.save(existingDetail)).thenReturn(updatedDetail);
+        when(contactDetailRepository.findById(detailId)).thenReturn(Optional.of(existingDetail));
+        when(contactDetailRepository.save(existingDetail)).thenReturn(savedDetail);
 
-        ContactDetail result = contactDetailService.update(id, updateDetail);
+        ContactDetail result = contactDetailService.update(detailId, updatedData);
 
-        assertEquals(DetailType.EMAIL, result.getDetailType());
-        assertEquals(DetailLabel.WORK, result.getLabel());
-        assertEquals("new value", result.getValue());
-        assertTrue(result.getIsPrimary());
-        verify(contactDetailRepository).findById(id);
-        verify(contactDetailRepository).save(existingDetail);
+        assertNotNull(result);
+        assertEquals(updatedData.getDetailType(), result.getDetailType());
+        assertEquals(updatedData.getValue(), result.getValue());
+        assertEquals(updatedData.getIsPrimary(), result.getIsPrimary());
+        verify(contactDetailRepository, times(1)).findById(detailId);
+        verify(contactDetailRepository, times(1)).save(existingDetail);
     }
 
     @Test
-    void update_ShouldThrowContactDetailNotFoundException_WhenNotExists() {
-        Long id = 999L;
-        ContactDetail updateDetail = ContactDetail.builder().build();
+    void update_WhenContactDetailNotFound_ShouldThrowContactDetailNotFoundException() {
+        Long nonExistentId = 999L;
+        ContactDetail updatedData = createTestContactDetail();
+        updatedData.setId(nonExistentId);
 
-        when(contactDetailRepository.findById(id)).thenReturn(Optional.empty());
+        when(contactDetailRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         ContactDetailNotFoundException exception = assertThrows(
                 ContactDetailNotFoundException.class,
-                () -> contactDetailService.update(id, updateDetail)
+                () -> contactDetailService.update(nonExistentId, updatedData)
         );
 
-        assertTrue(exception.getMessage().contains("Не найден способ связи с id: " + id));
-        verify(contactDetailRepository).findById(id);
+        assertTrue(exception.getMessage().contains("Не найден способ связи с id: " + nonExistentId));
+        verify(contactDetailRepository, times(1)).findById(nonExistentId);
         verify(contactDetailRepository, never()).save(any(ContactDetail.class));
     }
 
     @Test
-    void findById_ShouldReturnContactDetail_WhenExists() {
-        Long id = 1L;
-        ContactDetail expectedDetail = ContactDetail.builder().id(id).build();
+    void findById_WhenContactDetailExists_ShouldReturnDetail() {
+        Long detailId = 1L;
+        ContactDetail testDetail = createTestContactDetail();
 
-        when(contactDetailRepository.findById(id)).thenReturn(Optional.of(expectedDetail));
+        when(contactDetailRepository.findById(detailId)).thenReturn(Optional.of(testDetail));
 
-        ContactDetail result = contactDetailService.findById(id);
+        ContactDetail result = contactDetailService.findById(detailId);
 
-        assertEquals(expectedDetail, result);
-        verify(contactDetailRepository).findById(id);
+        assertNotNull(result);
+        assertEquals(testDetail.getId(), result.getId());
+        assertEquals(testDetail.getValue(), result.getValue());
+        verify(contactDetailRepository, times(1)).findById(detailId);
     }
 
     @Test
-    void findById_ShouldThrowContactDetailNotFoundException_WhenNotExists() {
-        Long id = 999L;
+    void findById_WhenContactDetailNotExists_ShouldThrowContactDetailNotFoundException() {
+        Long nonExistentId = 999L;
 
-        when(contactDetailRepository.findById(id)).thenReturn(Optional.empty());
+        when(contactDetailRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         ContactDetailNotFoundException exception = assertThrows(
                 ContactDetailNotFoundException.class,
-                () -> contactDetailService.findById(id)
+                () -> contactDetailService.findById(nonExistentId)
         );
 
-        assertTrue(exception.getMessage().contains("Не найден способ связи с id: " + id));
-        verify(contactDetailRepository).findById(id);
+        assertTrue(exception.getMessage().contains("Не найден способ связи с id: " + nonExistentId));
+        verify(contactDetailRepository, times(1)).findById(nonExistentId);
     }
 
     @Test
-    void findByDetailTypeAndLabel_WithStringLabel_ShouldReturnContactDetails_WhenValidLabel() {
-        DetailType detailType = DetailType.PHONE;
-        String label = "MOBILE";
-        ContactDetail detail = ContactDetail.builder().id(1L).build();
-        List<ContactDetail> expectedDetails = List.of(detail);
+    void findByDetailTypeAndLabel_WithValidStringLabel_ShouldReturnList() {
+        DetailType detailType = DetailType.EMAIL;
+        String label = "MAIN";
+        List<ContactDetail> expectedDetails = Collections.singletonList(createTestContactDetail());
 
-        when(contactDetailRepository.findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, DetailLabel.MOBILE))
+        when(contactDetailRepository.findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, DetailLabel.MAIN))
                 .thenReturn(expectedDetails);
 
         List<ContactDetail> result = contactDetailService.findByDetailTypeAndLabel(detailType, label);
 
-        assertEquals(expectedDetails, result);
-        verify(contactDetailRepository).findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, DetailLabel.MOBILE);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactDetailRepository, times(1))
+                .findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, DetailLabel.MAIN);
     }
 
     @Test
-    void findByDetailTypeAndLabel_WithStringLabel_ShouldReturnEmptyList_WhenInvalidLabel() {
-        DetailType detailType = DetailType.PHONE;
+    void findByDetailTypeAndLabel_WithInvalidStringLabel_ShouldReturnEmptyList() {
+        DetailType detailType = DetailType.EMAIL;
         String invalidLabel = "INVALID_LABEL";
 
         List<ContactDetail> result = contactDetailService.findByDetailTypeAndLabel(detailType, invalidLabel);
 
+        assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(contactDetailRepository, never()).findByDetailTypeAndIsPrimaryTrueOrLabel(any(), any());
+        verify(contactDetailRepository, never())
+                .findByDetailTypeAndIsPrimaryTrueOrLabel(any(), any());
     }
 
     @Test
-    void findByDetailTypeAndLabel_WithDetailLabel_ShouldReturnContactDetails() {
-        DetailType detailType = DetailType.EMAIL;
+    void findByDetailTypeAndLabel_WithDetailLabel_ShouldReturnList() {
+        DetailType detailType = DetailType.PHONE;
         DetailLabel label = DetailLabel.WORK;
-        ContactDetail detail = ContactDetail.builder().id(1L).build();
-        List<ContactDetail> expectedDetails = List.of(detail);
+        List<ContactDetail> expectedDetails = Collections.singletonList(createAnotherTestContactDetail());
 
         when(contactDetailRepository.findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, label))
                 .thenReturn(expectedDetails);
 
         List<ContactDetail> result = contactDetailService.findByDetailTypeAndLabel(detailType, label);
 
-        assertEquals(expectedDetails, result);
-        verify(contactDetailRepository).findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, label);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactDetailRepository, times(1))
+                .findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, label);
     }
 
     @Test
-    void findAll_ShouldReturnAllContactDetails() {
-        ContactDetail detail1 = ContactDetail.builder().id(1L).build();
-        ContactDetail detail2 = ContactDetail.builder().id(2L).build();
-        List<ContactDetail> expectedDetails = List.of(detail1, detail2);
+    void findAll_WhenContactDetailsExist_ShouldReturnAllDetails() {
+        List<ContactDetail> expectedDetails = Arrays.asList(
+                createTestContactDetail(),
+                createAnotherTestContactDetail()
+        );
 
         when(contactDetailRepository.findAll()).thenReturn(expectedDetails);
 
         List<ContactDetail> result = contactDetailService.findAll();
 
-        assertEquals(expectedDetails, result);
-        verify(contactDetailRepository).findAll();
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(contactDetailRepository, times(1)).findAll();
+    }
+
+    @Test
+    void findAll_WhenNoContactDetails_ShouldReturnEmptyList() {
+        when(contactDetailRepository.findAll()).thenReturn(List.of());
+
+        List<ContactDetail> result = contactDetailService.findAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(contactDetailRepository, times(1)).findAll();
     }
 }

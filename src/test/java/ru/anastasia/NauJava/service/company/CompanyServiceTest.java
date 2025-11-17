@@ -12,7 +12,7 @@ import ru.anastasia.NauJava.exception.company.IllegalCompanyStateException;
 import ru.anastasia.NauJava.repository.company.CompanyRepository;
 import ru.anastasia.NauJava.service.company.impl.CompanyServiceImpl;
 
-import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,81 +37,85 @@ class CompanyServiceTest {
     @InjectMocks
     private CompanyServiceImpl companyService;
 
-    @Test
-    void create_ShouldReturnCompany_WhenSuccessful() {
-        Company company = Company.builder()
-                .name("Test Company")
-                .website("https://test.com")
-                .build();
-        Company savedCompany = Company.builder()
+    private Company createTestCompany() {
+        return Company.builder()
                 .id(1L)
-                .name("Test Company")
-                .website("https://test.com")
-                .createdAt(LocalDateTime.now())
+                .name("Тестовая компания")
+                .website("https://test-company.ru")
                 .build();
+    }
 
-        when(companyRepository.save(any(Company.class))).thenReturn(savedCompany);
-
-        Company result = companyService.create(company);
-
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
-        assertEquals("Test Company", result.getName());
-        verify(companyRepository).save(company);
+    private Company createAnotherTestCompany() {
+        return Company.builder()
+                .id(2L)
+                .name("Другая тестовая компания")
+                .website("https://another-company.ru")
+                .build();
     }
 
     @Test
-    void create_ShouldThrowIllegalCompanyStateException_WhenCompanyNameAlreadyExists() {
-        Company company = Company.builder()
-                .name("Existing Company")
-                .website("https://existing.com")
-                .build();
+    void create_WhenValidCompany_ShouldReturnSavedCompany() {
+        Company testCompany = createTestCompany();
+        Company savedCompany = createTestCompany();
 
-        when(companyRepository.save(any(Company.class)))
-                .thenThrow(DataIntegrityViolationException.class);
+        when(companyRepository.save(testCompany)).thenReturn(savedCompany);
+
+        Company result = companyService.create(testCompany);
+
+        assertNotNull(result);
+        assertEquals(savedCompany.getId(), result.getId());
+        assertEquals(savedCompany.getName(), result.getName());
+        assertEquals(savedCompany.getWebsite(), result.getWebsite());
+        verify(companyRepository, times(1)).save(testCompany);
+    }
+
+    @Test
+    void create_WhenDuplicateCompanyName_ShouldThrowIllegalCompanyStateException() {
+        Company testCompany = createTestCompany();
+
+        when(companyRepository.save(testCompany))
+                .thenThrow(new DataIntegrityViolationException("Duplicate company name"));
 
         IllegalCompanyStateException exception = assertThrows(
                 IllegalCompanyStateException.class,
-                () -> companyService.create(company)
+                () -> companyService.create(testCompany)
         );
 
+        assertTrue(exception.getMessage().contains("Не удалось создать компанию"));
         assertTrue(exception.getMessage().contains("Компания с таким именем уже существует"));
-        verify(companyRepository).save(company);
+        verify(companyRepository, times(1)).save(testCompany);
     }
 
     @Test
-    void findByName_ShouldReturnCompany_WhenCompanyExists() {
-        String companyName = "Test Company";
-        Company company = Company.builder()
-                .id(1L)
-                .name(companyName)
-                .build();
+    void findByName_WhenCompanyExists_ShouldReturnCompany() {
+        Company testCompany = createTestCompany();
+        String companyName = "Тестовая компания";
 
-        when(companyRepository.findByName(companyName)).thenReturn(Optional.of(company));
+        when(companyRepository.findByName(companyName)).thenReturn(Optional.of(testCompany));
 
         Company result = companyService.findByName(companyName);
 
         assertNotNull(result);
-        assertEquals(companyName, result.getName());
-        verify(companyRepository).findByName(companyName);
+        assertEquals(testCompany.getId(), result.getId());
+        assertEquals(testCompany.getName(), result.getName());
+        verify(companyRepository, times(1)).findByName(companyName);
     }
 
     @Test
-    void findByName_ShouldReturnNull_WhenCompanyDoesNotExist() {
-        String companyName = "Non-existent Company";
-        when(companyRepository.findByName(companyName)).thenReturn(Optional.empty());
+    void findByName_WhenCompanyNotExists_ShouldReturnNull() {
+        String nonExistentCompanyName = "Несуществующая компания";
 
-        Company result = companyService.findByName(companyName);
+        when(companyRepository.findByName(nonExistentCompanyName)).thenReturn(Optional.empty());
+
+        Company result = companyService.findByName(nonExistentCompanyName);
 
         assertNull(result);
-        verify(companyRepository).findByName(companyName);
+        verify(companyRepository, times(1)).findByName(nonExistentCompanyName);
     }
 
     @Test
-    void findAll_ShouldReturnListOfCompanies() {
-        Company company1 = Company.builder().id(1L).name("Company 1").build();
-        Company company2 = Company.builder().id(2L).name("Company 2").build();
-        List<Company> companies = List.of(company1, company2);
+    void findAll_WhenCompaniesExist_ShouldReturnAllCompanies() {
+        List<Company> companies = Arrays.asList(createTestCompany(), createAnotherTestCompany());
 
         when(companyRepository.findAll()).thenReturn(companies);
 
@@ -117,104 +123,151 @@ class CompanyServiceTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(companyRepository).findAll();
+        verify(companyRepository, times(1)).findAll();
     }
 
     @Test
-    void update_ShouldReturnUpdatedCompany_WhenSuccessful() {
+    void findAll_WhenNoCompanies_ShouldReturnEmptyList() {
+        when(companyRepository.findAll()).thenReturn(List.of());
+
+        List<Company> result = companyService.findAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(companyRepository, times(1)).findAll();
+    }
+
+    @Test
+    void update_WhenValidCompany_ShouldReturnUpdatedCompany() {
         Long companyId = 1L;
-        Company existingCompany = Company.builder()
+        Company existingCompany = createTestCompany();
+        Company updatedData = Company.builder()
                 .id(companyId)
-                .name("Old Name")
-                .website("https://old.com")
-                .build();
-        Company updatedCompany = Company.builder()
-                .id(companyId)
-                .name("New Name")
-                .website("https://new.com")
+                .name("Обновленное название")
+                .website("https://updated-website.ru")
                 .build();
         Company savedCompany = Company.builder()
                 .id(companyId)
-                .name("New Name")
-                .website("https://new.com")
+                .name("Обновленное название")
+                .website("https://updated-website.ru")
                 .build();
 
         when(companyRepository.findById(companyId)).thenReturn(Optional.of(existingCompany));
-        when(companyRepository.save(any(Company.class))).thenReturn(savedCompany);
+        when(companyRepository.save(existingCompany)).thenReturn(savedCompany);
 
-        Company result = companyService.update(updatedCompany);
+        Company result = companyService.update(updatedData);
 
         assertNotNull(result);
-        assertEquals("New Name", result.getName());
-        assertEquals("https://new.com", result.getWebsite());
-        verify(companyRepository).findById(companyId);
-        verify(companyRepository).save(existingCompany);
+        assertEquals(updatedData.getName(), result.getName());
+        assertEquals(updatedData.getWebsite(), result.getWebsite());
+        verify(companyRepository, times(1)).findById(companyId);
+        verify(companyRepository, times(1)).save(existingCompany);
     }
 
     @Test
-    void update_ShouldThrowIllegalCompanyStateException_WhenCompanyNameAlreadyExists() {
-        Long companyId = 1L;
-        Company existingCompany = Company.builder()
-                .id(companyId)
-                .name("Old Name")
+    void update_WhenCompanyNotFound_ShouldThrowCompanyNotFoundException() {
+        Long nonExistentId = 999L;
+        Company updatedData = Company.builder()
+                .id(nonExistentId)
+                .name("Несуществующая компания")
                 .build();
-        Company updatedCompany = Company.builder()
+
+        when(companyRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        CompanyNotFoundException exception = assertThrows(
+                CompanyNotFoundException.class,
+                () -> companyService.update(updatedData)
+        );
+
+        assertTrue(exception.getMessage().contains("Компания не найдена с id: " + nonExistentId));
+        verify(companyRepository, times(1)).findById(nonExistentId);
+        verify(companyRepository, never()).save(any(Company.class));
+    }
+
+    @Test
+    void update_WhenDuplicateCompanyName_ShouldThrowIllegalCompanyStateException() {
+        Long companyId = 1L;
+        Company existingCompany = createTestCompany();
+        Company updatedData = Company.builder()
                 .id(companyId)
-                .name("Existing Name")
+                .name("Дублирующееся название")
+                .website("https://test-company.ru")
                 .build();
 
         when(companyRepository.findById(companyId)).thenReturn(Optional.of(existingCompany));
-        when(companyRepository.save(any(Company.class)))
-                .thenThrow(DataIntegrityViolationException.class);
+        when(companyRepository.save(existingCompany))
+                .thenThrow(new DataIntegrityViolationException("Duplicate company name"));
 
         IllegalCompanyStateException exception = assertThrows(
                 IllegalCompanyStateException.class,
-                () -> companyService.update(updatedCompany)
+                () -> companyService.update(updatedData)
         );
 
         assertTrue(exception.getMessage().contains("Компания с таким именем уже существует"));
-        verify(companyRepository).findById(companyId);
-        verify(companyRepository).save(existingCompany);
+        verify(companyRepository, times(1)).findById(companyId);
+        verify(companyRepository, times(1)).save(existingCompany);
     }
 
     @Test
-    void delete_ShouldCallRepositoryDelete() {
+    void delete_WhenValidId_ShouldCallRepositoryDelete() {
         Long companyId = 1L;
+
         doNothing().when(companyRepository).deleteById(companyId);
 
         companyService.delete(companyId);
 
-        verify(companyRepository).deleteById(companyId);
+        verify(companyRepository, times(1)).deleteById(companyId);
     }
 
     @Test
-    void findById_ShouldReturnCompany_WhenCompanyExists() {
+    void findById_WhenCompanyExists_ShouldReturnCompany() {
         Long companyId = 1L;
-        Company company = Company.builder()
-                .id(companyId)
-                .name("Test Company")
-                .build();
+        Company testCompany = createTestCompany();
 
-        when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
+        when(companyRepository.findById(companyId)).thenReturn(Optional.of(testCompany));
 
         Company result = companyService.findById(companyId);
 
         assertNotNull(result);
-        assertEquals(companyId, result.getId());
-        verify(companyRepository).findById(companyId);
+        assertEquals(testCompany.getId(), result.getId());
+        assertEquals(testCompany.getName(), result.getName());
+        verify(companyRepository, times(1)).findById(companyId);
     }
 
     @Test
-    void findById_ShouldThrowCompanyNotFoundException_WhenCompanyDoesNotExist() {
-        Long companyId = 999L;
-        when(companyRepository.findById(companyId)).thenReturn(Optional.empty());
+    void findById_WhenCompanyNotExists_ShouldThrowCompanyNotFoundException() {
+        Long nonExistentId = 999L;
+
+        when(companyRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         CompanyNotFoundException exception = assertThrows(
                 CompanyNotFoundException.class,
-                () -> companyService.findById(companyId)
+                () -> companyService.findById(nonExistentId)
         );
 
-        assertTrue(exception.getMessage().contains("Компания не найдена с id: " + companyId));
-        verify(companyRepository).findById(companyId);
+        assertTrue(exception.getMessage().contains("Компания не найдена с id: " + nonExistentId));
+        verify(companyRepository, times(1)).findById(nonExistentId);
+    }
+
+    @Test
+    void countTotal_WhenCompaniesExist_ShouldReturnCount() {
+        long expectedCount = 5L;
+
+        when(companyRepository.count()).thenReturn(expectedCount);
+
+        Long result = companyService.countTotal();
+
+        assertEquals(expectedCount, result);
+        verify(companyRepository, times(1)).count();
+    }
+
+    @Test
+    void countTotal_WhenNoCompanies_ShouldReturnZero() {
+        when(companyRepository.count()).thenReturn(0L);
+
+        Long result = companyService.countTotal();
+
+        assertEquals(0L, result);
+        verify(companyRepository, times(1)).count();
     }
 }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ошибка - Contact Manager</title>
 
-    <div th:replace="fragments/styles :: base-styles"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
     <style>
         .error-container {
             min-height: 60vh;
@@ -132,7 +132,7 @@
 
                 <div class="error-details" th:if="${timestamp}">
                     <summary>Время возникновения</summary>
-                    <pre th:text="${#temporals.format(timestamp, 'dd.MM.yyyy HH:mm:ss')}"></pre>
+                    <pre th:text="${#temporals.format(#temporals.createNow(), 'dd.MM.yyyy HH:mm:ss')}"></pre>
                 </div>
 
                 <div class="error-details" th:if="${path}">

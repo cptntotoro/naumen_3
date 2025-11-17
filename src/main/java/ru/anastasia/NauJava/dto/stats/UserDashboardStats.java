@@ -16,18 +16,10 @@ public class UserDashboardStats extends BaseDashboardStats {
     /**
      * Число избранных контактов
      */
-    private Long favoritesCount;
+    private long favoritesCount;
 
     /**
      * Ближайшие дни рождения
      */
-    private Long upcomingBirthdays;
-
-    public Long getFavoritesCount() {
-        return favoritesCount != null ? favoritesCount : 0L;
-    }
-
-    public Long getUpcomingBirthdays() {
-        return upcomingBirthdays != null ? upcomingBirthdays : 0L;
-    }
+    private long upcomingBirthdays;
 }

@@ -12,6 +12,7 @@ import ru.anastasia.NauJava.exception.company.JobTitleNotFoundException;
 import ru.anastasia.NauJava.repository.company.JobTitleRepository;
 import ru.anastasia.NauJava.service.company.impl.JobTitleServiceImpl;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,96 +37,105 @@ class JobTitleServiceTest {
     @InjectMocks
     private JobTitleServiceImpl jobTitleService;
 
-    @Test
-    void create_ShouldReturnJobTitle_WhenSuccessful() {
-        String title = "Software Engineer";
-        JobTitle jobTitle = JobTitle.builder()
+    private JobTitle createTestJobTitle() {
+        return JobTitle.builder()
                 .id(1L)
-                .title(title)
+                .title("Тестовая должность")
                 .build();
+    }
 
-        when(jobTitleRepository.save(any(JobTitle.class))).thenReturn(jobTitle);
+    private JobTitle createAnotherTestJobTitle() {
+        return JobTitle.builder()
+                .id(2L)
+                .title("Другая тестовая должность")
+                .build();
+    }
+
+    @Test
+    void create_WhenValidTitle_ShouldReturnSavedJobTitle() {
+        String title = "Тестовая должность";
+        JobTitle savedJobTitle = createTestJobTitle();
+
+        when(jobTitleRepository.save(any(JobTitle.class))).thenReturn(savedJobTitle);
 
         JobTitle result = jobTitleService.create(title);
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());
-        assertEquals(title, result.getTitle());
-        verify(jobTitleRepository).save(any(JobTitle.class));
+        assertEquals(savedJobTitle.getId(), result.getId());
+        assertEquals(savedJobTitle.getTitle(), result.getTitle());
+        verify(jobTitleRepository, times(1)).save(any(JobTitle.class));
     }
 
     @Test
-    void create_ShouldReturnExistingJobTitle_WhenTitleAlreadyExists() {
-        String title = "Existing Title";
+    void create_WhenDuplicateTitleAndJobTitleExists_ShouldReturnExistingJobTitle() {
+        String duplicateTitle = "Дублирующаяся должность";
         JobTitle existingJobTitle = JobTitle.builder()
                 .id(1L)
-                .title(title)
+                .title(duplicateTitle)
                 .build();
 
         when(jobTitleRepository.save(any(JobTitle.class)))
-                .thenThrow(DataIntegrityViolationException.class);
-        when(jobTitleRepository.findByTitle(title)).thenReturn(Optional.of(existingJobTitle));
+                .thenThrow(new DataIntegrityViolationException("Duplicate title"));
+        when(jobTitleRepository.findByTitle(duplicateTitle)).thenReturn(Optional.of(existingJobTitle));
 
-        JobTitle result = jobTitleService.create(title);
+        JobTitle result = jobTitleService.create(duplicateTitle);
 
         assertNotNull(result);
         assertEquals(existingJobTitle.getId(), result.getId());
         assertEquals(existingJobTitle.getTitle(), result.getTitle());
-        verify(jobTitleRepository).save(any(JobTitle.class));
-        verify(jobTitleRepository).findByTitle(title);
+        verify(jobTitleRepository, times(1)).save(any(JobTitle.class));
+        verify(jobTitleRepository, times(1)).findByTitle(duplicateTitle);
     }
 
     @Test
-    void create_ShouldThrowIllegalJobTitleStateException_WhenTitleAlreadyExistsAndCannotBeFound() {
-        String title = "Problematic Title";
+    void create_WhenDuplicateTitleAndJobTitleNotExists_ShouldThrowIllegalJobTitleStateException() {
+        String duplicateTitle = "Дублирующаяся должность";
 
         when(jobTitleRepository.save(any(JobTitle.class)))
-                .thenThrow(DataIntegrityViolationException.class);
-        when(jobTitleRepository.findByTitle(title)).thenReturn(Optional.empty());
+                .thenThrow(new DataIntegrityViolationException("Duplicate title"));
+        when(jobTitleRepository.findByTitle(duplicateTitle)).thenReturn(Optional.empty());
 
         IllegalJobTitleStateException exception = assertThrows(
                 IllegalJobTitleStateException.class,
-                () -> jobTitleService.create(title)
+                () -> jobTitleService.create(duplicateTitle)
         );
 
+        assertTrue(exception.getMessage().contains("Не удалось создать название должности"));
         assertTrue(exception.getMessage().contains("Название должности с таким именем уже существует"));
-        verify(jobTitleRepository).save(any(JobTitle.class));
-        verify(jobTitleRepository).findByTitle(title);
+        verify(jobTitleRepository, times(1)).save(any(JobTitle.class));
+        verify(jobTitleRepository, times(1)).findByTitle(duplicateTitle);
     }
 
     @Test
-    void findByName_ShouldReturnJobTitle_WhenJobTitleExists() {
-        String title = "Software Engineer";
-        JobTitle jobTitle = JobTitle.builder()
-                .id(1L)
-                .title(title)
-                .build();
+    void findByName_WhenJobTitleExists_ShouldReturnJobTitle() {
+        String title = "Тестовая должность";
+        JobTitle testJobTitle = createTestJobTitle();
 
-        when(jobTitleRepository.findByTitle(title)).thenReturn(Optional.of(jobTitle));
+        when(jobTitleRepository.findByTitle(title)).thenReturn(Optional.of(testJobTitle));
 
         JobTitle result = jobTitleService.findByName(title);
 
         assertNotNull(result);
-        assertEquals(title, result.getTitle());
-        verify(jobTitleRepository).findByTitle(title);
+        assertEquals(testJobTitle.getId(), result.getId());
+        assertEquals(testJobTitle.getTitle(), result.getTitle());
+        verify(jobTitleRepository, times(1)).findByTitle(title);
     }
 
     @Test
-    void findByName_ShouldReturnNull_WhenJobTitleDoesNotExist() {
-        String title = "Non-existent Title";
-        when(jobTitleRepository.findByTitle(title)).thenReturn(Optional.empty());
+    void findByName_WhenJobTitleNotExists_ShouldReturnNull() {
+        String nonExistentTitle = "Несуществующая должность";
 
-        JobTitle result = jobTitleService.findByName(title);
+        when(jobTitleRepository.findByTitle(nonExistentTitle)).thenReturn(Optional.empty());
+
+        JobTitle result = jobTitleService.findByName(nonExistentTitle);
 
         assertNull(result);
-        verify(jobTitleRepository).findByTitle(title);
+        verify(jobTitleRepository, times(1)).findByTitle(nonExistentTitle);
     }
 
     @Test
-    void findAll_ShouldReturnListOfJobTitles() {
-        JobTitle jobTitle1 = JobTitle.builder().id(1L).title("Title 1").build();
-        JobTitle jobTitle2 = JobTitle.builder().id(2L).title("Title 2").build();
-        List<JobTitle> jobTitles = List.of(jobTitle1, jobTitle2);
+    void findAll_WhenJobTitlesExist_ShouldReturnAllJobTitles() {
+        List<JobTitle> jobTitles = Arrays.asList(createTestJobTitle(), createAnotherTestJobTitle());
 
         when(jobTitleRepository.findAll()).thenReturn(jobTitles);
 
@@ -132,94 +143,102 @@ class JobTitleServiceTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(jobTitleRepository).findAll();
+        verify(jobTitleRepository, times(1)).findAll();
     }
 
     @Test
-    void update_ShouldReturnUpdatedJobTitle_WhenSuccessful() {
+    void findAll_WhenNoJobTitles_ShouldReturnEmptyList() {
+        when(jobTitleRepository.findAll()).thenReturn(List.of());
+
+        List<JobTitle> result = jobTitleService.findAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(jobTitleRepository, times(1)).findAll();
+    }
+
+    @Test
+    void update_WhenValidJobTitle_ShouldReturnUpdatedJobTitle() {
         Long jobTitleId = 1L;
-        JobTitle existingJobTitle = JobTitle.builder()
+        JobTitle existingJobTitle = createTestJobTitle();
+        JobTitle updatedData = JobTitle.builder()
                 .id(jobTitleId)
-                .title("Old Title")
-                .build();
-        JobTitle updatedJobTitle = JobTitle.builder()
-                .id(jobTitleId)
-                .title("New Title")
+                .title("Обновленное название должности")
                 .build();
         JobTitle savedJobTitle = JobTitle.builder()
                 .id(jobTitleId)
-                .title("New Title")
+                .title("Обновленное название должности")
                 .build();
 
         when(jobTitleRepository.findById(jobTitleId)).thenReturn(Optional.of(existingJobTitle));
         when(jobTitleRepository.save(existingJobTitle)).thenReturn(savedJobTitle);
 
-        JobTitle result = jobTitleService.update(updatedJobTitle);
+        JobTitle result = jobTitleService.update(updatedData);
 
         assertNotNull(result);
-        assertEquals("New Title", result.getTitle());
-        verify(jobTitleRepository).findById(jobTitleId);
-        verify(jobTitleRepository).save(existingJobTitle);
+        assertEquals(updatedData.getTitle(), result.getTitle());
+        verify(jobTitleRepository, times(1)).findById(jobTitleId);
+        verify(jobTitleRepository, times(1)).save(existingJobTitle);
     }
 
     @Test
-    void update_ShouldThrowJobTitleNotFoundException_WhenJobTitleDoesNotExist() {
-        Long jobTitleId = 999L;
-        JobTitle jobTitle = JobTitle.builder()
-                .id(jobTitleId)
-                .title("Non-existent Title")
+    void update_WhenJobTitleNotFound_ShouldThrowJobTitleNotFoundException() {
+        Long nonExistentId = 999L;
+        JobTitle updatedData = JobTitle.builder()
+                .id(nonExistentId)
+                .title("Несуществующая должность")
                 .build();
 
-        when(jobTitleRepository.findById(jobTitleId)).thenReturn(Optional.empty());
+        when(jobTitleRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         JobTitleNotFoundException exception = assertThrows(
                 JobTitleNotFoundException.class,
-                () -> jobTitleService.update(jobTitle)
+                () -> jobTitleService.update(updatedData)
         );
 
-        assertTrue(exception.getMessage().contains("Не найдена должность с id: " + jobTitleId));
-        verify(jobTitleRepository).findById(jobTitleId);
+        assertTrue(exception.getMessage().contains("Не найдена должность с id: " + nonExistentId));
+        verify(jobTitleRepository, times(1)).findById(nonExistentId);
         verify(jobTitleRepository, never()).save(any(JobTitle.class));
     }
 
     @Test
-    void delete_ShouldCallRepositoryDelete() {
+    void delete_WhenValidId_ShouldCallRepositoryDelete() {
         Long jobTitleId = 1L;
+
         doNothing().when(jobTitleRepository).deleteById(jobTitleId);
 
         jobTitleService.delete(jobTitleId);
 
-        verify(jobTitleRepository).deleteById(jobTitleId);
+        verify(jobTitleRepository, times(1)).deleteById(jobTitleId);
     }
 
     @Test
-    void findById_ShouldReturnJobTitle_WhenJobTitleExists() {
+    void findById_WhenJobTitleExists_ShouldReturnJobTitle() {
         Long jobTitleId = 1L;
-        JobTitle jobTitle = JobTitle.builder()
-                .id(jobTitleId)
-                .title("Test Title")
-                .build();
+        JobTitle testJobTitle = createTestJobTitle();
 
-        when(jobTitleRepository.findById(jobTitleId)).thenReturn(Optional.of(jobTitle));
+        when(jobTitleRepository.findById(jobTitleId)).thenReturn(Optional.of(testJobTitle));
 
         JobTitle result = jobTitleService.findById(jobTitleId);
 
         assertNotNull(result);
-        assertEquals(jobTitleId, result.getId());
-        verify(jobTitleRepository).findById(jobTitleId);
+        assertEquals(testJobTitle.getId(), result.getId());
+        assertEquals(testJobTitle.getTitle(), result.getTitle());
+        verify(jobTitleRepository, times(1)).findById(jobTitleId);
     }
 
     @Test
-    void findById_ShouldThrowJobTitleNotFoundException_WhenJobTitleDoesNotExist() {
-        Long jobTitleId = 999L;
-        when(jobTitleRepository.findById(jobTitleId)).thenReturn(Optional.empty());
+    void findById_WhenJobTitleNotExists_ShouldThrowJobTitleNotFoundException() {
+        Long nonExistentId = 999L;
+
+        when(jobTitleRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         JobTitleNotFoundException exception = assertThrows(
                 JobTitleNotFoundException.class,
-                () -> jobTitleService.findById(jobTitleId)
+                () -> jobTitleService.findById(nonExistentId)
         );
 
-        assertTrue(exception.getMessage().contains("Не найдена должность с id: " + jobTitleId));
-        verify(jobTitleRepository).findById(jobTitleId);
+        assertTrue(exception.getMessage().contains("Не найдена должность с id: " + nonExistentId));
+        verify(jobTitleRepository, times(1)).findById(nonExistentId);
     }
 }

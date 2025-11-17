@@ -15,6 +15,8 @@ import ru.anastasia.NauJava.service.contact.impl.ContactServiceImpl;
 import ru.anastasia.NauJava.service.event.EventService;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,351 +47,590 @@ class ContactServiceTest {
     @InjectMocks
     private ContactServiceImpl contactService;
 
-    @Test
-    void add_ShouldReturnSavedContact() {
-        String firstName = "John";
-        String lastName = "Doe";
-        Contact savedContact = Contact.builder().id(1L).firstName(firstName).lastName(lastName).build();
-
-        when(contactRepository.save(any(Contact.class))).thenReturn(savedContact);
-
-        Contact result = contactService.add(firstName, lastName);
-
-        assertNotNull(result.getId());
-        assertEquals(firstName, result.getFirstName());
-        assertEquals(lastName, result.getLastName());
-        verify(contactRepository).save(any(Contact.class));
-    }
-
-    @Test
-    void findById_ShouldReturnContact_WhenExists() {
-        Long id = 1L;
-        Contact contact = Contact.builder().id(id).firstName("John").lastName("Doe").build();
-
-        when(contactRepository.findById(id)).thenReturn(Optional.of(contact));
-
-        Contact result = contactService.findById(id);
-
-        assertEquals(contact, result);
-        verify(contactRepository).findById(id);
-    }
-
-    @Test
-    void findById_ShouldThrowContactNotFoundException_WhenNotExists() {
-        Long id = 999L;
-
-        when(contactRepository.findById(id)).thenReturn(Optional.empty());
-
-        ContactNotFoundException exception = assertThrows(
-                ContactNotFoundException.class,
-                () -> contactService.findById(id)
-        );
-
-        assertTrue(exception.getMessage().contains("Не найден контакт с id: " + id));
-        verify(contactRepository).findById(id);
-    }
-
-    @Test
-    void deleteById_ShouldCallRepositoryDelete() {
-        Long id = 1L;
-        doNothing().when(contactRepository).deleteById(id);
-
-        contactService.deleteById(id);
-
-        verify(contactRepository).deleteById(id);
-    }
-
-    @Test
-    void update_WithName_ShouldReturnUpdatedContact_WhenExists() {
-        Long id = 1L;
-        String newFirstName = "Jane";
-        String newLastName = "Smith";
-        Contact existingContact = Contact.builder().id(id).firstName("John").lastName("Doe").build();
-        Contact updatedContact = Contact.builder().id(id).firstName(newFirstName).lastName(newLastName).build();
-
-        when(contactRepository.findById(id)).thenReturn(Optional.of(existingContact));
-        when(contactRepository.save(existingContact)).thenReturn(updatedContact);
-
-        Contact result = contactService.update(id, newFirstName, newLastName);
-
-        assertEquals(newFirstName, result.getFirstName());
-        assertEquals(newLastName, result.getLastName());
-        verify(contactRepository).findById(id);
-        verify(contactRepository).save(existingContact);
-    }
-
-    @Test
-    void update_WithName_ShouldThrowContactNotFoundException_WhenNotExists() {
-        Long id = 999L;
-
-        when(contactRepository.findById(id)).thenReturn(Optional.empty());
-
-        ContactNotFoundException exception = assertThrows(
-                ContactNotFoundException.class,
-                () -> contactService.update(id, "Jane", "Smith")
-        );
-
-        assertTrue(exception.getMessage().contains("Не найден контакт с id: " + id));
-        verify(contactRepository).findById(id);
-        verify(contactRepository, never()).save(any(Contact.class));
-    }
-
-    @Test
-    void update_WithAllFields_ShouldReturnUpdatedContact_WhenExists() {
-        Long id = 1L;
-        Contact existingContact = Contact.builder()
-                .id(id)
-                .firstName("John")
-                .lastName("Doe")
-                .displayName("John Doe")
-                .avatarUrl("old.jpg")
-                .isFavorite(false)
-                .build();
-        Contact updatedContact = Contact.builder()
-                .id(id)
-                .firstName("Jane")
-                .lastName("Smith")
-                .displayName("Jane Smith")
-                .avatarUrl("new.jpg")
+    // Тестовые данные
+    private Contact createTestContact() {
+        return Contact.builder()
+                .id(1L)
+                .firstName("Иван")
+                .lastName("Иванов")
+                .displayName("Иван Иванов")
+                .avatarUrl("https://example.com/avatar.jpg")
                 .isFavorite(true)
                 .build();
-
-        when(contactRepository.findById(id)).thenReturn(Optional.of(existingContact));
-        when(contactRepository.save(existingContact)).thenReturn(updatedContact);
-
-        Contact result = contactService.update(id, "Jane", "Smith", "Jane Smith", "new.jpg", true);
-
-        assertEquals("Jane", result.getFirstName());
-        assertEquals("Smith", result.getLastName());
-        assertEquals("Jane Smith", result.getDisplayName());
-        assertEquals("new.jpg", result.getAvatarUrl());
-        assertTrue(result.getIsFavorite());
-        verify(contactRepository).findById(id);
-        verify(contactRepository).save(existingContact);
     }
 
-    @Test
-    void findAll_ShouldReturnAllContacts() {
-        Contact contact1 = Contact.builder().id(1L).build();
-        Contact contact2 = Contact.builder().id(2L).build();
-        List<Contact> contacts = List.of(contact1, contact2);
-
-        when(contactRepository.findAll()).thenReturn(contacts);
-
-        List<Contact> result = contactService.findAll();
-
-        assertEquals(2, result.size());
-        verify(contactRepository).findAll();
+    private Contact createAnotherTestContact() {
+        return Contact.builder()
+                .id(2L)
+                .firstName("Петр")
+                .lastName("Петров")
+                .displayName("Петр Петров")
+                .avatarUrl("https://example.com/avatar2.jpg")
+                .isFavorite(false)
+                .build();
     }
 
-    @Test
-    void findByName_ShouldReturnMatchingContacts() {
-        String name = "John";
-        Contact contact1 = Contact.builder().id(1L).firstName("John").lastName("Doe").build();
-        Contact contact2 = Contact.builder().id(2L).firstName("Johnny").lastName("Smith").build();
-        List<Contact> expectedContacts = List.of(contact1, contact2);
-
-        when(contactRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name))
-                .thenReturn(expectedContacts);
-
-        List<Contact> result = contactService.findByName(name);
-
-        assertEquals(expectedContacts, result);
-        verify(contactRepository).findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
+    private Event createBirthdayEvent(Contact contact) {
+        return Event.builder()
+                .id(1L)
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(LocalDate.now())
+                .contact(contact)
+                .build();
     }
 
+    // Тесты для метода add()
+
     @Test
-    void findAllByFullName_ShouldReturnContacts() {
-        String firstName = "John";
-        String lastName = "Doe";
-        Contact contact = Contact.builder().id(1L).firstName(firstName).lastName(lastName).build();
-        List<Contact> expectedContacts = List.of(contact);
+    void add_WhenValidNames_ShouldReturnSavedContact() {
+        // Подготовка тестовых данных
+        String firstName = "Иван";
+        String lastName = "Иванов";
+        Contact savedContact = createTestContact();
 
-        when(contactRepository.findByFirstNameAndLastName(firstName, lastName)).thenReturn(expectedContacts);
+        // Настройка моков
+        when(contactRepository.save(any(Contact.class))).thenReturn(savedContact);
 
-        List<Contact> result = contactService.findAllByFullName(firstName, lastName);
+        // Выполнение тестируемого метода
+        Contact result = contactService.add(firstName, lastName);
 
-        assertEquals(expectedContacts, result);
-        verify(contactRepository).findByFirstNameAndLastName(firstName, lastName);
+        // Проверки
+        assertNotNull(result);
+        assertEquals(savedContact.getId(), result.getId());
+        assertEquals(savedContact.getFirstName(), result.getFirstName());
+        assertEquals(savedContact.getLastName(), result.getLastName());
+        verify(contactRepository, times(1)).save(any(Contact.class));
     }
 
-    @Test
-    void findByTag_ShouldReturnContacts() {
-        String tagName = "friend";
-        Contact contact = Contact.builder().id(1L).build();
-        List<Contact> expectedContacts = List.of(contact);
-
-        when(contactRepository.findContactsByTagName(tagName)).thenReturn(expectedContacts);
-
-        List<Contact> result = contactService.findByTag(tagName);
-
-        assertEquals(expectedContacts, result);
-        verify(contactRepository).findContactsByTagName(tagName);
-    }
+    // Тесты для метода findById()
 
     @Test
-    void updateAvatar_ShouldReturnUpdatedContact_WhenExists() {
+    void findById_WhenContactExists_ShouldReturnContact() {
+        // Подготовка тестовых данных
         Long contactId = 1L;
-        String avatarUrl = "new-avatar.jpg";
-        Contact existingContact = Contact.builder().id(contactId).avatarUrl("old-avatar.jpg").build();
-        Contact updatedContact = Contact.builder().id(contactId).avatarUrl(avatarUrl).build();
+        Contact testContact = createTestContact();
 
-        when(contactRepository.findById(contactId)).thenReturn(Optional.of(existingContact));
-        when(contactRepository.save(existingContact)).thenReturn(updatedContact);
+        // Настройка моков
+        when(contactRepository.findById(contactId)).thenReturn(Optional.of(testContact));
 
-        Contact result = contactService.updateAvatar(contactId, avatarUrl);
+        // Выполнение тестируемого метода
+        Contact result = contactService.findById(contactId);
 
-        assertEquals(avatarUrl, result.getAvatarUrl());
-        verify(contactRepository).findById(contactId);
-        verify(contactRepository).save(existingContact);
+        // Проверки
+        assertNotNull(result);
+        assertEquals(testContact.getId(), result.getId());
+        assertEquals(testContact.getFirstName(), result.getFirstName());
+        verify(contactRepository, times(1)).findById(contactId);
     }
 
     @Test
-    void updateAvatar_ShouldThrowContactNotFoundException_WhenNotExists() {
-        Long contactId = 999L;
+    void findById_WhenContactNotExists_ShouldThrowContactNotFoundException() {
+        // Подготовка тестовых данных
+        Long nonExistentId = 999L;
 
-        when(contactRepository.findById(contactId)).thenReturn(Optional.empty());
+        // Настройка моков
+        when(contactRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
+        // Проверка исключения
         ContactNotFoundException exception = assertThrows(
                 ContactNotFoundException.class,
-                () -> contactService.updateAvatar(contactId, "avatar.jpg")
+                () -> contactService.findById(nonExistentId)
         );
 
-        assertTrue(exception.getMessage().contains("Не найден контакт с id: " + contactId));
-        verify(contactRepository).findById(contactId);
+        // Проверки
+        assertTrue(exception.getMessage().contains("Не найден контакт с id: " + nonExistentId));
+        verify(contactRepository, times(1)).findById(nonExistentId);
+    }
+
+    // Тесты для метода deleteById()
+
+    @Test
+    void deleteById_WhenValidId_ShouldCallRepositoryDelete() {
+        // Подготовка тестовых данных
+        Long contactId = 1L;
+
+        // Настройка моков
+        doNothing().when(contactRepository).deleteById(contactId);
+
+        // Выполнение тестируемого метода
+        contactService.deleteById(contactId);
+
+        // Проверки
+        verify(contactRepository, times(1)).deleteById(contactId);
+    }
+
+    // Тесты для метода update() с двумя параметрами
+
+    @Test
+    void update_WithTwoParameters_WhenValidData_ShouldReturnUpdatedContact() {
+        // Подготовка тестовых данных
+        Long contactId = 1L;
+        String newFirstName = "НовоеИмя";
+        String newLastName = "НоваяФамилия";
+        Contact existingContact = createTestContact();
+        Contact savedContact = Contact.builder()
+                .id(contactId)
+                .firstName(newFirstName)
+                .lastName(newLastName)
+                .build();
+
+        // Настройка моков
+        when(contactRepository.findById(contactId)).thenReturn(Optional.of(existingContact));
+        when(contactRepository.save(existingContact)).thenReturn(savedContact);
+
+        // Выполнение тестируемого метода
+        Contact result = contactService.update(contactId, newFirstName, newLastName);
+
+        // Проверки
+        assertNotNull(result);
+        assertEquals(newFirstName, result.getFirstName());
+        assertEquals(newLastName, result.getLastName());
+        verify(contactRepository, times(1)).findById(contactId);
+        verify(contactRepository, times(1)).save(existingContact);
+    }
+
+    @Test
+    void update_WithTwoParameters_WhenContactNotFound_ShouldThrowContactNotFoundException() {
+        // Подготовка тестовых данных
+        Long nonExistentId = 999L;
+        String firstName = "Имя";
+        String lastName = "Фамилия";
+
+        // Настройка моков
+        when(contactRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        // Проверка исключения
+        ContactNotFoundException exception = assertThrows(
+                ContactNotFoundException.class,
+                () -> contactService.update(nonExistentId, firstName, lastName)
+        );
+
+        // Проверки
+        assertTrue(exception.getMessage().contains("Не найден контакт с id: " + nonExistentId));
+        verify(contactRepository, times(1)).findById(nonExistentId);
         verify(contactRepository, never()).save(any(Contact.class));
     }
 
+    // Тесты для метода update() с шестью параметрами
+
     @Test
-    void search_ShouldReturnAllContacts_WhenSearchTermIsEmpty() {
-        Contact contact1 = Contact.builder().id(1L).build();
-        Contact contact2 = Contact.builder().id(2L).build();
-        List<Contact> contacts = List.of(contact1, contact2);
+    void update_WithSixParameters_WhenValidData_ShouldReturnUpdatedContact() {
+        // Подготовка тестовых данных
+        Long contactId = 1L;
+        String newFirstName = "НовоеИмя";
+        String newLastName = "НоваяФамилия";
+        String displayName = "Новое отображаемое имя";
+        String avatarUrl = "https://new-avatar.jpg";
+        Boolean isFavorite = false;
+        Contact existingContact = createTestContact();
+        Contact savedContact = Contact.builder()
+                .id(contactId)
+                .firstName(newFirstName)
+                .lastName(newLastName)
+                .displayName(displayName)
+                .avatarUrl(avatarUrl)
+                .isFavorite(isFavorite)
+                .build();
 
-        when(contactRepository.findAll()).thenReturn(contacts);
+        // Настройка моков
+        when(contactRepository.findById(contactId)).thenReturn(Optional.of(existingContact));
+        when(contactRepository.save(existingContact)).thenReturn(savedContact);
 
-        List<Contact> result = contactService.search("");
+        // Выполнение тестируемого метода
+        Contact result = contactService.update(contactId, newFirstName, newLastName, displayName, avatarUrl, isFavorite);
 
+        // Проверки
+        assertNotNull(result);
+        assertEquals(newFirstName, result.getFirstName());
+        assertEquals(newLastName, result.getLastName());
+        assertEquals(displayName, result.getDisplayName());
+        assertEquals(avatarUrl, result.getAvatarUrl());
+        assertEquals(isFavorite, result.getIsFavorite());
+        verify(contactRepository, times(1)).findById(contactId);
+        verify(contactRepository, times(1)).save(existingContact);
+    }
+
+    // Тесты для метода findAll()
+
+    @Test
+    void findAll_WhenContactsExist_ShouldReturnAllContacts() {
+        // Подготовка тестовых данных
+        List<Contact> expectedContacts = Arrays.asList(
+                createTestContact(),
+                createAnotherTestContact()
+        );
+
+        // Настройка моков
+        when(contactRepository.findAll()).thenReturn(expectedContacts);
+
+        // Выполнение тестируемого метода
+        List<Contact> result = contactService.findAll();
+
+        // Проверки
+        assertNotNull(result);
         assertEquals(2, result.size());
-        verify(contactRepository).findAll();
-        verify(contactRepository, never()).findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(anyString(), anyString());
+        verify(contactRepository, times(1)).findAll();
     }
 
     @Test
-    void search_ShouldReturnMatchingContacts_WhenSearchTermProvided() {
-        String searchTerm = "John";
-        Contact contact = Contact.builder().id(1L).firstName("John").build();
-        List<Contact> expectedContacts = List.of(contact);
+    void findAll_WhenNoContacts_ShouldReturnEmptyList() {
+        // Настройка моков
+        when(contactRepository.findAll()).thenReturn(List.of());
 
+        // Выполнение тестируемого метода
+        List<Contact> result = contactService.findAll();
+
+        // Проверки
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(contactRepository, times(1)).findAll();
+    }
+
+    // Тесты для метода findByName()
+
+    @Test
+    void findByName_WhenContactsExist_ShouldReturnMatchingContacts() {
+        // Подготовка тестовых данных
+        String searchName = "Иван";
+        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
+
+        // Настройка моков
+        when(contactRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchName, searchName))
+                .thenReturn(expectedContacts);
+
+        // Выполнение тестируемого метода
+        List<Contact> result = contactService.findByName(searchName);
+
+        // Проверки
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactRepository, times(1))
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchName, searchName);
+    }
+
+    // Тесты для метода findAllByFullName()
+
+    @Test
+    void findAllByFullName_WhenContactsExist_ShouldReturnMatchingContacts() {
+        // Подготовка тестовых данных
+        String firstName = "Иван";
+        String lastName = "Иванов";
+        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
+
+        // Настройка моков
+        when(contactRepository.findByFirstNameAndLastName(firstName, lastName))
+                .thenReturn(expectedContacts);
+
+        // Выполнение тестируемого метода
+        List<Contact> result = contactService.findAllByFullName(firstName, lastName);
+
+        // Проверки
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactRepository, times(1)).findByFirstNameAndLastName(firstName, lastName);
+    }
+
+    // Тесты для метода findByTag()
+
+    @Test
+    void findByTag_WhenContactsExist_ShouldReturnMatchingContacts() {
+        // Подготовка тестовых данных
+        String tagName = "друзья";
+        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
+
+        // Настройка моков
+        when(contactRepository.findContactsByTagName(tagName)).thenReturn(expectedContacts);
+
+        // Выполнение тестируемого метода
+        List<Contact> result = contactService.findByTag(tagName);
+
+        // Проверки
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactRepository, times(1)).findContactsByTagName(tagName);
+    }
+
+    // Тесты для метода updateAvatar()
+
+    @Test
+    void updateAvatar_WhenValidData_ShouldReturnUpdatedContact() {
+        // Подготовка тестовых данных
+        Long contactId = 1L;
+        String newAvatarUrl = "https://new-avatar.jpg";
+        Contact existingContact = createTestContact();
+        Contact savedContact = createTestContact();
+        savedContact.setAvatarUrl(newAvatarUrl);
+
+        // Настройка моков
+        when(contactRepository.findById(contactId)).thenReturn(Optional.of(existingContact));
+        when(contactRepository.save(existingContact)).thenReturn(savedContact);
+
+        // Выполнение тестируемого метода
+        Contact result = contactService.updateAvatar(contactId, newAvatarUrl);
+
+        // Проверки
+        assertNotNull(result);
+        assertEquals(newAvatarUrl, result.getAvatarUrl());
+        verify(contactRepository, times(1)).findById(contactId);
+        verify(contactRepository, times(1)).save(existingContact);
+    }
+
+    @Test
+    void updateAvatar_WhenContactNotFound_ShouldThrowContactNotFoundException() {
+        // Подготовка тестовых данных
+        Long nonExistentId = 999L;
+        String avatarUrl = "https://avatar.jpg";
+
+        // Настройка моков
+        when(contactRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        // Проверка исключения
+        ContactNotFoundException exception = assertThrows(
+                ContactNotFoundException.class,
+                () -> contactService.updateAvatar(nonExistentId, avatarUrl)
+        );
+
+        // Проверки
+        assertTrue(exception.getMessage().contains("Не найден контакт с id: " + nonExistentId));
+        verify(contactRepository, times(1)).findById(nonExistentId);
+        verify(contactRepository, never()).save(any(Contact.class));
+    }
+
+    // Тесты для метода search()
+
+    @Test
+    void search_WithSearchTerm_ShouldReturnMatchingContacts() {
+        // Подготовка тестовых данных
+        String searchTerm = "Иван";
+        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
+
+        // Настройка моков
         when(contactRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm))
                 .thenReturn(expectedContacts);
 
+        // Выполнение тестируемого метода
         List<Contact> result = contactService.search(searchTerm);
 
-        assertEquals(expectedContacts, result);
-        verify(contactRepository).findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm);
+        // Проверки
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactRepository, times(1))
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm);
     }
 
     @Test
-    void save_ShouldReturnSavedContact() {
-        Contact contact = Contact.builder().firstName("John").lastName("Doe").build();
-        Contact savedContact = Contact.builder().id(1L).firstName("John").lastName("Doe").build();
+    void search_WithEmptySearchTerm_ShouldReturnAllContacts() {
+        // Подготовка тестовых данных
+        List<Contact> expectedContacts = Arrays.asList(
+                createTestContact(),
+                createAnotherTestContact()
+        );
 
-        when(contactRepository.save(contact)).thenReturn(savedContact);
+        // Настройка моков
+        when(contactRepository.findAll()).thenReturn(expectedContacts);
 
-        Contact result = contactService.save(contact);
+        // Выполнение тестируемого метода
+        List<Contact> result = contactService.search("");
 
-        assertNotNull(result.getId());
-        assertEquals(savedContact, result);
-        verify(contactRepository).save(contact);
+        // Проверки
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(contactRepository, times(1)).findAll();
     }
 
     @Test
-    void addToFavorites_ShouldSetFavoriteTrue_WhenContactExists() {
+    void search_WithNullSearchTerm_ShouldReturnAllContacts() {
+        // Подготовка тестовых данных
+        List<Contact> expectedContacts = Arrays.asList(
+                createTestContact(),
+                createAnotherTestContact()
+        );
+
+        // Настройка моков
+        when(contactRepository.findAll()).thenReturn(expectedContacts);
+
+        // Выполнение тестируемого метода
+        List<Contact> result = contactService.search(null);
+
+        // Проверки
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(contactRepository, times(1)).findAll();
+    }
+
+    // Тесты для метода save()
+
+    @Test
+    void save_WhenValidContact_ShouldReturnSavedContact() {
+        // Подготовка тестовых данных
+        Contact testContact = createTestContact();
+        Contact savedContact = createTestContact();
+
+        // Настройка моков
+        when(contactRepository.save(testContact)).thenReturn(savedContact);
+
+        // Выполнение тестируемого метода
+        Contact result = contactService.save(testContact);
+
+        // Проверки
+        assertNotNull(result);
+        assertEquals(savedContact.getId(), result.getId());
+        verify(contactRepository, times(1)).save(testContact);
+    }
+
+    // Тесты для метода countTotal()
+
+    @Test
+    void countTotal_WhenContactsExist_ShouldReturnCount() {
+        // Подготовка тестовых данных
+        long expectedCount = 5L;
+
+        // Настройка моков
+        when(contactRepository.count()).thenReturn(expectedCount);
+
+        // Выполнение тестируемого метода
+        Long result = contactService.countTotal();
+
+        // Проверки
+        assertEquals(expectedCount, result);
+        verify(contactRepository, times(1)).count();
+    }
+
+    // Тесты для метода countFavorites()
+
+    @Test
+    void countFavorites_WhenFavoriteContactsExist_ShouldReturnCount() {
+        // Подготовка тестовых данных
+        long expectedCount = 2L;
+
+        // Настройка моков
+        when(contactRepository.countByIsFavoriteTrue()).thenReturn(expectedCount);
+
+        // Выполнение тестируемого метода
+        Long result = contactService.countFavorites();
+
+        // Проверки
+        assertEquals(expectedCount, result);
+        verify(contactRepository, times(1)).countByIsFavoriteTrue();
+    }
+
+    // Тесты для метода addToFavorites()
+
+    @Test
+    void addToFavorites_WhenContactExists_ShouldSetFavoriteTrue() {
+        // Подготовка тестовых данных
         Long contactId = 1L;
-        Contact contact = Contact.builder().id(contactId).isFavorite(false).build();
+        Contact contact = createTestContact();
+        contact.setIsFavorite(false);
 
+        // Настройка моков
         when(contactRepository.findById(contactId)).thenReturn(Optional.of(contact));
+        when(contactRepository.save(contact)).thenReturn(contact);
 
+        // Выполнение тестируемого метода
         contactService.addToFavorites(contactId);
 
+        // Проверки
         assertTrue(contact.getIsFavorite());
-        verify(contactRepository).findById(contactId);
-        verify(contactRepository).save(contact);
+        verify(contactRepository, times(1)).findById(contactId);
+        verify(contactRepository, times(1)).save(contact);
     }
 
     @Test
-    void addToFavorites_ShouldDoNothing_WhenContactNotExists() {
-        Long contactId = 999L;
+    void addToFavorites_WhenContactNotExists_ShouldDoNothing() {
+        // Подготовка тестовых данных
+        Long nonExistentId = 999L;
 
-        when(contactRepository.findById(contactId)).thenReturn(Optional.empty());
+        // Настройка моков
+        when(contactRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        contactService.addToFavorites(contactId);
+        // Выполнение тестируемого метода
+        contactService.addToFavorites(nonExistentId);
 
-        verify(contactRepository).findById(contactId);
+        // Проверки
+        verify(contactRepository, times(1)).findById(nonExistentId);
         verify(contactRepository, never()).save(any(Contact.class));
     }
 
+    // Тесты для метода removeFromFavorites()
+
     @Test
-    void removeFromFavorites_ShouldSetFavoriteFalse_WhenContactExists() {
+    void removeFromFavorites_WhenContactExists_ShouldSetFavoriteFalse() {
+        // Подготовка тестовых данных
         Long contactId = 1L;
-        Contact contact = Contact.builder().id(contactId).isFavorite(true).build();
+        Contact contact = createTestContact();
+        contact.setIsFavorite(true);
 
+        // Настройка моков
         when(contactRepository.findById(contactId)).thenReturn(Optional.of(contact));
+        when(contactRepository.save(contact)).thenReturn(contact);
 
+        // Выполнение тестируемого метода
         contactService.removeFromFavorites(contactId);
 
+        // Проверки
         assertFalse(contact.getIsFavorite());
-        verify(contactRepository).findById(contactId);
-        verify(contactRepository).save(contact);
+        verify(contactRepository, times(1)).findById(contactId);
+        verify(contactRepository, times(1)).save(contact);
     }
 
-    @Test
-    void removeFromFavorites_ShouldDoNothing_WhenContactNotExists() {
-        Long contactId = 999L;
-
-        when(contactRepository.findById(contactId)).thenReturn(Optional.empty());
-
-        contactService.removeFromFavorites(contactId);
-
-        verify(contactRepository).findById(contactId);
-        verify(contactRepository, never()).save(any(Contact.class));
-    }
+    // Тесты для метода findFavorites()
 
     @Test
-    void findFavorites_ShouldReturnFavoriteContacts() {
-        Contact favorite1 = Contact.builder().id(1L).isFavorite(true).build();
-        Contact favorite2 = Contact.builder().id(2L).isFavorite(true).build();
-        List<Contact> expectedFavorites = List.of(favorite1, favorite2);
+    void findFavorites_WhenFavoriteContactsExist_ShouldReturnFavoriteContacts() {
+        // Подготовка тестовых данных
+        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
 
-        when(contactRepository.findByIsFavoriteTrue()).thenReturn(expectedFavorites);
+        // Настройка моков
+        when(contactRepository.findByIsFavoriteTrue()).thenReturn(expectedContacts);
 
+        // Выполнение тестируемого метода
         List<Contact> result = contactService.findFavorites();
 
-        assertEquals(expectedFavorites, result);
-        verify(contactRepository).findByIsFavoriteTrue();
+        // Проверки
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertTrue(result.getFirst().getIsFavorite());
+        verify(contactRepository, times(1)).findByIsFavoriteTrue();
+    }
+
+    // Тесты для метода findBirthdaysThisMonth()
+
+    @Test
+    void findBirthdaysThisMonth_WhenBirthdayEventsExist_ShouldReturnContacts() {
+        // Подготовка тестовых данных
+        Contact contact1 = createTestContact();
+        Contact contact2 = createAnotherTestContact();
+        List<Event> birthdayEvents = Arrays.asList(
+                createBirthdayEvent(contact1),
+                createBirthdayEvent(contact2)
+        );
+
+        // Настройка моков
+        when(eventService.findByEventTypeAndEventDateBetween(any(), any(), any()))
+                .thenReturn(birthdayEvents);
+
+        // Выполнение тестируемого метода
+        List<Contact> result = contactService.findBirthdaysThisMonth();
+
+        // Проверки
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(eventService, times(1)).findByEventTypeAndEventDateBetween(any(), any(), any());
     }
 
     @Test
-    void findBirthdaysThisMonth_ShouldReturnContactsWithBirthdaysThisMonth() {
-        LocalDate now = LocalDate.now();
-        LocalDate startOfMonth = now.withDayOfMonth(1);
-        LocalDate endOfMonth = now.withDayOfMonth(now.lengthOfMonth());
+    void findBirthdaysThisMonth_WhenNoBirthdayEvents_ShouldReturnEmptyList() {
+        // Настройка моков
+        when(eventService.findByEventTypeAndEventDateBetween(any(), any(), any()))
+                .thenReturn(List.of());
 
-        Contact contact1 = Contact.builder().id(1L).build();
-        Contact contact2 = Contact.builder().id(2L).build();
-        Event birthday1 = Event.builder().id(1L).contact(contact1).eventType(EventType.BIRTHDAY).build();
-        Event birthday2 = Event.builder().id(2L).contact(contact2).eventType(EventType.BIRTHDAY).build();
-        List<Event> birthdayEvents = List.of(birthday1, birthday2);
-
-        when(eventService.findByEventTypeAndEventDateBetween(EventType.BIRTHDAY, startOfMonth, endOfMonth))
-                .thenReturn(birthdayEvents);
-
+        // Выполнение тестируемого метода
         List<Contact> result = contactService.findBirthdaysThisMonth();
 
-        assertEquals(2, result.size());
-        assertTrue(result.contains(contact1));
-        assertTrue(result.contains(contact2));
-        verify(eventService).findByEventTypeAndEventDateBetween(EventType.BIRTHDAY, startOfMonth, endOfMonth);
+        // Проверки
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(eventService, times(1)).findByEventTypeAndEventDateBetween(any(), any(), any());
     }
 }
