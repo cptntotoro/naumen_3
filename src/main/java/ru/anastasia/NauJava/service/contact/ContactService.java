@@ -141,4 +141,18 @@ public interface ContactService {
      * @return Контакт
      */
     Contact save(Contact contact);
+
+    /**
+     * Получить число всех контактов
+     *
+     * @return Количество контактов
+     */
+    Long countTotal();
+
+    /**
+     * Получить число избранных контактов
+     *
+     * @return Количество избранных контактов
+     */
+    Long countFavorites();
 }

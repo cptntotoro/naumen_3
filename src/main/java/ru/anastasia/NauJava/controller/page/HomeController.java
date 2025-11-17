@@ -1,15 +1,22 @@
 package ru.anastasia.NauJava.controller.page;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.anastasia.NauJava.dto.DashboardStats;
+import ru.anastasia.NauJava.service.stats.StatisticsService;
 
 import java.util.Collections;
 
 @Controller
+@RequiredArgsConstructor
 public class HomeController {
+
+    /**
+     * Сервис статистики дашбордов
+     */
+    private final StatisticsService statisticsService;
 
     @GetMapping("/")
     public String home(Model model, Authentication authentication) {
@@ -19,14 +26,7 @@ public class HomeController {
             model.addAttribute("username", authentication.getName());
         }
 
-        DashboardStats stats = DashboardStats.builder()
-                .contactsCount(0L)
-                .companiesCount(0L)
-                .favoritesCount(0L)
-                .upcomingBirthdays(0L)
-                .build();
-
-        model.addAttribute("stats", stats);
+        model.addAttribute("stats", statisticsService.getUserDashboardStats());
         model.addAttribute("recentActivities", Collections.emptyList());
 
         return "index";

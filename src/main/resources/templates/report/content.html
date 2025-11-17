@@ -1,0 +1,85 @@
+<div class="report-content">
+
+    <!-- Заголовок -->
+    <div class="text-center mb-6">
+        <h1 class="h3 fw-bold text-gradient">Статистика приложения</h1>
+        <p class="text-muted small mt-2"
+           th:text="${#temporals.format(generationTime, 'dd MMMM yyyy, HH:mm')}">
+            11 ноября 2025, 22:19
+        </p>
+    </div>
+
+    <!-- Статистика — карточки -->
+    <div class="row g-4 mb-6">
+        <div class="col-md-6">
+            <div class="stats-card p-5 text-center border-left-primary">
+                <div class="stats-card__icon mb-3">
+                    <i class="fas fa-users fa-2x text-white opacity-75"></i>
+                </div>
+                <div class="stats-card__number display-5 fw-bold text-white" th:text="${userCount}">42</div>
+                <div class="stats-card__label text-white opacity-75 mt-2">Пользователей</div>
+                <small class="text-white opacity-50">Время: <strong th:text="${timeUsers + ' мс'}"></strong></small>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="stats-card p-5 text-center border-left-accent">
+                <div class="stats-card__icon mb-3">
+                    <i class="fas fa-address-book fa-2x text-white opacity-75"></i>
+                </div>
+                <div class="stats-card__number display-5 fw-bold text-white" th:text="${contacts.size()}">118</div>
+                <div class="stats-card__label text-white opacity-75 mt-2">Контактов</div>
+                <small class="text-white opacity-50">Время: <strong th:text="${timeContacts + ' мс'}"></strong></small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица -->
+    <div class="card border-0 shadow-sm mb-5">
+        <div class="card-header bg-white border-bottom-0">
+            <h2 class="h5 fw-bold mb-0 d-flex align-items-center">
+                <i class="fas fa-list me-2 text-primary"></i>
+                Список контактов
+            </h2>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="width: 100%;">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="text-center ps-4 text-gray-700 fw-semibold" style="width: 15%;">ID</th>
+                        <th class="text-center text-gray-700 fw-semibold" style="width: 35%;">Имя</th>
+                        <th class="text-center text-gray-700 fw-semibold" style="width: 35%;">Фамилия</th>
+                        <th class="text-center text-gray-700 fw-semibold" style="width: 15%;">Избранное</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c : ${contacts}" class="animate-fadeIn">
+                        <td class="text-center ps-4 text-muted small font-monospace" th:text="${c.id}">1</td>
+                        <td class="text-center fw-medium text-gray-900" th:text="${c.firstName}">Иван</td>
+                        <td class="text-center text-gray-800" th:text="${c.lastName}">Иванов</td>
+                        <td class="text-center">
+                            <i th:if="${c.isFavorite}"
+                               class="fas fa-star text-warning"
+                               title="Избранный контакт"></i>
+                            <i th:unless="${c.isFavorite}"
+                               class="far fa-star text-gray-400"
+                               title="Не избранный"></i>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Итог -->
+    <div class="text-center mt-6 p-4 bg-gradient-primary text-white rounded shadow-sm">
+        <p class="mb-1 opacity-90">
+            <strong>Общее время формирования отчёта</strong>
+        </p>
+        <p class="display-6 fw-bold mb-0" th:text="${totalTime + ' мс'}">
+            112 мс
+        </p>
+    </div>
+</div>

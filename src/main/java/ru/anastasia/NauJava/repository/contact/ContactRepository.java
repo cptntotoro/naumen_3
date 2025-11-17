@@ -108,4 +108,11 @@ public interface ContactRepository extends CrudRepository<Contact, Long>, Contac
      */
     @Query("SELECT c FROM Contact c JOIN c.companies cc JOIN cc.company comp WHERE comp.name = :companyName")
     List<Contact> findByCompanyName(@Param("companyName") String companyName);
+
+    /**
+     * Получить количество избранных контактов
+     *
+     * @return Количество избранных контактов
+     */
+    Long countByIsFavoriteTrue();
 }

@@ -97,6 +97,14 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findByEventTypeAndEventDateBetween(EventType.BIRTHDAY, start, end);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Long countUpcomingBirthdays(int daysAhead) {
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusDays(daysAhead);
+        return eventRepository.countByEventTypeAndEventDateBetween(EventType.BIRTHDAY, start, end);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<Event> findByEventTypeAndEventDateBetween(EventType type, LocalDate start, LocalDate end) {

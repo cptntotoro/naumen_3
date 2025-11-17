@@ -216,7 +216,7 @@
                     <div class="admin-card__icon admin-card__icon--primary">
                         <i class="fas fa-users"></i>
                     </div>
-                    <div class="admin-card__number">1,247</div>
+                    <div class="admin-card__number" th:text="${stats.usersCount}">0</div>
                     <div class="admin-card__label">Всего пользователей</div>
                 </div>
 
@@ -224,7 +224,7 @@
                     <div class="admin-card__icon admin-card__icon--success">
                         <i class="fas fa-address-book"></i>
                     </div>
-                    <div class="admin-card__number">5,892</div>
+                    <div class="admin-card__number" th:text="${stats.contactsCount}">0</div>
                     <div class="admin-card__label">Контактов в системе</div>
                 </div>
 
@@ -232,7 +232,7 @@
                     <div class="admin-card__icon admin-card__icon--warning">
                         <i class="fas fa-building"></i>
                     </div>
-                    <div class="admin-card__number">324</div>
+                    <div class="admin-card__number" th:text="${stats.companiesCount}">0</div>
                     <div class="admin-card__label">Компаний</div>
                 </div>
 
@@ -248,6 +248,16 @@
                     <h3 class="action-card__title">API Документация</h3>
                     <p class="action-card__description">
                         Полный доступ к Swagger UI для тестирования и документации API
+                    </p>
+                </a>
+
+                <a th:href="@{/reports}" class="action-card">
+                    <div class="action-card__icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="action-card__title">Отчет по статистике</h3>
+                    <p class="action-card__description">
+                        Сформировать отчёт о пользователях и контактах
                     </p>
                 </a>
             </div>

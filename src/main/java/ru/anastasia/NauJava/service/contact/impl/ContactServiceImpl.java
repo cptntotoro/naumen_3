@@ -132,6 +132,16 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
+    public Long countTotal() {
+        return contactRepository.count();
+    }
+
+    @Override
+    public Long countFavorites() {
+        return contactRepository.countByIsFavoriteTrue();
+    }
+
+    @Override
     public void addToFavorites(Long contactId) {
         contactRepository.findById(contactId)
                 .ifPresent(contact -> {

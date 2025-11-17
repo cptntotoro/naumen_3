@@ -29,4 +29,11 @@ public interface UserService {
      * @return Да / Нет
      */
     boolean userExists(String username);
+
+    /**
+     * Получить число пользователей
+     *
+     * @return Число пользователей
+     */
+    Long countTotal();
 }
