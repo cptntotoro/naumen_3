@@ -35,25 +35,35 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public UserDashboardStats getUserDashboardStats() {
+        Long contacts = contactService.countTotal();
+        Long companies = companyService.countTotal();
+        Long favorites = contactService.countFavorites();
+        Long birthdays = eventService.countUpcomingBirthdays(14);
+
         return UserDashboardStats.builder()
-                .contactsCount(contactService.countTotal())
-                .companiesCount(companyService.countTotal())
-                .favoritesCount(contactService.countFavorites())
-                .upcomingBirthdays(getUpcomingBirthdaysCount(14))
+                .contactsCount(contacts != null ? contacts : 0L)
+                .companiesCount(companies != null ? companies : 0L)
+                .favoritesCount(favorites != null ? favorites : 0L)
+                .upcomingBirthdays(birthdays != null ? birthdays : 0L)
                 .build();
     }
 
     @Override
     public AdminDashboardStats getAdminDashboardStats() {
+        Long users = userService.countTotal();
+        Long contacts = contactService.countTotal();
+        Long companies = companyService.countTotal();
+
         return AdminDashboardStats.builder()
-                .usersCount(userService.countTotal())
-                .contactsCount(contactService.countTotal())
-                .companiesCount(companyService.countTotal())
+                .usersCount(users != null ? users : 0L)
+                .contactsCount(contacts != null ? contacts : 0L)
+                .companiesCount(companies != null ? companies : 0L)
                 .build();
     }
 
     @Override
-    public Long getUpcomingBirthdaysCount(int daysAhead) {
-        return eventService.countUpcomingBirthdays(daysAhead);
+    public long getUpcomingBirthdaysCount(int daysAhead) {
+        Long result = eventService.countUpcomingBirthdays(daysAhead);
+        return result != null ? result : 0L;
     }
 }

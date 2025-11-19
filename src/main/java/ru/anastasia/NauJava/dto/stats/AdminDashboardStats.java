@@ -16,9 +16,5 @@ public class AdminDashboardStats extends BaseDashboardStats {
     /**
      * Число пользователей
      */
-    private Long usersCount;
-
-    public Long getUsersCount() {
-        return usersCount != null ? usersCount : 0L;
-    }
+    private long usersCount;
 }

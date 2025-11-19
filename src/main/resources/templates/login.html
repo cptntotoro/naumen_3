@@ -107,8 +107,8 @@
 
         <div th:if="${param.error}" class="alert alert-danger">
             <i class="fas fa-exclamation-circle"></i>
-            <span th:if="${param.accessDenied}">Доступ запрещен. Требуется авторизация.</span>
-            <span th:if="${!param.accessDenied}">Неверное имя пользователя или пароль.</span>
+            <span th:if="${param.accessDenied != null}">Доступ запрещен. Требуется авторизация.</span>
+            <span th:if="${param.accessDenied == null}">Неверное имя пользователя или пароль.</span>
         </div>
 
         <!-- Форма логина -->

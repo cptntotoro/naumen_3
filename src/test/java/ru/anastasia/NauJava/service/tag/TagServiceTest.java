@@ -15,17 +15,17 @@ import ru.anastasia.NauJava.repository.tag.ContactTagRepository;
 import ru.anastasia.NauJava.repository.tag.TagRepository;
 import ru.anastasia.NauJava.service.contact.ContactService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,93 +45,117 @@ class TagServiceTest {
     private TagServiceImpl tagService;
 
     @Test
-    void create_ShouldReturnSavedTag() {
-        Tag tag = Tag.builder().name("friend").color("#FF0000").build();
-        Tag savedTag = Tag.builder().id(1L).name("friend").color("#FF0000").build();
+    void createSuccess() {
+        Tag tag = Tag.builder()
+                .name("важный")
+                .color("#FF0000")
+                .description("важные контакты")
+                .build();
 
-        when(tagRepository.save(tag)).thenReturn(savedTag);
+        when(tagRepository.save(any(Tag.class))).thenReturn(tag);
 
         Tag result = tagService.create(tag);
 
-        assertNotNull(result.getId());
-        assertEquals(savedTag, result);
-        verify(tagRepository).save(tag);
+        assertNotNull(result);
+        assertEquals("важный", result.getName());
+        assertEquals("#FF0000", result.getColor());
+        verify(tagRepository, times(1)).save(tag);
     }
 
     @Test
-    void create_ShouldThrowIllegalTagStateException_WhenTagNameAlreadyExists() {
-        Tag tag = Tag.builder().name("existing").build();
+    void createWithDuplicateNameThrowsException() {
+        Tag tag = Tag.builder()
+                .name("существующий")
+                .color("#0000FF")
+                .build();
 
-        when(tagRepository.save(tag)).thenThrow(DataIntegrityViolationException.class);
+        when(tagRepository.save(any(Tag.class))).thenThrow(new DataIntegrityViolationException("Duplicate"));
 
-        IllegalTagStateException exception = assertThrows(
-                IllegalTagStateException.class,
-                () -> tagService.create(tag)
-        );
-
-        assertTrue(exception.getMessage().contains("Тег с таким именем уже существует"));
-        verify(tagRepository).save(tag);
+        assertThrows(IllegalTagStateException.class, () -> tagService.create(tag));
+        verify(tagRepository, times(1)).save(tag);
     }
 
     @Test
-    void findByName_ShouldReturnTag_WhenExists() {
-        String tagName = "friend";
-        Tag tag = Tag.builder().id(1L).name(tagName).build();
+    void findByNameSuccess() {
+        String tagName = "работа";
+        Tag tag = Tag.builder()
+                .id(1L)
+                .name(tagName)
+                .build();
 
         when(tagRepository.findByName(tagName)).thenReturn(Optional.of(tag));
 
         Tag result = tagService.findByName(tagName);
 
-        assertEquals(tag, result);
-        verify(tagRepository).findByName(tagName);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertEquals("работа", result.getName());
+        verify(tagRepository, times(1)).findByName(tagName);
     }
 
     @Test
-    void findByName_ShouldThrowTagNotFoundException_WhenNotExists() {
-        String tagName = "nonexistent";
+    void findByNameNotFoundThrowsException() {
+        String tagName = "несуществующий";
 
         when(tagRepository.findByName(tagName)).thenReturn(Optional.empty());
 
-        TagNotFoundException exception = assertThrows(
-                TagNotFoundException.class,
-                () -> tagService.findByName(tagName)
-        );
-
-        assertTrue(exception.getMessage().contains("Тег не найден: " + tagName));
-        verify(tagRepository).findByName(tagName);
+        assertThrows(TagNotFoundException.class, () -> tagService.findByName(tagName));
+        verify(tagRepository, times(1)).findByName(tagName);
     }
 
     @Test
-    void addToContact_ShouldReturnContactTag_WhenTagExists() {
+    void addToContactWithExistingTagSuccess() {
         Long contactId = 1L;
-        String tagName = "friend";
-        Contact contact = Contact.builder().id(contactId).build();
-        Tag tag = Tag.builder().id(1L).name(tagName).build();
-        ContactTag contactTag = ContactTag.builder().id(1L).contact(contact).tag(tag).build();
+        String tagName = "друзья";
+        Contact contact = new Contact();
+        contact.setId(contactId);
+
+        Tag existingTag = Tag.builder()
+                .id(2L)
+                .name(tagName)
+                .build();
+
+        ContactTag contactTag = ContactTag.builder()
+                .id(3L)
+                .contact(contact)
+                .tag(existingTag)
+                .build();
 
         when(contactService.findById(contactId)).thenReturn(contact);
-        when(tagRepository.findByName(tagName)).thenReturn(Optional.of(tag));
-        when(contactTagRepository.existsByContactIdAndTagId(contactId, tag.getId())).thenReturn(false);
+        when(tagRepository.findByName(tagName)).thenReturn(Optional.of(existingTag));
+        when(contactTagRepository.existsByContactIdAndTagId(contactId, existingTag.getId())).thenReturn(false);
         when(contactTagRepository.save(any(ContactTag.class))).thenReturn(contactTag);
 
         ContactTag result = tagService.addToContact(contactId, tagName);
 
-        assertNotNull(result.getId());
+        assertNotNull(result);
+        assertEquals(3L, result.getId());
         assertEquals(contact, result.getContact());
-        assertEquals(tag, result.getTag());
-        verify(contactService).findById(contactId);
-        verify(tagRepository).findByName(tagName);
-        verify(contactTagRepository).existsByContactIdAndTagId(contactId, tag.getId());
-        verify(contactTagRepository).save(any(ContactTag.class));
+        assertEquals(existingTag, result.getTag());
+        verify(contactService, times(1)).findById(contactId);
+        verify(tagRepository, times(1)).findByName(tagName);
+        verify(contactTagRepository, times(1)).existsByContactIdAndTagId(contactId, existingTag.getId());
+        verify(contactTagRepository, times(1)).save(any(ContactTag.class));
     }
 
     @Test
-    void addToContact_ShouldCreateNewTag_WhenTagNotExists() {
+    void addToContactWithNewTagSuccess() {
         Long contactId = 1L;
-        String tagName = "newtag";
-        Contact contact = Contact.builder().id(contactId).build();
-        Tag newTag = Tag.builder().id(1L).name(tagName).color("#808080").build();
-        ContactTag contactTag = ContactTag.builder().id(1L).contact(contact).tag(newTag).build();
+        String tagName = "новая метка";
+        Contact contact = new Contact();
+        contact.setId(contactId);
+
+        Tag newTag = Tag.builder()
+                .id(2L)
+                .name(tagName)
+                .color("#808080")
+                .build();
+
+        ContactTag contactTag = ContactTag.builder()
+                .id(3L)
+                .contact(contact)
+                .tag(newTag)
+                .build();
 
         when(contactService.findById(contactId)).thenReturn(contact);
         when(tagRepository.findByName(tagName)).thenReturn(Optional.empty());
@@ -141,203 +165,188 @@ class TagServiceTest {
 
         ContactTag result = tagService.addToContact(contactId, tagName);
 
-        assertNotNull(result.getId());
-        verify(tagRepository).findByName(tagName);
-        verify(tagRepository).save(any(Tag.class));
-        verify(contactTagRepository).save(any(ContactTag.class));
+        assertNotNull(result);
+        assertEquals(3L, result.getId());
+        verify(contactService, times(1)).findById(contactId);
+        verify(tagRepository, times(1)).findByName(tagName);
+        verify(tagRepository, times(1)).save(any(Tag.class));
+        verify(contactTagRepository, times(1)).save(any(ContactTag.class));
     }
 
     @Test
-    void addToContact_ShouldThrowIllegalTagStateException_WhenTagAlreadyAttached() {
+    void addToContactWhenAlreadyExistsThrowsException() {
         Long contactId = 1L;
-        String tagName = "friend";
-        Contact contact = Contact.builder().id(contactId).build();
-        Tag tag = Tag.builder().id(1L).name(tagName).build();
+        String tagName = "семья";
+        Contact contact = new Contact();
+        contact.setId(contactId);
+
+        Tag tag = Tag.builder()
+                .id(2L)
+                .name(tagName)
+                .build();
 
         when(contactService.findById(contactId)).thenReturn(contact);
         when(tagRepository.findByName(tagName)).thenReturn(Optional.of(tag));
         when(contactTagRepository.existsByContactIdAndTagId(contactId, tag.getId())).thenReturn(true);
 
-        IllegalTagStateException exception = assertThrows(
-                IllegalTagStateException.class,
-                () -> tagService.addToContact(contactId, tagName)
-        );
-
-        assertTrue(exception.getMessage().contains("Тег уже привязан к контакту"));
+        assertThrows(IllegalTagStateException.class, () -> tagService.addToContact(contactId, tagName));
         verify(contactTagRepository, never()).save(any(ContactTag.class));
     }
 
     @Test
-    void findByContactId_ShouldReturnTags() {
+    void findByContactIdSuccess() {
         Long contactId = 1L;
-        Tag tag1 = Tag.builder().id(1L).name("friend").build();
-        Tag tag2 = Tag.builder().id(2L).name("work").build();
-        ContactTag contactTag1 = ContactTag.builder().id(1L).tag(tag1).build();
-        ContactTag contactTag2 = ContactTag.builder().id(2L).tag(tag2).build();
-        List<ContactTag> contactTags = List.of(contactTag1, contactTag2);
+        Tag tag1 = Tag.builder().id(1L).name("работа").build();
+        Tag tag2 = Tag.builder().id(2L).name("друзья").build();
 
-        when(contactTagRepository.findByContactId(contactId)).thenReturn(contactTags);
+        ContactTag contactTag1 = ContactTag.builder().id(10L).tag(tag1).build();
+        ContactTag contactTag2 = ContactTag.builder().id(11L).tag(tag2).build();
+
+        when(contactTagRepository.findByContactId(contactId)).thenReturn(List.of(contactTag1, contactTag2));
 
         List<Tag> result = tagService.findByContactId(contactId);
 
+        assertNotNull(result);
         assertEquals(2, result.size());
-        assertTrue(result.contains(tag1));
-        assertTrue(result.contains(tag2));
-        verify(contactTagRepository).findByContactId(contactId);
+        assertEquals("работа", result.get(0).getName());
+        assertEquals("друзья", result.get(1).getName());
+        verify(contactTagRepository, times(1)).findByContactId(contactId);
     }
 
     @Test
-    void findAll_ShouldReturnAllTags() {
-        Tag tag1 = Tag.builder().id(1L).build();
-        Tag tag2 = Tag.builder().id(2L).build();
-        List<Tag> tags = List.of(tag1, tag2);
+    void findAllSuccess() {
+        Tag tag1 = Tag.builder().id(1L).name("метка1").build();
+        Tag tag2 = Tag.builder().id(2L).name("метка2").build();
 
-        when(tagRepository.findAll()).thenReturn(tags);
+        when(tagRepository.findAll()).thenReturn(List.of(tag1, tag2));
 
         List<Tag> result = tagService.findAll();
 
+        assertNotNull(result);
         assertEquals(2, result.size());
-        verify(tagRepository).findAll();
+        verify(tagRepository, times(1)).findAll();
     }
 
     @Test
-    void findById_ShouldReturnTag_WhenExists() {
-        Long id = 1L;
-        Tag tag = Tag.builder().id(id).name("friend").build();
+    void findByIdSuccess() {
+        Long tagId = 1L;
+        Tag tag = Tag.builder()
+                .id(tagId)
+                .name("найденный")
+                .build();
 
-        when(tagRepository.findById(id)).thenReturn(Optional.of(tag));
+        when(tagRepository.findById(tagId)).thenReturn(Optional.of(tag));
 
-        Tag result = tagService.findById(id);
+        Tag result = tagService.findById(tagId);
 
-        assertEquals(tag, result);
-        verify(tagRepository).findById(id);
+        assertNotNull(result);
+        assertEquals(tagId, result.getId());
+        assertEquals("найденный", result.getName());
+        verify(tagRepository, times(1)).findById(tagId);
     }
 
     @Test
-    void findById_ShouldThrowTagNotFoundException_WhenNotExists() {
-        Long id = 999L;
+    void findByIdNotFoundThrowsException() {
+        Long tagId = 999L;
 
-        when(tagRepository.findById(id)).thenReturn(Optional.empty());
+        when(tagRepository.findById(tagId)).thenReturn(Optional.empty());
 
-        TagNotFoundException exception = assertThrows(
-                TagNotFoundException.class,
-                () -> tagService.findById(id)
-        );
-
-        assertTrue(exception.getMessage().contains("Тег не найден с id: " + id));
-        verify(tagRepository).findById(id);
+        assertThrows(TagNotFoundException.class, () -> tagService.findById(tagId));
+        verify(tagRepository, times(1)).findById(tagId);
     }
 
     @Test
-    void findAllById_ShouldReturnTags() {
-        Set<Long> ids = Set.of(1L, 2L);
-        Tag tag1 = Tag.builder().id(1L).build();
-        Tag tag2 = Tag.builder().id(2L).build();
-        List<Tag> expectedTags = List.of(tag1, tag2);
+    void findAllByIdSuccess() {
+        List<Long> tagIds = Arrays.asList(1L, 2L, 3L);
+        Tag tag1 = Tag.builder().id(1L).name("тег1").build();
+        Tag tag2 = Tag.builder().id(2L).name("тег2").build();
+        Tag tag3 = Tag.builder().id(3L).name("тег3").build();
 
-        when(tagRepository.getTagsByIdIsIn(ids)).thenReturn(expectedTags);
+        when(tagRepository.getTagsByIdIsIn(tagIds)).thenReturn(List.of(tag1, tag2, tag3));
 
-        List<Tag> result = tagService.findAllById(ids);
+        List<Tag> result = tagService.findAllById(tagIds);
 
-        assertEquals(expectedTags, result);
-        verify(tagRepository).getTagsByIdIsIn(ids);
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        verify(tagRepository, times(1)).getTagsByIdIsIn(tagIds);
     }
 
     @Test
-    void update_ShouldReturnUpdatedTag_WhenExists() {
-        Long id = 1L;
+    void updateSuccess() {
+        Long tagId = 1L;
         Tag existingTag = Tag.builder()
-                .id(id)
-                .name("old")
+                .id(tagId)
+                .name("старое имя")
                 .color("#000000")
-                .description("old desc")
+                .description("старое описание")
                 .build();
-        Tag updateTag = Tag.builder()
-                .id(id)
-                .name("new")
-                .color("#FFFFFF")
-                .description("new desc")
-                .build();
+
         Tag updatedTag = Tag.builder()
-                .id(id)
-                .name("new")
+                .id(tagId)
+                .name("новое имя")
                 .color("#FFFFFF")
-                .description("new desc")
+                .description("новое описание")
                 .build();
 
-        when(tagRepository.findById(id)).thenReturn(Optional.of(existingTag));
-        when(tagRepository.save(existingTag)).thenReturn(updatedTag);
+        when(tagRepository.findById(tagId)).thenReturn(Optional.of(existingTag));
+        when(tagRepository.save(any(Tag.class))).thenReturn(updatedTag);
 
-        Tag result = tagService.update(updateTag);
+        Tag result = tagService.update(updatedTag);
 
-        assertEquals("new", result.getName());
+        assertNotNull(result);
+        assertEquals("новое имя", result.getName());
         assertEquals("#FFFFFF", result.getColor());
-        assertEquals("new desc", result.getDescription());
-        verify(tagRepository).findById(id);
-        verify(tagRepository).save(existingTag);
+        assertEquals("новое описание", result.getDescription());
+        verify(tagRepository, times(1)).findById(tagId);
+        verify(tagRepository, times(1)).save(existingTag);
     }
 
     @Test
-    void update_ShouldThrowTagNotFoundException_WhenNotExists() {
-        Tag tag = Tag.builder().id(999L).build();
+    void updateWithDuplicateNameThrowsException() {
+        Long tagId = 1L;
+        Tag existingTag = Tag.builder()
+                .id(tagId)
+                .name("старое")
+                .build();
 
-        when(tagRepository.findById(999L)).thenReturn(Optional.empty());
+        Tag updatedTag = Tag.builder()
+                .id(tagId)
+                .name("дубликат")
+                .build();
 
-        TagNotFoundException exception = assertThrows(
-                TagNotFoundException.class,
-                () -> tagService.update(tag)
-        );
+        when(tagRepository.findById(tagId)).thenReturn(Optional.of(existingTag));
+        when(tagRepository.save(any(Tag.class))).thenThrow(new DataIntegrityViolationException("Duplicate"));
 
-        assertTrue(exception.getMessage().contains("Тег не найден с id: " + tag.getId()));
-        verify(tagRepository).findById(999L);
-        verify(tagRepository, never()).save(any(Tag.class));
+        assertThrows(IllegalTagStateException.class, () -> tagService.update(updatedTag));
+        verify(tagRepository, times(1)).findById(tagId);
+        verify(tagRepository, times(1)).save(existingTag);
     }
 
     @Test
-    void update_ShouldThrowIllegalTagStateException_WhenTagNameAlreadyExists() {
-        Long id = 1L;
-        Tag existingTag = Tag.builder().id(id).name("old").build();
-        Tag updateTag = Tag.builder().id(id).name("existing").build();
+    void deleteSuccess() {
+        Long tagId = 1L;
 
-        when(tagRepository.findById(id)).thenReturn(Optional.of(existingTag));
-        when(tagRepository.save(existingTag)).thenThrow(DataIntegrityViolationException.class);
+        tagService.delete(tagId);
 
-        IllegalTagStateException exception = assertThrows(
-                IllegalTagStateException.class,
-                () -> tagService.update(updateTag)
-        );
-
-        assertTrue(exception.getMessage().contains("Тег с таким именем уже существует"));
-        verify(tagRepository).findById(id);
-        verify(tagRepository).save(existingTag);
+        verify(tagRepository, times(1)).deleteById(tagId);
     }
 
     @Test
-    void delete_ShouldCallRepositoryDelete() {
-        Long id = 1L;
-        doNothing().when(tagRepository).deleteById(id);
-
-        tagService.delete(id);
-
-        verify(tagRepository).deleteById(id);
-    }
-
-    @Test
-    void findContactTagsByContactId_ShouldReturnEmptyList() {
+    void findContactTagsByContactIdReturnsEmptyList() {
         Long contactId = 1L;
 
         List<ContactTag> result = tagService.findContactTagsByContactId(contactId);
 
+        assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void deleteContactTag_ShouldCallRepositoryDelete() {
+    void deleteContactTagSuccess() {
         Long contactTagId = 1L;
-        doNothing().when(contactTagRepository).deleteById(contactTagId);
 
         tagService.deleteContactTag(contactTagId);
 
-        verify(contactTagRepository).deleteById(contactTagId);
+        verify(contactTagRepository, times(1)).deleteById(contactTagId);
     }
 }

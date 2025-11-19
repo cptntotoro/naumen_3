@@ -28,5 +28,5 @@ public interface StatisticsService {
      * @param daysAhead Количество дней для поиска дней рождения
      * @return Количество дней рождения
      */
-    Long getUpcomingBirthdaysCount(int daysAhead);
+    long getUpcomingBirthdaysCount(int daysAhead);
 }
