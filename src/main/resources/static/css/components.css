@@ -1,3 +1,8 @@
+.section-header {
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: var(--space-2);
+}
+
 .contact-card {
     border: 1px solid var(--gray-200);
     border-radius: var(--radius-xl);
@@ -423,7 +428,6 @@
     font-weight: 500;
     border-radius: var(--radius);
     line-height: 1;
-    border: 1px solid var(--primary);
 }
 
 .badge-primary {
@@ -444,6 +448,11 @@
 .badge-info {
     background: var(--info);
     color: var(--white);
+}
+
+.current-badge-icon {
+    font-size: 0.9em;
+    cursor: help;
 }
 
 /* ===== EMPTY STATE COMPONENT ===== */

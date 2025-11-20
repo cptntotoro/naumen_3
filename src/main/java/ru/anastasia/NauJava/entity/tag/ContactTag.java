@@ -48,6 +48,7 @@ public class ContactTag {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
+    @EqualsAndHashCode.Include
     private Contact contact;
 
     /**
@@ -55,6 +56,7 @@ public class ContactTag {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id", nullable = false)
+    @EqualsAndHashCode.Include
     private Tag tag;
 
     /**

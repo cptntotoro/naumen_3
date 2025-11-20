@@ -1,0 +1,22 @@
+.companies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.badge-counter {
+    color: var(--white);
+}
+
+.company-card-footer {
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
+    padding-top: var(--space-3);
+}
+
+@media (max-width: 768px) {
+    .companies-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}

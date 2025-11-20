@@ -47,7 +47,6 @@ class ContactServiceTest {
     @InjectMocks
     private ContactServiceImpl contactService;
 
-    // Тестовые данные
     private Contact createTestContact() {
         return Contact.builder()
                 .id(1L)
