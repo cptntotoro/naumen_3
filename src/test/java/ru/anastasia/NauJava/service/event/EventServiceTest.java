@@ -47,7 +47,6 @@ class EventServiceTest {
     @InjectMocks
     private EventServiceImpl eventService;
 
-    // Тестовые данные
     private Contact createTestContact() {
         return Contact.builder()
                 .id(1L)
@@ -351,10 +350,10 @@ class EventServiceTest {
         Map<LocalDate, List<Event>> result = eventService.getUpcomingEvents(daysAhead);
 
         assertNotNull(result);
-        assertEquals(2, result.size()); // Две разные даты
+        assertEquals(2, result.size());
         assertTrue(result.containsKey(today.plusDays(1)));
         assertTrue(result.containsKey(today.plusDays(3)));
-        assertEquals(2, result.get(today.plusDays(1)).size()); // Два события в один день
+        assertEquals(2, result.get(today.plusDays(1)).size());
         verify(eventRepository, times(1)).findByEventDateBetween(today, today.plusDays(daysAhead));
     }
 

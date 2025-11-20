@@ -10,12 +10,7 @@
     <div th:replace="fragments/styles :: page-styles('forms')"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header(
-    'Редактирование контакта',
-    null,
-    null,
-    'contacts'
-)"></div>
+<div th:replace="fragments/header :: header('Редактирование контакта', null, null, 'contacts')"></div>
 
 <div class="container">
     <!-- Форма для редактирования -->
@@ -32,8 +27,8 @@
                 </h3>
             </div>
             <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
+                <div class="contact-form-grid">
+                    <div class="contact-form-column">
                         <label for="firstName" class="form-label fw-semibold">
                             Имя <span class="text-danger">*</span>
                         </label>
@@ -42,7 +37,7 @@
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}"
                              th:errors="*{firstName}"></div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="contact-form-column">
                         <label for="lastName" class="form-label fw-semibold">
                             Фамилия <span class="text-danger">*</span>
                         </label>
@@ -51,24 +46,27 @@
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}"
                              th:errors="*{lastName}"></div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="contact-form-column">
                         <label for="displayName" class="form-label fw-semibold">Отображаемое имя</label>
                         <input type="text" class="form-control" id="displayName"
                                th:field="*{displayName}" placeholder="Имя для отображения">
                     </div>
-                    <div class="col-md-6">
+                    <div class="contact-form-column">
                         <label for="avatarUrl" class="form-label fw-semibold">URL аватара</label>
                         <div class="input-group">
                             <input type="url" class="form-control" id="avatarUrl"
                                    th:field="*{avatarUrl}" placeholder="https://example.com/avatar.jpg">
                         </div>
                     </div>
-                    <div class="col-12">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="isFavorite"
-                                   th:field="*{isFavorite}" role="switch">
-                            <label class="form-check-label fw-semibold" for="isFavorite">
-                                <i class="fas fa-star me-1 text-warning"></i>Добавить в избранное
+                    <div class="contact-form-full-width">
+                        <div class="favorite-toggle">
+                            <input type="checkbox" id="isFavorite"
+                                   th:field="*{isFavorite}"
+                                   class="favorite-checkbox" hidden
+                                   onchange="updateFavoriteText(this)">
+                            <label for="isFavorite" class="favorite-label">
+                                <i class="favorite-icon far fa-star"></i>
+                                <span class="favorite-text">Добавить в избранное</span>
                             </label>
                         </div>
                     </div>
@@ -90,7 +88,7 @@
                 <div id="contactDetailsContainer" class="dynamic-fields-container">
                     <div th:each="detail, stat : *{contactDetails}" class="dynamic-field">
                         <input type="hidden" th:field="*{contactDetails[__${stat.index}__].id}" />
-                        <div class="row g-3">
+                        <div class="contact-detail-grid">
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Тип</label>
                                 <select class="form-select" th:field="*{contactDetails[__${stat.index}__].detailType}" required>
@@ -120,10 +118,16 @@
                                     Значение обязательно
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label fw-semibold">Основной</label>
-                                <div class="form-check form-switch mt-2">
-                                    <input class="form-check-input" type="checkbox" th:field="*{contactDetails[__${stat.index}__].isPrimary}">
+                            <div class="contact-form-full-width">
+                                <div class="primary-toggle">
+                                    <input type="checkbox" name="contactDetailCreateDtos[INDEX].isPrimary"
+                                           th:field="*{contactDetails[__${stat.index}__].isPrimary}"
+                                           class="primary-checkbox" hidden
+                                           onchange="updatePrimaryText(this)">
+                                    <label class="primary-label" onclick="togglePrimaryCheckbox(this)">
+                                        <i class="primary-icon far fa-circle"></i>
+                                        <span class="primary-text">Сделать основным</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -149,7 +153,7 @@
                 <div id="socialProfilesContainer" class="dynamic-fields-container">
                     <div th:each="profile, stat : *{socialProfiles}" class="dynamic-field">
                         <input type="hidden" th:field="*{socialProfiles[__${stat.index}__].id}" />
-                        <div class="row g-3">
+                        <div class="contact-detail-grid">
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Платформа</label>
                                 <select class="form-select" th:field="*{socialProfiles[__${stat.index}__].platform}" required>
@@ -200,7 +204,7 @@
                 <div id="companyJobTitleContainer" class="dynamic-fields-container">
                     <div th:each="company, stat : *{companies}" class="dynamic-field">
                         <input type="hidden" th:field="*{companies[__${stat.index}__].id}" />
-                        <div class="row g-3">
+                        <div class="contact-detail-grid">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Компания</label>
                                 <select class="form-select" th:field="*{companies[__${stat.index}__].companyId}">
@@ -240,7 +244,7 @@
                 <div id="eventsContainer" class="dynamic-fields-container">
                     <div th:each="event, stat : *{events}" class="dynamic-field">
                         <input type="hidden" th:field="*{events[__${stat.index}__].id}" />
-                        <div class="row g-3">
+                        <div class="contact-detail-grid">
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Тип события</label>
                                 <select class="form-select" th:field="*{events[__${stat.index}__].eventType}" required>
@@ -297,7 +301,7 @@
                 <div id="notesContainer" class="dynamic-fields-container">
                     <div th:each="note, stat : *{notes}" class="dynamic-field">
                         <input type="hidden" th:field="*{notes[__${stat.index}__].id}" />
-                        <div class="row g-3">
+                        <div class="contact-detail-grid">
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Содержимое <span class="text-danger">*</span></label>
                                 <textarea class="form-control" th:field="*{notes[__${stat.index}__].content}" required></textarea>
@@ -351,8 +355,8 @@
 
 <!-- Hidden Templates for Adding New -->
 <div id="contactDetailTemplate" class="dynamic-field" style="display: none;">
-    <div class="row g-3">
-        <div class="col-md-3">
+    <div class="contact-detail-grid">
+        <div class="contact-form-column">
             <label class="form-label fw-semibold">Тип</label>
             <select class="form-select" name="contactDetails[INDEX].detailType" required>
                 <option value="" disabled selected>Выберите тип</option>
@@ -360,7 +364,7 @@
             </select>
             <div class="invalid-feedback">Тип обязателен</div>
         </div>
-        <div class="col-md-3">
+        <div class="contact-form-column">
             <label class="form-label fw-semibold">Метка</label>
             <select class="form-select" name="contactDetails[INDEX].label" required>
                 <option value="" disabled selected>Выберите метку</option>
@@ -368,12 +372,12 @@
             </select>
             <div class="invalid-feedback">Метка обязательна</div>
         </div>
-        <div class="col-md-4">
+        <div class="contact-form-column">
             <label class="form-label fw-semibold">Значение <span class="text-danger">*</span></label>
             <input type="text" class="form-control" name="contactDetails[INDEX].value" required>
             <div class="invalid-feedback">Значение обязательно</div>
         </div>
-        <div class="col-md-2">
+        <div class="contact-form-column">
             <label class="form-label fw-semibold">Основной</label>
             <div class="form-check form-switch mt-2">
                 <input class="form-check-input" type="checkbox" name="contactDetails[INDEX].isPrimary">
@@ -386,8 +390,8 @@
 </div>
 
 <div id="socialProfileTemplate" class="dynamic-field" style="display: none;">
-    <div class="row g-3">
-        <div class="col-md-3">
+    <div class="contact-form-grid">
+        <div class="contact-form-column">
             <label class="form-label fw-semibold">Платформа</label>
             <select class="form-select" name="socialProfiles[INDEX].platform" required>
                 <option value="" disabled selected>Выберите платформу</option>
@@ -395,17 +399,17 @@
             </select>
             <div class="invalid-feedback">Платформа обязательна</div>
         </div>
-        <div class="col-md-3">
+        <div class="contact-form-column">
             <label class="form-label fw-semibold">Кастомная платформа</label>
             <input type="text" class="form-control" name="socialProfiles[INDEX].customPlatformName"
                    placeholder="Если выбрано CUSTOM">
         </div>
-        <div class="col-md-3">
+        <div class="contact-form-column">
             <label class="form-label fw-semibold">Имя пользователя <span class="text-danger">*</span></label>
             <input type="text" class="form-control" name="socialProfiles[INDEX].username" required>
             <div class="invalid-feedback">Имя пользователя обязательно</div>
         </div>
-        <div class="col-md-3">
+        <div class="contact-form-column">
             <label class="form-label fw-semibold">URL профиля</label>
             <input type="url" class="form-control" name="socialProfiles[INDEX].profileUrl">
         </div>
@@ -416,7 +420,7 @@
 </div>
 
 <div id="companyJobTitleTemplate" class="dynamic-field" style="display: none;">
-    <div class="row g-3">
+    <div class="contact-detail-grid">
         <div class="col-md-6">
             <label class="form-label fw-semibold">Компания</label>
             <select class="form-select" name="companies[INDEX].companyId">
@@ -438,7 +442,7 @@
 </div>
 
 <div id="eventTemplate" class="dynamic-field" style="display: none;">
-    <div class="row g-3">
+    <div class="contact-detail-grid">
         <div class="col-md-3">
             <label class="form-label fw-semibold">Тип события</label>
             <select class="form-select" name="events[INDEX].eventType" required>
@@ -474,7 +478,7 @@
 </div>
 
 <div id="noteTemplate" class="dynamic-field" style="display: none;">
-    <div class="row g-3">
+    <div class="contact-detail-grid">
         <div class="col-12">
             <label class="form-label fw-semibold">Содержимое <span class="text-danger">*</span></label>
             <textarea class="form-control" name="notes[INDEX].content" required></textarea>
@@ -488,72 +492,6 @@
 
 <div th:replace="fragments/footer :: footer"></div>
 <div th:replace="fragments/scripts :: base-scripts"></div>
-
-<script th:inline="javascript">
-    window.addContactDetail = function() {
-        var template = document.getElementById('contactDetailTemplate').cloneNode(true);
-        template.removeAttribute('id');
-        template.style.display = '';
-        var index = document.getElementById('contactDetailsContainer').children.length;
-        var elements = template.querySelectorAll('[name]');
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].name = elements[i].name.replace('[INDEX]', '[' + index + ']');
-        }
-        document.getElementById('contactDetailsContainer').appendChild(template);
-    };
-
-    window.addSocialProfile = function() {
-        var template = document.getElementById('socialProfileTemplate').cloneNode(true);
-        template.removeAttribute('id');
-        template.style.display = '';
-        var index = document.getElementById('socialProfilesContainer').children.length;
-        var elements = template.querySelectorAll('[name]');
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].name = elements[i].name.replace('[INDEX]', '[' + index + ']');
-        }
-        document.getElementById('socialProfilesContainer').appendChild(template);
-    };
-
-    window.addCompanyJobTitle = function() {
-        var template = document.getElementById('companyJobTitleTemplate').cloneNode(true);
-        template.removeAttribute('id');
-        template.style.display = '';
-        var index = document.getElementById('companyJobTitleContainer').children.length;
-        var elements = template.querySelectorAll('[name]');
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].name = elements[i].name.replace('[INDEX]', '[' + index + ']');
-        }
-        document.getElementById('companyJobTitleContainer').appendChild(template);
-    };
-
-    window.addEvent = function() {
-        var template = document.getElementById('eventTemplate').cloneNode(true);
-        template.removeAttribute('id');
-        template.style.display = '';
-        var index = document.getElementById('eventsContainer').children.length;
-        var elements = template.querySelectorAll('[name]');
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].name = elements[i].name.replace('[INDEX]', '[' + index + ']');
-        }
-        document.getElementById('eventsContainer').appendChild(template);
-    };
-
-    window.addNote = function() {
-        var template = document.getElementById('noteTemplate').cloneNode(true);
-        template.removeAttribute('id');
-        template.style.display = '';
-        var index = document.getElementById('notesContainer').children.length;
-        var elements = template.querySelectorAll('[name]');
-        for (var i = 0; i < elements.length; i++) {
-            elements[i].name = elements[i].name.replace('[INDEX]', '[' + index + ']');
-        }
-        document.getElementById('notesContainer').appendChild(template);
-    };
-
-    window.removeFormField = function(button) {
-        const field = button.closest('.dynamic-field');
-        field.remove();
-    };
-</script>
+<div th:replace="fragments/scripts :: page-scripts('contact-forms')"></div>
 </body>
 </html>

@@ -23,6 +23,7 @@ import ru.anastasia.NauJava.entity.note.Note;
 import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 import ru.anastasia.NauJava.entity.tag.ContactTag;
 import ru.anastasia.NauJava.entity.tag.Tag;
+import ru.anastasia.NauJava.exception.tag.TagNotFoundException;
 import ru.anastasia.NauJava.service.company.CompanyService;
 import ru.anastasia.NauJava.service.company.JobTitleService;
 import ru.anastasia.NauJava.service.contact.ContactDetailService;
@@ -40,6 +41,7 @@ import ru.anastasia.NauJava.service.tag.TagService;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -269,13 +271,25 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     }
 
     private void addTagsToContact(Contact contact, Set<Long> tagIds) {
-        if (tagIds.isEmpty()) return;
+        if (tagIds == null || tagIds.isEmpty()) return;
 
-        tagService.findAllById(tagIds)
-                .forEach(tag -> contact.addContactTag(ContactTag.builder()
-                        .tag(tag)
-                        .contact(contact)
-                        .build()));
+        List<Tag> tags = tagService.findAllById(tagIds);
+
+        if (tags.size() != tagIds.size()) {
+            Set<Long> foundTagIds = tags.stream()
+                    .map(Tag::getId)
+                    .collect(Collectors.toSet());
+            Set<Long> missingTagIds = tagIds.stream()
+                    .filter(id -> !foundTagIds.contains(id))
+                    .collect(Collectors.toSet());
+
+            throw new TagNotFoundException("Не найдены теги с ID: " + missingTagIds);
+        }
+
+        tags.forEach(tag -> contact.addContactTag(ContactTag.builder()
+                .tag(tag)
+                .contact(contact)
+                .build()));
     }
 
     private void updateContactBasicInfo(Contact contact, ContactUpdateDto dto) {
@@ -331,6 +345,18 @@ public class ContactManagementServiceImpl implements ContactManagementService {
 
     private void updateContactTags(Contact contact, Set<Long> tagIds) {
         List<Tag> newTags = tagService.findAllById(tagIds);
+
+        if (newTags.size() != tagIds.size()) {
+            Set<Long> foundTagIds = newTags.stream()
+                    .map(Tag::getId)
+                    .collect(Collectors.toSet());
+            Set<Long> missingTagIds = tagIds.stream()
+                    .filter(id -> !foundTagIds.contains(id))
+                    .collect(Collectors.toSet());
+
+            throw new TagNotFoundException("Не найдены теги с ID: " + missingTagIds);
+        }
+
         contact.getContactTags().clear();
 
         newTags.forEach(tag -> contact.addContactTag(ContactTag.builder()

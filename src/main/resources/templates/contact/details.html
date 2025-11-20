@@ -4,233 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="'Контакт: ' + ${contactDetails.contact.firstName} + ' ' + ${contactDetails.contact.lastName}">
-        Контакт - Contact Manager</title>
+        Контакт — Contact Manager</title>
 
-    <!-- Подключение стилей -->
     <div th:replace="fragments/styles :: base-styles"></div>
+    <div th:replace="fragments/styles :: page-styles('contacts')"></div>
+    <link th:href="@{/css/pages/contact-details.css}" rel="stylesheet">
 </head>
-<body class="bg-light">
-<div th:replace="fragments/header :: header('Детали контакта', null, null, 'contact')"></div>
+<body class="app-container">
 
-<div class="container">
-    <!-- Contact Header -->
-    <div class="card info-card mb-4">
-        <div class="card-body p-4">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <img th:src="${contactDetails.contact.avatarUrl} ?: '/images/avatar-placeholder.jpg'"
-                         alt="Avatar" class="profile-avatar rounded-circle shadow">
+<div th:replace="~{fragments/header :: header('Детали контакта', null, null, 'contact')}"></div>
+
+<div class="container pb-16">
+
+    <!-- Основная карточка с шапкой контакта -->
+    <div class="card mb-6">
+        <div class="p-6 md:p-8">
+            <div class="flex flex-wrap gap-6 items-start">
+                <!-- Аватар + звезда избранного -->
+                <div class="avatar-container flex-shrink-0">
+                    <img th:src="@{${contactDetails.contact.avatarUrl ?: '/images/avatar-placeholder.jpg'}}"
+                         alt="Avatar"
+                         class="avatar rounded-circle shadow-lg">
+                    <div class="favorite-star-icon" th:if="${contactDetails.contact.isFavorite}">
+                        <i class="favorite-icon fas fa-star"></i>
+                    </div>
                 </div>
-                <div class="col">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h1 class="h2 fw-bold mb-1">
-                                <span th:text="${contactDetails.contact.firstName + ' ' + contactDetails.contact.lastName}"></span>
-                                <i th:if="${contactDetails.contact.isFavorite}" class="fas fa-star text-warning ms-2"
-                                   title="Избранный"></i>
+
+                <!-- Информация и действия -->
+                <div class="flex-column mb-3">
+                    <div class="flex-column gap-6">
+                        <div class="flex-column gap-3">
+                            <h1 class="mb-1"
+                                th:text="${contactDetails.contact.firstName + ' ' + contactDetails.contact.lastName}">
                             </h1>
-                            <p class="text-muted mb-2 fs-5" th:if="${contactDetails.contact.displayName}"
+                            <p class="mb-4"
+                               th:if="${contactDetails.contact.displayName}"
                                th:text="${contactDetails.contact.displayName}"></p>
 
-                            <!-- Companies -->
-                            <div th:if="${!contactDetails.contact.companies.isEmpty()}"
-                                 class="mb-3">
-                                <div th:each="company : ${contactDetails.contact.companies}"
-                                     class="d-inline-block me-3">
-                                        <span class="badge bg-primary badge-custom">
-                                            <i class="fas fa-building me-1"></i>
-                                            <span th:text="${company.company.name}"></span>
+                            <!-- Компании -->
+                            <div th:if="${!contactDetails.contact.companies.isEmpty()}">
+                                <div th:each="company : ${contactDetails.contact.companies}" class="company-info">
+                                    <span class="company-name text-primary fw-semibold mb-1">
+                                        <span class="current-badge-icon" title="Название компании">
+                                            <i class="fas fa-building me-2"></i>
                                         </span>
-                                    <span class="badge bg-secondary badge-custom ms-1">
-                                            <i class="fas fa-briefcase me-1"></i>
-                                            <span th:text="${company.jobTitle.title}"></span>
-                                            <span th:if="${company.isCurrent}" class="ms-1">• Текущая</span>
+                                        <span th:text="${company.company.name}"></span>
+                                    </span>
+                                    <span class="job-title text-muted d-flex align-items-center flex-wrap">
+                                        <span class="current-badge-icon" title="Должность">
+                                            <i class="fas fa-briefcase me-2"></i>
                                         </span>
+                                        <span class="me-2" th:text="${company.jobTitle.title}"></span>
+                                        <span th:if="${company.isCurrent}"
+                                              class="current-badge-icon"
+                                              title="Текущее место работы">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </span>
+                                    </span>
                                 </div>
                             </div>
 
-                            <!-- Tags -->
-                            <div th:if="${!contactDetails.tags.isEmpty()}">
+                            <!-- Теги -->
+                            <div th:if="${!contactDetails.tags.isEmpty()}" class="contact-tags">
+                                <div class="tags-grid">
                                     <span th:each="tag : ${contactDetails.tags}"
-                                          class="badge bg-light text-dark border me-1 mb-1">
+                                          class="tag-badge"
+                                          th:style="'background-color: ' + ${tag.color} + ';'"
+                                          th:attr="data-color=${tag.color}">
                                         <i class="fas fa-tag me-1"></i>
                                         <span th:text="${tag.name}"></span>
                                     </span>
+                                </div>
                             </div>
                         </div>
-                        <div class="btn-group-vertical">
+
+                        <!-- Кнопки действий -->
+                        <div class="d-flex justify-content-between">
                             <a th:href="@{/contacts/{id}/edit(id=${contactDetails.contact.id})}"
-                               class="btn btn-primary action-btn mb-2">
-                                <i class="fas fa-edit me-2"></i>Редактировать
+                               class="btn btn-outline-primary btn-sm flex-fill py-0">
+                                <i class="fas fa-edit me-1"></i>Редактировать
                             </a>
+
                             <form th:action="@{/contacts/{id}/duplicate(id=${contactDetails.contact.id})}" method="post"
-                                  class="d-inline w-100">
-                                <button type="submit" class="btn btn-info action-btn mb-2 w-100">
-                                    <i class="fas fa-copy me-2"></i>Дублировать
+                                  class="inline-block">
+                                <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                                    <i class="fas fa-copy mr-2"></i>Дублировать
                                 </button>
                             </form>
-                            <form th:action="@{/contacts/{id}/delete(id=${contactDetails.contact.id})}" method="post"
-                                  class="d-inline w-100" data-confirm="Удалить контакт?">
-                                <button type="submit" class="btn btn-danger action-btn w-100">
-                                    <i class="fas fa-trash me-2"></i>Удалить
+                            <form th:action="@{/contacts/{id}/delete(id=${contactDetails.contact.id})}"
+                                  method="post"
+                                  data-confirm="Удалить контакт навсегда?"
+                                  class="flex-fill">
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-0">
+                                    <i class="fas fa-trash me-1"></i>Удалить
                                 </button>
                             </form>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <!-- Contact Details -->
-        <div class="col-lg-6">
-            <div class="card info-card h-100">
-                <div class="card-header bg-white">
-                    <h3 class="h5 fw-bold mb-0">
-                        <i class="fas fa-address-book me-2 text-primary"></i>Контактная информация
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div th:each="detail : ${contactDetails.contactDetails}">
-                        <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-                            <div class="d-flex align-items-center">
-                                <i th:class="'fas fa-' + ${detail.detailType == 'EMAIL' ? 'envelope' : 'phone'} + ' text-primary me-3 fa-lg'"></i>
-                                <div>
-                                    <strong th:text="${detail.detailType.name()}"></strong>
-                                    <small class="text-muted d-block"
-                                           th:text="'(' + ${detail.label.name()} + ')'"></small>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <span class="fw-semibold" th:text="${detail.value}"></span>
-                                <i th:if="${detail.isPrimary}" class="fas fa-star text-warning ms-2" title="Основной"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div th:if="${contactDetails.contactDetails.isEmpty()}" class="text-center text-muted py-5">
-                        <i class="fas fa-address-book fa-2x mb-3"></i>
-                        <p class="mb-0">Контактная информация не указана</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Social Profiles -->
-        <div class="col-lg-6">
-            <div class="card info-card h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h3 class="h5 fw-bold mb-0">
-                        <i class="fas fa-share-alt me-2 text-primary"></i>Социальные сети
-                    </h3>
-                    <a th:href="@{/social-profiles/new?contactId={id}(id=${contactDetails.contact.id})}"
-                       class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus me-1"></i>Добавить
-                    </a>
-                </div>
-                <div class="card-body">
-                    <div th:each="profile : ${contactDetails.socialProfiles}">
-                        <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-share-alt text-primary me-3 fa-lg"></i>
-                                <div>
-                                    <strong th:text="${profile.platform.name()}"></strong>
-                                    <small th:if="${profile.customPlatformName}" class="text-muted d-block"
-                                           th:text="'(' + ${profile.customPlatformName} + ')'"></small>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="fw-semibold" th:text="${profile.username}"></div>
-                                <a th:if="${profile.profileUrl}" th:href="${profile.profileUrl}" target="_blank"
-                                   class="btn btn-sm btn-outline-primary mt-1">
-                                    <i class="fas fa-external-link-alt me-1"></i>Перейти
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <div th:if="${contactDetails.socialProfiles.isEmpty()}" class="text-center text-muted py-5">
-                        <i class="fas fa-share-alt fa-2x mb-3"></i>
-                        <p class="mb-0">Социальные профили не указаны</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Events -->
-        <div class="col-lg-6">
-            <div class="card info-card h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h3 class="h5 fw-bold mb-0">
-                        <i class="fas fa-calendar me-2 text-primary"></i>События
-                    </h3>
-                    <a th:href="@{/events/new?contactId={id}(id=${contactDetails.contact.id})}"
-                       class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus me-1"></i>Добавить
-                    </a>
-                </div>
-                <div class="card-body">
-                    <div th:each="event : ${contactDetails.events}">
-                        <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-calendar text-primary me-3 fa-lg"></i>
-                                <div>
-                                    <strong th:text="${event.eventType.name()}"></strong>
-                                    <small th:if="${event.customEventName}" class="text-muted d-block"
-                                           th:text="'(' + ${event.customEventName} + ')'"></small>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="fw-semibold"
-                                     th:text="${#temporals.format(event.eventDate, 'dd.MM.yyyy')}"></div>
-                                <small class="text-muted" th:text="${event.notes}"></small>
-                                <i th:if="${event.yearlyRecurrence}" class="fas fa-sync-alt text-info ms-2"
-                                   title="Повторяется ежегодно"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div th:if="${contactDetails.events.isEmpty()}" class="text-center text-muted py-5">
-                        <i class="fas fa-calendar fa-2x mb-3"></i>
-                        <p class="mb-0">События не добавлены</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Notes -->
-        <div class="col-lg-6">
-            <div class="card info-card h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h3 class="h5 fw-bold mb-0">
-                        <i class="fas fa-sticky-note me-2 text-primary"></i>Заметки
-                    </h3>
-                    <a th:href="@{/notes/new?contactId={id}(id=${contactDetails.contact.id})}"
-                       class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus me-1"></i>Добавить
-                    </a>
-                </div>
-                <div class="card-body">
-                    <div th:each="note : ${contactDetails.notes}">
-                        <div class="py-3 border-bottom">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="btn-group btn-group-sm">
-                                    <a th:href="@{/notes/{id}/edit(id=${note.id})}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form th:action="@{/notes/{id}(id=${note.id})}" method="post" class="d-inline">
-                                        <input type="hidden" name="_method" value="delete">
-                                        <button type="submit" class="btn btn-outline-danger"
-                                                data-confirm="Удалить заметку?">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                            <p class="mb-0" th:text="${note.content}"></p>
-                        </div>
-                    </div>
-                    <div th:if="${contactDetails.notes.isEmpty()}" class="text-center text-muted py-5">
-                        <i class="fas fa-sticky-note fa-2x mb-3"></i>
-                        <p class="mb-0">Заметки не добавлены</p>
                     </div>
                 </div>
             </div>
@@ -238,7 +107,167 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<!-- Две колонки с данными -->
+<div class="container">
+
+    <!-- Контактная информация -->
+    <div class="card h-full">
+        <div class="card-header">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-address-book text-primary me-2"></i>Контактная информация
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="card-body">
+                <div th:each="detail : ${contactDetails.contactDetails}">
+                    <div class="d-flex row gap-2 align-items-center border-bottom">
+                        <div class="row align-items-center gap-4">
+                            <i th:class="'fas fa-' + ${detail.detailType == 'EMAIL' ? 'envelope' : 'phone'} + ' text-primary'"></i>
+                            <div>
+                                <strong th:text="${detail.detailType.name()}"></strong>
+                                <small class="text-muted d-block"
+                                       th:text="'(' + ${detail.label.name()} + ')'"></small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-semibold" th:text="${detail.value}"></span>
+                            <i th:if="${detail.isPrimary}" class="fas fa-star text-warning ms-2"
+                               title="Основной способ связи"
+                               style="color:var(--warning);"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${contactDetails.contactDetails.isEmpty()}" class="empty-state py-12">
+                    <i class="fas fa-address-book empty-state__icon text-primary"></i>
+                    <div class="empty-state__title">Контактная информация отсутствует</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Социальные сети -->
+        <div class="card h-full">
+            <div class="card-header flex-between">
+                <h3 class="h5 fw-bold mb-0 section-header">
+                    <i class="fas fa-share-alt text-primary me-2"></i>Социальные сети
+                </h3>
+                <a th:href="@{/social-profiles/new?contactId={id}(id=${contactDetails.contact.id})}"
+                   class="btn btn-outline-primary text-sm">
+                    <i class="fas fa-plus mr-1"></i>Добавить
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="card-body">
+                    <div th:each="profile : ${contactDetails.socialProfiles}">
+                        <div class="d-flex row gap-2 align-items-center border-bottom">
+                            <div class="row align-items-center gap-4">
+                                <i class="fas fa-share-alt text-primary"></i>
+                                <div>
+                                    <strong th:text="${profile.platform.name()}"></strong>
+                                    <small class="text-sm text-gray-500"
+                                           th:if="${!#strings.isEmpty(profile.customPlatformName)}"
+                                           th:text="'(' + ${profile.customPlatformName} + ')'">
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-semibold" th:text="${profile.username}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${contactDetails.socialProfiles.isEmpty()}" class="empty-state py-12">
+                        <i class="fas fa-share-alt empty-state__icon text-primary"></i>
+                        <div class="empty-state__title">Социальные профили не указаны</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- События (дни рождения, юбилеи и т.д.) -->
+            <div class="card h-full">
+                <div class="card-header flex-between">
+                    <h3 class="h5 fw-bold mb-0 section-header">
+                        <i class="fas fa-calendar text-primary me-2"></i>События
+                    </h3>
+                    <a th:href="@{/events/new?contactId={id}(id=${contactDetails.contact.id})}"
+                       class="btn btn-outline-primary text-sm">
+                        <i class="fas fa-plus mr-1"></i>Добавить
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div th:each="event : ${contactDetails.events}"
+                         class="d-flex row gap-2 align-items-center border-bottom">
+                        <div class="flex items-center gap-4">
+                            <i class="fas fa-calendar text-primary text-2xl w-8"></i>
+                            <div>
+                                <div class="font-semibold" th:text="${event.eventType.name()}"></div>
+                                <div class="text-sm text-gray-500"
+                                     th:if="${event.customEventName}"
+                                     th:text="'(' + ${event.customEventName} + ')'"></div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-medium"
+                                 th:text="${#temporals.format(event.eventDate, 'dd.MM.yyyy')}"></div>
+                            <div class="text-sm text-gray-600" th:text="${event.notes}"></div>
+                            <i th:if="${event.yearlyRecurrence}"
+                               class="fas fa-sync-alt text-info ml-2" title="Повторяется ежегодно"></i>
+                        </div>
+                    </div>
+
+                    <div th:if="${contactDetails.events.isEmpty()}" class="empty-state py-12">
+                        <i class="fas fa-calendar empty-state__icon text-primary"></i>
+                        <div class="empty-state__title">События не добавлены</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Заметки -->
+            <div class="card h-full">
+                <div class="card-header flex-between">
+                    <h3 class="h5 fw-bold mb-0 section-header">
+                        <i class="fas fa-sticky-note text-primary me-2"></i>Заметки
+                    </h3>
+                    <a th:href="@{/notes/new?contactId={id}(id=${contactDetails.contact.id})}"
+                       class="btn btn-outline-primary text-sm">
+                        <i class="fas fa-plus mr-1"></i>Добавить
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div th:each="note : ${contactDetails.notes}"
+                         class="d-flex row gap-2 align-items-center border-bottom">
+                        <div class="flex-between mb-3">
+                            <div class="text-sm text-gray-500"
+                                 th:text="${#temporals.format(note.createdAt, 'dd.MM.yyyy HH:mm')}"></div>
+                            <div class="flex gap-2">
+                                <a th:href="@{/notes/{id}/edit(id=${note.id})}"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form th:action="@{/notes/{id=${note.id}}" method="post" class="inline">
+                                    <input type="hidden" name="_method" value="delete">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-confirm="Удалить заметку?">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 whitespace-pre-wrap" th:text="${note.content}"></p>
+                    </div>
+
+                    <div th:if="${contactDetails.notes.isEmpty()}" class="empty-state py-12">
+                        <i class="fas fa-sticky-note empty-state__icon text-primary"></i>
+                        <div class="empty-state__title">Заметок пока нет</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

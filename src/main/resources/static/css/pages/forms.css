@@ -1,4 +1,19 @@
-/* Form Sections */
+.contact-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.contact-form-full-width {
+    grid-column: 1 / -1;
+}
+
+.contact-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+}
+
 .form-section {
     border-radius: 15px;
     border: 1px solid var(--gray-200);
@@ -65,11 +80,6 @@
     padding: 0.75rem 1.5rem;
 }
 
-.section-header {
-    border-bottom: 2px solid var(--primary);
-    padding-bottom: var(--space-2);
-}
-
 /* Form specific styles */
 .contact-form .form-control,
 .contact-form .form-select {
@@ -106,6 +116,10 @@
 }
 
 @media (max-width: 768px) {
+    .contact-form-grid {
+        grid-template-columns: 1fr;
+    }
+
     .form-section__body {
         padding: var(--space-4);
     }

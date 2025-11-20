@@ -18,7 +18,119 @@
 }
 
 .card-info {
+    min-width: 0;
+}
 
+/* Заголовок контакта */
+.contact-header {
+    border-bottom: 1px solid var(--gray-100);
+    padding-bottom: var(--space-3);
+}
+
+.contact-name {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.2;
+    margin: 0;
+}
+
+.contact-display-name {
+    font-size: var(--font-size-sm);
+    font-style: italic;
+    margin: 0;
+}
+
+/* Информация о компании */
+.company-info {
+    background: var(--gray-50);
+    padding: var(--space-3);
+    border-left: 3px solid var(--primary);
+}
+
+.company-name {
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+}
+
+.job-title {
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    margin-top: var(--space-1);
+}
+
+.current-badge {
+    color: var(--success);
+    font-weight: 600;
+    margin-left: var(--space-2);
+}
+
+/* Контактные данные */
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.contact-detail-item {
+    display: flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+}
+
+.contact-detail-item:hover {
+    background: var(--gray-100);
+    transform: translateX(2px);
+}
+
+.contact-value {
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+.contact-detail-item i {
+    color: var(--primary);
+    width: 16px;
+    text-align: center;
+}
+
+/* Теги */
+.contact-tags {
+    margin-top: var(--space-3);
+}
+
+.tags-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.tag-badge {
+    align-items: center;
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: white;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tag-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.tag-badge i {
+    font-size: 0.7em;
+    opacity: 0.9;
 }
 
 .favorite-card {
