@@ -2,8 +2,11 @@ package ru.anastasia.NauJava.service.contact.impl;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import ru.anastasia.NauJava.config.AppConfig;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.enums.EventType;
@@ -179,5 +182,31 @@ public class ContactServiceImpl implements ContactService {
                 .map(Event::getContact)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    // TODO: Искать по названиям вместо id - очень дорого. Мб отрефакторить
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Contact> searchContacts(String searchTerm, String companyName, String tagName, Pageable pageable) {
+        if (!StringUtils.hasText(searchTerm) && !StringUtils.hasText(companyName) && !StringUtils.hasText(tagName)) {
+            return contactRepository.findAll(pageable);
+        }
+
+        String processedSearchTerm = StringUtils.hasText(searchTerm) ? searchTerm.trim() : null;
+        String processedCompanyName = StringUtils.hasText(companyName) ? companyName.trim() : null;
+        String processedTagName = StringUtils.hasText(tagName) ? tagName.trim() : null;
+
+        return contactRepository.searchWithFilters(
+                processedSearchTerm,
+                processedCompanyName,
+                processedTagName,
+                pageable
+        );
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<Contact> findAll(Pageable pageable) {
+        return contactRepository.findAll(pageable);
     }
 }

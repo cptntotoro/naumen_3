@@ -6,12 +6,12 @@
     <title>Компании - Contact Manager</title>
 
     <!-- Подключение стилей -->
-    <div th:replace="fragments/styles :: base-styles"></div>
-    <div th:replace="fragments/styles :: page-styles('companies')"></div>
-    <div th:replace="fragments/styles :: page-styles('forms')"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('companies')}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('forms')}"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header('Компании', '/companies/new', 'Добавить компанию', 'companies')"></div>
+<div th:replace="~{fragments/header :: header('Компании', '/companies/new', 'Добавить компанию', 'companies')}"></div>
 
 <div class="container px-3">
     <!-- Search Form -->
@@ -100,7 +100,7 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

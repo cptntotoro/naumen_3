@@ -6,11 +6,11 @@
     <title>Должности - Contact Manager</title>
 
     <!-- Подключение стилей -->
-    <div th:replace="fragments/styles :: base-styles"></div>
-    <div th:replace="fragments/styles :: page-styles('jobtitles')"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('jobtitles')}"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header('Должности', '/jobtitles/new', 'Добавить должность', 'jobtitles')"></div>
+<div th:replace="~{fragments/header :: header('Должности', '/jobtitles/new', 'Добавить должность', 'jobtitles')}"></div>
 
 <div class="container">
     <!-- Job Titles List -->
@@ -63,7 +63,7 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

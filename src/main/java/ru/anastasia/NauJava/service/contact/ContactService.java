@@ -1,5 +1,7 @@
 package ru.anastasia.NauJava.service.contact;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.anastasia.NauJava.entity.contact.Contact;
 
 import java.util.List;
@@ -155,4 +157,23 @@ public interface ContactService {
      * @return Количество избранных контактов
      */
     Long countFavorites();
+
+    /**
+     * Получить страницу контактов по имени, фамилии, псевдониму с опциональными фильтрами по компании и тегу
+     *
+     * @param searchTerm  Поисковый запрос
+     * @param companyName Название компании
+     * @param tagName     Название тега
+     * @param pageable    Страница
+     * @return Страница контактов
+     */
+    Page<Contact> searchContacts(String searchTerm, String companyName, String tagName, Pageable pageable);
+
+    /**
+     * Получить страницу контактов
+     *
+     * @param pageable Страница
+     * @return Страница контактов
+     */
+    Page<Contact> findAll(Pageable pageable);
 }

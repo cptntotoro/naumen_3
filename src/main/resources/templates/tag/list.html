@@ -6,11 +6,11 @@
     <title>Теги - Contact Manager</title>
 
     <!-- Подключение стилей -->
-    <div th:replace="fragments/styles :: base-styles"></div>
-    <div th:replace="fragments/styles :: page-styles('tags')"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('tags')}"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header('Теги', '/tags/new', 'Создать тег', 'tags')"></div>
+<div th:replace="~{fragments/header :: header('Теги', '/tags/new', 'Создать тег', 'tags')}"></div>
 <div class="container">
     <!-- Tags Grid -->
     <div class="tags-grid" th:if="${!tags.empty}">
@@ -77,7 +77,7 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

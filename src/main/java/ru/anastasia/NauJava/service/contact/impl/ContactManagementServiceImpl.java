@@ -232,6 +232,8 @@ public class ContactManagementServiceImpl implements ContactManagementService {
                 .build();
     }
 
+    // TODO: Только компания или только должность не добавляются
+    // TODO: Сразу устанавливаются как основное место работы - нужно протянуть чекбокс
     private void addCompaniesToContact(Contact contact, List<ContactCompanyCreateDto> companyDtos) {
         if (companyDtos.isEmpty()) return;
 
@@ -242,6 +244,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
                     .contact(contact)
                     .company(company)
                     .jobTitle(jobTitle)
+                    .isCurrent(dto.isCurrent())
                     .build());
         });
     }

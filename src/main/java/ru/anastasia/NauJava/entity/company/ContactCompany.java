@@ -66,5 +66,5 @@ public class ContactCompany {
      */
     @Builder.Default
     @Column(name = "is_current")
-    private Boolean isCurrent = true;
+    private Boolean isCurrent = false;
 }

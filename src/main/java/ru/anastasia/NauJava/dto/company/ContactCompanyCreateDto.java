@@ -22,4 +22,9 @@ public class ContactCompanyCreateDto {
      * Идентификатор должности
      */
     private Long jobTitleId;
+
+    /**
+     * Является ли текущим местом работы
+     */
+    private boolean isCurrent;
 }

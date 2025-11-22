@@ -6,11 +6,11 @@
     <title>Редактирование контакта</title>
 
     <!-- Подключение стилей -->
-    <div th:replace="fragments/styles :: base-styles"></div>
-    <div th:replace="fragments/styles :: page-styles('forms')"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('forms')}"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header('Редактирование контакта', null, null, 'contacts')"></div>
+<div th:replace="~{fragments/header :: header('Редактирование контакта', null, null, 'contacts')}"></div>
 
 <div class="container">
     <!-- Форма для редактирования -->
@@ -490,8 +490,8 @@
     </button>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
-<div th:replace="fragments/scripts :: page-scripts('contact-forms')"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
+<div th:replace="~{fragments/scripts :: page-scripts('contact-forms')}"></div>
 </body>
 </html>

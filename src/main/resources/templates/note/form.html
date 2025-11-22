@@ -8,8 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header(${noteId ? != null 'Редактирование заметки' : 'Новая заметка'},
-        null, null)"></div>
+<div th:replace="~{fragments/header :: header(${noteId ? != null 'Редактирование заметки' : 'Новая заметка'},
+        null, null)}"></div>
 
 <div class="container">
     <div class="row justify-content-center">
@@ -84,7 +84,7 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

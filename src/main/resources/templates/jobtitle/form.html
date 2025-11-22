@@ -6,15 +6,12 @@
     <title th:text="${isEdit ? 'Редактирование должности' : 'Новая должность'}">Должность - Contact Manager</title>
 
     <!-- Подключение стилей -->
-    <div th:replace="fragments/styles :: base-styles"></div>
-    <div th:replace="fragments/styles :: page-styles('jobtitles')"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('jobtitles')}"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header(
-        ${isEdit ? 'Редактирование должности' : 'Новая должность'},
-        null,
-        null, 'jobtitles'
-    )"></div>
+<div th:replace="fragments/header :: header(${isEdit ? 'Редактирование должности' : 'Новая должность'},
+        null, null, 'jobtitles')"></div>
 
 <div class="container">
     <div class="row justify-content-center">
@@ -89,7 +86,7 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

@@ -2,6 +2,9 @@ package ru.anastasia.NauJava.controller.contact;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -10,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.anastasia.NauJava.dto.contact.ContactCreateDto;
 import ru.anastasia.NauJava.dto.contact.ContactUpdateDto;
 import ru.anastasia.NauJava.entity.company.Company;
@@ -65,14 +69,34 @@ public class ContactController {
     private final JobTitleService jobTitleService;
 
     @GetMapping
-    public String listContacts(Model model) {
-        List<Contact> contacts = contactService.findAll();
+    public String listContacts(
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "company", required = false) String companyName,
+            @RequestParam(value = "tag", required = false) String tagName,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "12") int size,
+            Model model) {
+
         List<Company> companies = companyService.findAll();
         List<Tag> tags = tagService.findAll();
 
-        model.addAttribute("contacts", contacts);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Contact> contactPage;
+
+        contactPage = contactService.searchContacts(search, companyName, tagName, pageable);
+
+        model.addAttribute("contacts", contactPage.getContent());
         model.addAttribute("companies", companies);
         model.addAttribute("tags", tags);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", contactPage.getTotalPages());
+        model.addAttribute("totalCount", contactPage.getTotalElements());
+
+        model.addAttribute("searchParam", search);
+        model.addAttribute("companyParam", companyName);
+        model.addAttribute("tagParam", tagName);
+
         return "contact/list";
     }
 

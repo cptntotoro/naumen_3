@@ -1,11 +1,12 @@
 package ru.anastasia.NauJava.repository.contact;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.enums.DetailType;
 import ru.anastasia.NauJava.repository.contact.custom.ContactRepositoryCustom;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * Репозиторий контактов
  */
 @Repository
-public interface ContactRepository extends CrudRepository<Contact, Long>, ContactRepositoryCustom {
+public interface ContactRepository extends JpaRepository<Contact, Long>, ContactRepositoryCustom {
 
     /**
      * Получить контакты по имени или фамилии (без учёта регистра)
@@ -40,16 +41,6 @@ public interface ContactRepository extends CrudRepository<Contact, Long>, Contac
      */
     @Query("SELECT c FROM Contact c JOIN c.contactTags ct JOIN ct.tag t WHERE t.name = :tagName")
     List<Contact> findContactsByTagName(@Param("tagName") String tagName);
-
-    /**
-     * Получить контакты по части номера телефона
-     *
-     * @param phonePart  Часть номера телефона
-     * @param detailType Тип способа связи
-     * @return Список контактов
-     */
-    @Query("SELECT DISTINCT c FROM Contact c JOIN c.contactDetails cd WHERE cd.detailType = :detailType AND cd.value LIKE %:phonePart%")
-    List<Contact> findContactsByPhoneNumberContaining(@Param("phonePart") String phonePart, @Param("detailType") DetailType detailType);
 
     /**
      * Получить контакты по имени и фамилии
@@ -115,4 +106,32 @@ public interface ContactRepository extends CrudRepository<Contact, Long>, Contac
      * @return Количество избранных контактов
      */
     Long countByIsFavoriteTrue();
+
+    /**
+     * Получить страницу контактов по имени, фамилии, псевдониму с фильтрами по компании и тегу
+     *
+     * @param searchTerm  Поисковый запрос
+     * @param companyName Название компании
+     * @param tagName     Название тега
+     * @param pageable    Страница
+     * @return Страница контактов
+     */
+    @Query("SELECT DISTINCT c FROM Contact c " +
+            "LEFT JOIN c.companies cc " +
+            "LEFT JOIN cc.company comp " +
+            "LEFT JOIN c.contactTags ct " +
+            "LEFT JOIN ct.tag t " +
+            "WHERE (" +
+            "  (:searchTerm IS NULL OR " +
+            "   c.firstName LIKE '%' || CAST(:searchTerm AS text) || '%' OR " +
+            "   c.lastName LIKE '%' || CAST(:searchTerm AS text) || '%' OR " +
+            "   (c.displayName IS NOT NULL AND c.displayName LIKE '%' || CAST(:searchTerm AS text) || '%'))" +
+            ") AND " +
+            "(:companyName IS NULL OR comp.name LIKE '%' || CAST(:companyName AS text) || '%') AND " +
+            "(:tagName IS NULL OR t.name LIKE '%' || CAST(:tagName AS text) || '%')")
+    Page<Contact> searchWithFilters(
+            @Param("searchTerm") String searchTerm,
+            @Param("companyName") String companyName,
+            @Param("tagName") String tagName,
+            Pageable pageable);
 }
