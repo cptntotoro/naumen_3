@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Избранные контакты - Contact Manager</title>
 
-    <!-- Подключение стилей -->
     <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('contacts')}"></div>
 </head>
-<body class="bg-light">
-<div th:replace="~{fragments/header :: header('Избранные контакты', null, null)}"></div>
+<body class="app-container">
+<div th:replace="~{fragments/header :: header('Избранные контакты', '/contacts', 'Все контакты', 'contacts')}"></div>
 
 <div class="container">
     <!-- Stats -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-warning text-white shadow-sm">
+            <div class="card bg-warning text-white shadow-sm" style="background: var(--warning);">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-8">
@@ -25,7 +25,7 @@
                             <p class="mb-0">Быстрый доступ к самым важным контактам</p>
                         </div>
                         <div class="col-md-4 text-md-end">
-                            <h2 class="display-4 fw-bold" th:text="${contacts.size()}">0</h2>
+                            <h2 class="display-4 fw-bold" th:text="${totalCount}">0</h2>
                             <p class="mb-0">контактов в избранном</p>
                         </div>
                     </div>
@@ -35,58 +35,100 @@
     </div>
 
     <!-- Favorites Grid -->
-    <div class="row g-4" th:if="${!contacts.empty}">
-        <div th:each="contact : ${contacts}" class="col-xl-4 col-lg-6">
-            <div class="favorite-card card h-100">
+    <div class="contacts-grid" th:if="${!contacts.isEmpty()}">
+        <div th:each="contact : ${contacts}" class="contact-item">
+            <div class="contact-card card h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-start mb-3 gap-4">
-                        <img th:src="@{${contact.avatarUrl ?: '/images/avatar-placeholder.jpg'}}"
-                             alt="Avatar" class="avatar rounded-circle me-3 shadow">
-                        <div class="card-info">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <h5 class="card-title mb-0 fw-bold">
-                                    <span th:text="${contact.contact.firstName + ' ' + contact.contact.lastName}"></span>
-                                </h5>
-                                <i class="fas fa-star star-icon fa-lg"></i>
+                        <!-- Аватар с звездой избранного -->
+                        <div class="avatar-container position-relative">
+                            <img th:src="@{${contact.avatarUrl ?: '/images/avatar-placeholder.jpg'}}"
+                                 alt="Avatar" class="avatar rounded-circle shadow">
+                            <!-- Звезда избранного -->
+                            <div class="favorite-star-icon">
+                                <i class="favorite-icon fas fa-star"></i>
                             </div>
-                            <p class="text-muted mb-2 small" th:if="${contact.contact.displayName}"
-                               th:text="${contact.contact.displayName}"></p>
+                        </div>
 
-                            <!-- Primary Contact Info -->
-                            <div class="contact-info">
-                                <div th:each="detail : ${contact.primaryContactDetails}">
-                                    <small class="text-muted d-block">
-                                        <i th:class="'fas fa-' + ${detail.detailType == 'EMAIL' ? 'envelope' : 'phone'} + ' me-1'"></i>
-                                        <span th:text="${detail.value}"></span>
-                                    </small>
+                        <div class="card-info">
+                            <!-- Имя и фамилия -->
+                            <div class="contact-header mb-3">
+                                <h5 class="contact-name mb-1">
+                                    <span th:text="${contact.firstName + ' ' + contact.lastName}"></span>
+                                </h5>
+                                <p class="contact-display-name text-muted" th:if="${contact.displayName}"
+                                   th:text="${contact.displayName}"></p>
+                            </div>
+
+                            <!-- Информация о компании -->
+                            <div th:if="${!contact.companies.isEmpty()}" class="company-info mb-3">
+                                <div class="company-name text-primary fw-semibold mb-1">
+                                    <span class="current-badge-icon" title="Название компании">
+                                        <i class="fas fa-building me-2"></i>
+                                    </span>
+                                    <span th:text="${contact.companies[0].company.name}"></span>
+                                </div>
+                                <div class="job-title text-muted d-flex align-items-center flex-wrap">
+                                    <span class="current-badge-icon" title="Должность">
+                                        <i class="fas fa-briefcase me-2"></i>
+                                    </span>
+                                    <span class="me-2" th:text="${contact.companies[0].jobTitle.title}"></span>
+                                    <span th:if="${contact.companies[0].isCurrent}"
+                                          class="current-badge-icon"
+                                          title="Текущее место работы">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </span>
                                 </div>
                             </div>
 
-                            <!-- Tags -->
-                            <div class="tags mt-2" th:if="${contact.tags} && !contact.tags.empty}">
-                                    <span th:each="tag : ${contact.tags}"
-                                          class="badge bg-light text-dark border me-1 mb-1 small">
-                                        <i class="fas fa-tag me-1"></i>
-                                        <span th:text="${tag.name}"></span>
+                            <!-- Основные контакты -->
+                            <div class="contact-details mb-3" th:if="${!contact.contactDetails.isEmpty()}">
+                                <div th:each="detail : ${contact.contactDetails}" th:if="${detail.isPrimary}"
+                                     class="contact-detail-item">
+                                    <span class="current-badge-icon" title="Основной способ связи">
+                                        <i th:class="'fas fa-' + ${detail.detailType == 'EMAIL' ? 'envelope' :
+                                      detail.detailType == 'PHONE' ? 'phone' :
+                                      'address-card'} + ' me-2'"></i>
                                     </span>
+                                    <span class="contact-value" th:text="${detail.value}"></span>
+                                </div>
+                            </div>
+
+                            <!-- Теги -->
+                            <div class="contact-tags" th:if="${!contact.contactTags.isEmpty()}">
+                                <div class="tags-grid">
+                                    <span th:each="contactTag : ${contact.contactTags}"
+                                          class="tag-badge"
+                                          th:style="'background-color: ' + ${contactTag.tag.color} + ';'"
+                                          th:attr="data-color=${contactTag.tag.color}">
+                                        <i class="fas fa-tag me-1"></i>
+                                        <span th:text="${contactTag.tag.name}"></span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-0 pt-0">
-                    <div class="btn-group w-100">
-                        <a th:href="@{/contacts/{id}(id=${contact.contact.id})}"
+                    <div class="action-buttons d-flex gap-2 justify-content-between">
+                        <a th:href="@{/contacts/{id}(id=${contact.id})}"
                            class="btn btn-outline-primary flex-fill" title="Просмотр">
                             <i class="fas fa-eye"></i>
                         </a>
-                        <a th:href="@{/contacts/{id}/edit(id=${contact.contact.id})}"
-                           class="btn btn-outline-secondary flex-fill" title="Редактировать">
+                        <a th:href="@{/contacts/{id}/edit(id=${contact.id})}"
+                           class="btn btn btn-outline-primary flex-fill" title="Редактировать">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <form th:action="@{/contacts/{id}/duplicate(id=${contact.contact.id})}" method="post"
+                        <form th:action="@{/contacts/{id}/duplicate(id=${contact.id})}" method="post"
                               class="d-inline flex-fill" title="Дублировать">
-                            <button type="submit" class="btn btn-outline-info w-100">
+                            <button type="submit" class="btn btn-outline-primary w-100">
                                 <i class="fas fa-copy"></i>
+                            </button>
+                        </form>
+                        <form th:action="@{/contacts/{id}/delete(id=${contact.id})}" method="post"
+                              class="d-inline flex-fill" data-confirm="Удалить контакт?">
+                            <button type="submit" class="btn btn-outline-danger w-100" title="Удалить">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </form>
                     </div>
@@ -95,8 +137,59 @@
         </div>
     </div>
 
+    <!-- Пагинация -->
+    <div th:if="${!contacts.isEmpty()}" class="pagination-container">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <!-- Информация -->
+            <div class="pagination-info d-none d-md-block">
+                Страница <span th:text="${currentPage + 1}"></span> из <span th:text="${totalPages}"></span>
+            </div>
+
+            <!-- Навигация -->
+            <nav th:if="${totalPages > 1}">
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/contacts/favorites(page=${currentPage - 1}, size=${pageSize})}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <!-- Номера страниц -->
+                    <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}"
+                        class="page-item" th:classappend="${page == currentPage} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/contacts/favorites(page=${page}, size=${pageSize})}"
+                           th:text="${page + 1}">
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/contacts/favorites(page=${currentPage + 1}, size=${pageSize})}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Селектор размера страницы -->
+            <div class="d-none d-md-flex align-items-center gap-2">
+                <span class="text-muted small">На странице:</span>
+                <select class="form-select form-select-sm" style="width: auto;"
+                        onchange="updatePageSize(this.value)">
+                    <option th:each="size : ${#numbers.sequence(12, 48, 12)}"
+                            th:value="${size}"
+                            th:text="${size}"
+                            th:selected="${pageSize == size}">
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+
     <!-- Empty State -->
-    <div th:if="${contacts.empty}" class="text-center py-5">
+    <div th:if="${contacts.isEmpty()}" class="text-center py-5">
         <div class="card shadow-sm border-0">
             <div class="card-body py-5">
                 <i class="fas fa-star fa-4x text-muted mb-4"></i>
@@ -112,6 +205,15 @@
         </div>
     </div>
 </div>
+
+<script>
+    function updatePageSize(newSize) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('size', newSize);
+        url.searchParams.set('page', '0');
+        window.location.href = url.toString();
+    }
+</script>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <div th:replace="~{fragments/scripts :: base-scripts}"></div>

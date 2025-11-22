@@ -209,4 +209,10 @@ public class ContactServiceImpl implements ContactService {
     public Page<Contact> findAll(Pageable pageable) {
         return contactRepository.findAll(pageable);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Contact> findFavorites(Pageable pageable) {
+        return contactRepository.findByIsFavoriteTrue(pageable);
+    }
 }
