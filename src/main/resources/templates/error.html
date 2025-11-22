@@ -6,10 +6,10 @@
     <title>Ошибка - Contact Manager</title>
 
     <div th:replace="~{fragments/styles :: base-styles}"></div>
-    <div th:replace="fragments/styles :: page-styles('error')"></div>
+    <div th:replace="~{fragments/styles :: page-styles('error')}"></div>
 </head>
 <body class="app-container">
-<div th:replace="fragments/header :: header('Ошибка', null, null, null)"></div>
+<div th:replace="~{fragments/header :: header('Ошибка', null, null, null)}"></div>
 
 <div class="main-content">
     <div class="container">
@@ -59,7 +59,7 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title th:text="'Отчёт #' + ${reportId} + ' - Contact Manager'">Отчёт #1</title>
-    <div th:replace="fragments/styles :: base-styles"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header('Отчёт', null, null, 'report')"></div>
+<div th:replace="~{fragments/header :: header('Отчёт', null, null, 'report')}"></div>
 
 <div class="container py-4">
     <div th:if="${status == 'CREATED'}" class="text-center py-5">
@@ -30,7 +30,7 @@
     <div th:if="${status == 'COMPLETED'}" th:utext="${reportHtml}"></div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

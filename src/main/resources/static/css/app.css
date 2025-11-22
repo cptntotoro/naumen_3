@@ -1303,6 +1303,140 @@ p {
     text-decoration: none;
 }
 
+/* ===== PAGINATION STYLES ===== */
+.pagination {
+    display: flex;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.page-item {
+    margin: 0;
+}
+
+.page-item:first-child .page-link {
+    border-top-left-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+}
+
+.page-item:last-child .page-link {
+    border-top-right-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--gray-300);
+    background-color: var(--white);
+    color: var(--gray-600);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+    transition: var(--transition);
+    border-radius: var(--radius);
+}
+
+.page-link:hover {
+    background-color: var(--gray-50);
+    border-color: var(--gray-400);
+    color: var(--gray-700);
+    transform: translateY(-1px);
+}
+
+.page-item.active .page-link {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-color: var(--primary);
+    color: var(--white);
+    box-shadow: var(--shadow-sm);
+}
+
+.page-item.disabled .page-link {
+    background-color: var(--gray-100);
+    border-color: var(--gray-300);
+    color: var(--gray-400);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.page-item.disabled .page-link:hover {
+    background-color: var(--gray-100);
+    border-color: var(--gray-300);
+    color: var(--gray-400);
+    transform: none;
+}
+
+/* Стили для иконок в пагинации */
+.page-link i {
+    font-size: var(--font-size-sm);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .pagination {
+        flex-wrap: wrap;
+        gap: var(--space-1);
+    }
+
+    .page-link {
+        min-width: 40px;
+        height: 40px;
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--font-size-xs);
+    }
+
+    /* Скрываем некоторые номера страниц на мобильных */
+    .page-item:not(.active):not(:first-child):not(:last-child):not(:nth-child(2)):not(:nth-last-child(2)) {
+        display: none;
+    }
+
+    /* Показываем многоточие для скрытых страниц */
+    .page-item:nth-child(3):not(.active) .page-link::after,
+    .page-item:nth-last-child(2):not(.active) .page-link::after {
+        content: "...";
+    }
+
+    .page-item:nth-child(3):not(.active) .page-link,
+    .page-item:nth-last-child(2):not(.active) .page-link {
+        background: transparent;
+        border: none;
+        pointer-events: none;
+        min-width: auto;
+    }
+}
+
+/* Дополнительные стили для улучшенного внешнего вида */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: var(--space-8);
+}
+
+.pagination-info {
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+    margin-right: var(--space-4);
+}
+
+/* Стили для компактной пагинации */
+.pagination-compact .page-link {
+    min-width: 36px;
+    height: 36px;
+    padding: var(--space-2);
+    font-size: var(--font-size-xs);
+}
+
 @media (max-width: 768px) {
     .footer-content {
         flex-direction: column;

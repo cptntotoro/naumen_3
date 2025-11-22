@@ -6,14 +6,11 @@
     <title th:text="${eventId != null ? 'Редактирование события' : 'Новое событие'}">Событие - Contact Manager</title>
 
     <!-- Подключение стилей -->
-    <div th:replace="fragments/styles :: base-styles"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header(
-        ${eventId != null ? 'Редактирование события' : 'Новое событие'},
-        null,
-        null
-    )"></div>
+<div th:replace="~{fragments/header :: header(${eventId != null ? 'Редактирование события' : 'Новое событие'},
+        null, null)}"></div>
 
 <div class="container">
     <div class="row justify-content-center">
@@ -148,8 +145,8 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function () {

@@ -5,51 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Контакты - Contact Manager</title>
 
-    <div th:replace="fragments/styles :: base-styles"></div>
-    <div th:replace="fragments/styles :: page-styles('contacts')"></div>
-    <div th:replace="fragments/styles :: page-styles('forms')"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('contacts')}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('forms')}"></div>
 </head>
 <body class="app-container">
-<div th:replace="fragments/header :: header('Контакты', '/contacts/new', 'Добавить контакт', 'contacts')"
+<div th:replace="~{fragments/header :: header('Контакты', '/contacts/new', 'Добавить контакт', 'contacts')}"
      th:with="currentPage='contacts'"></div>
 
-<!-- Search and Filters -->
+<!-- Поиск и фильтры -->
 <div class="container">
-    <!-- Search Form -->
     <div class="card shadow-sm mb-4">
         <div class="card-body p-3">
             <form th:action="@{/contacts}" method="get" class="filter-form">
                 <div class="row g-2 align-items-end gap-2 justify-content-between">
+                    <!-- Поиск по имени, фамилии и псевдониму -->
                     <div class="col-lg-4 col-md-12">
-                        <label class="form-label fw-semibold mb-1 small">Поиск</label>
+                        <label class="form-label fw-semibold mb-1 small">Поиск контактов</label>
                         <div class="input-group input-group-sm">
                             <input type="text" name="search" class="form-control border-start-0 py-2"
-                                   placeholder="Имя, фамилия, компания..." th:value="${param.search}">
+                                   placeholder="Имя, фамилия или псевдоним..."
+                                   th:value="${param.search}">
                         </div>
                     </div>
+
+                    <!-- Фильтр по компании -->
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label fw-semibold mb-1 small">Компания</label>
                         <select name="company" class="form-select form-select-sm py-2">
                             <option value="">Все компании</option>
                             <option th:each="company : ${companies}" th:value="${company.name}"
-                                    th:text="${company.name}" th:selected="${param.company == company.name}"></option>
+                                    th:text="${company.name}"
+                                    th:selected="${param.company != null && param.company == company.name}"></option>
                         </select>
                     </div>
+
+                    <!-- Фильтр по тегу -->
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label fw-semibold mb-1 small">Тег</label>
                         <select name="tag" class="form-select form-select-sm py-2">
                             <option value="">Все теги</option>
                             <option th:each="tag : ${tags}" th:value="${tag.name}" th:text="${tag.name}"
-                                    th:selected="${param.tag == tag.name}"></option>
+                                    th:selected="${param.tag != null && param.tag == tag.name}"></option>
                         </select>
                     </div>
+
+                    <!-- Кнопки действий -->
                     <div class="col-lg-2 col-md-12">
                         <label class="form-label fw-semibold mb-1 small d-md-none d-lg-block">&nbsp;</label>
-                        <button type="submit" class="btn btn-primary w-100 filter-submit-btn link-inactive">
-                            <i class="fas fa-filter me-1"></i>Применить
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-fill filter-submit-btn">
+                                <i class="fas fa-filter me-1"></i>Применить
+                            </button>
+                            <a th:href="@{/contacts}" class="btn btn-outline-secondary"
+                               th:if="${param.search != null || param.company != null || param.tag != null}"
+                               title="Сбросить фильтры">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Информация о результатах поиска -->
+                <!--                <div class="row mt-3" th:if="${param.search != null || param.company != null || param.tag != null}">-->
+                <!--                    <div class="col-12">-->
+                <!--                        <div class="d-flex justify-content-between align-items-center">-->
+                <!--                            <div class="text-muted small">-->
+                <!--                                <span th:if="${totalCount != null}">Найдено контактов: <strong th:text="${totalCount}"></strong></span>-->
+                <!--                                <span th:if="${param.search != null}"> по запросу "<strong th:text="${param.search}"></strong>"</span>-->
+                <!--                                <span th:if="${param.company != null}"> в компании "<strong th:text="${param.company}"></strong>"</span>-->
+                <!--                                <span th:if="${param.tag != null}"> с тегом "<strong th:text="${param.tag}"></strong>"</span>-->
+                <!--                            </div>-->
+                <!--                            <a th:href="@{/contacts}" class="btn btn-outline-secondary btn-sm">-->
+                <!--                                <i class="fas fa-times me-1"></i>Сбросить-->
+                <!--                            </a>-->
+                <!--                        </div>-->
+                <!--                    </div>-->
+                <!--                </div>-->
             </form>
         </div>
     </div>
@@ -172,36 +204,87 @@
         </div>
     </div>
 
-    <!-- Pagination -->
-    <div th:if="${!contacts.isEmpty()}" class="d-flex justify-content-between align-items-center mt-4">
-        <!--        <div class="text-muted">-->
-        <!--            Показано <span th:text="${contacts.size()}"></span> из <span th:text="${totalCount}"></span> контактов-->
-        <!--        </div>-->
-        <nav th:if="${totalPages > 1}">
-            <ul class="pagination mb-0">
-                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                    <a class="page-link"
-                       th:href="@{/contacts(size=${pageSize}, page=${currentPage - 1}, search=${param.search})}">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                </li>
-                <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}"
-                    class="page-item" th:classappend="${page == currentPage} ? 'active'">
-                    <a class="page-link" th:href="@{/contacts(size=${pageSize}, page=${page}, search=${param.search})}"
-                       th:text="${page + 1}"></a>
-                </li>
-                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                    <a class="page-link"
-                       th:href="@{/contacts(size=${pageSize}, page=${currentPage + 1}, search=${param.search})}">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+    <!-- Пагинация -->
+    <div th:if="${!contacts.isEmpty()}" class="pagination-container">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <!-- Информация -->
+            <div class="pagination-info d-none d-md-block">
+                Страница <span th:text="${currentPage + 1}"></span> из <span th:text="${totalPages}"></span>
+            </div>
+
+            <!-- Навигация -->
+            <nav th:if="${totalPages > 1}">
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/contacts(
+                           size=${pageSize},
+                           page=${currentPage - 1},
+                           search=${param.search},
+                           company=${param.company},
+                           tag=${param.tag}
+                       )}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <!-- Номера страниц -->
+                    <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}"
+                        class="page-item" th:classappend="${page == currentPage} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/contacts(
+                           size=${pageSize},
+                           page=${page},
+                           search=${param.search},
+                           company=${param.company},
+                           tag=${param.tag}
+                       )}"
+                           th:text="${page + 1}">
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/contacts(
+                           size=${pageSize},
+                           page=${currentPage + 1},
+                           search=${param.search},
+                           company=${param.company},
+                           tag=${param.tag}
+                       )}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Селектор размера страницы -->
+            <div class="d-none d-md-flex align-items-center gap-2">
+                <span class="text-muted small">На странице:</span>
+                <select class="form-select form-select-sm" style="width: auto;"
+                        onchange="updatePageSize(this.value)">
+                    <!-- Исправленный синтаксис массива -->
+                    <option th:each="size : ${#numbers.sequence(12, 48, 12)}"
+                            th:value="${size}"
+                            th:text="${size}"
+                            th:selected="${pageSize == size}">
+                    </option>
+                </select>
+            </div>
+        </div>
     </div>
+
+    <script>
+        function updatePageSize(newSize) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('size', newSize);
+            url.searchParams.set('page', '0'); // Сбрасываем на первую страницу
+            window.location.href = url.toString();
+        }
+    </script>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>

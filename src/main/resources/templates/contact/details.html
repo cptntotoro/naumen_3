@@ -6,8 +6,8 @@
     <title th:text="'Контакт: ' + ${contactDetails.contact.firstName} + ' ' + ${contactDetails.contact.lastName}">
         Контакт — Contact Manager</title>
 
-    <div th:replace="fragments/styles :: base-styles"></div>
-    <div th:replace="fragments/styles :: page-styles('contacts')"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('contacts')}"></div>
     <link th:href="@{/css/pages/contact-details.css}" rel="stylesheet">
 </head>
 <body class="app-container">

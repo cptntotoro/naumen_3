@@ -6,10 +6,10 @@
     <title>Избранные контакты - Contact Manager</title>
 
     <!-- Подключение стилей -->
-    <div th:replace="fragments/styles :: base-styles"></div>
+    <div th:replace="~{fragments/styles :: base-styles}"></div>
 </head>
 <body class="bg-light">
-<div th:replace="fragments/header :: header('Избранные контакты', null, null)"></div>
+<div th:replace="~{fragments/header :: header('Избранные контакты', null, null)}"></div>
 
 <div class="container">
     <!-- Stats -->
@@ -113,7 +113,7 @@
     </div>
 </div>
 
-<div th:replace="fragments/footer :: footer"></div>
-<div th:replace="fragments/scripts :: base-scripts"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: base-scripts}"></div>
 </body>
 </html>
