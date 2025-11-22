@@ -53,6 +53,11 @@ public class ContactFullDetails {
     private Event birthday;
 
     /**
+     * Число дней до дня рождения
+     */
+    private Integer daysUntil;
+
+    /**
      * Список заметок
      */
     private List<Note> notes;
@@ -85,20 +90,5 @@ public class ContactFullDetails {
 
     public boolean hasTags() {
         return tags != null && !tags.isEmpty();
-    }
-
-    public String getDisplayInfo() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getFullName());
-
-        if (hasBirthday()) {
-            sb.append(" 🎂");
-        }
-
-        if (isFavorite()) {
-            sb.append(" ⭐");
-        }
-
-        return sb.toString();
     }
 }

@@ -12,6 +12,10 @@
     position: relative;
 }
 
+.badge-counter {
+    color: var(--white);
+}
+
 .contact-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-xl);

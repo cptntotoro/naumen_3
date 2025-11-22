@@ -999,6 +999,10 @@ p {
     justify-content: space-between;
 }
 
+.justify-content-around {
+    justify-content: space-around;
+}
+
 .justify-content-end {
     justify-content: flex-end;
 }

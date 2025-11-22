@@ -144,8 +144,34 @@ public interface ContactRepository extends JpaRepository<Contact, Long>, Contact
     Page<Contact> findByIsFavoriteTrue(Pageable pageable);
 
     /**
-     * Найти избранные контакты с пагинацией
+     * Получить контакты, у которых день рождения попадает в указанный диапазон дат
+     * <p>
+     * Метод ищет дни рождения, у которых месяц и день находятся между заданными границами.
+     * Например, для поиска дней рождения с 25 декабря по 15 января:
+     * - startMonth = 12 (декабрь), endMonth = 1 (январь)
+     * - startDay = 25, endDay = 15
+     *
+     * @param startMonth начальный месяц диапазона (1-12)
+     * @param endMonth   конечный месяц диапазона (1-12)
+     * @param startDay   начальный день диапазона (1-31)
+     * @param endDay     конечный день диапазона (1-31)
+     * @return Список контактов
+     *
+     * @example - Найти дни рождения с 15 декабря по 10 января
+     * findContactsWithUpcomingBirthdays(12, 1, 15, 10)
+     * <p>
+     * - Найти дни рождения с 1 по 31 марта
+     * findContactsWithUpcomingBirthdays(3, 3, 1, 31)
      */
-    @Query("SELECT c FROM Contact c WHERE c.isFavorite = true ORDER BY c.firstName, c.lastName")
-    Page<Contact> findFavoriteContacts(Pageable pageable);
+    @Query(value = "SELECT DISTINCT c.* FROM contacts c " +
+            "JOIN events e ON c.id = e.contact_id " +
+            "WHERE e.event_type = 'BIRTHDAY' " +
+            "AND EXTRACT(MONTH FROM e.event_date) BETWEEN :startMonth AND :endMonth " +
+            "AND EXTRACT(DAY FROM e.event_date) BETWEEN :startDay AND :endDay",
+            nativeQuery = true)
+    List<Contact> findContactsWithUpcomingBirthdays(
+            @Param("startMonth") int startMonth,
+            @Param("endMonth") int endMonth,
+            @Param("startDay") int startDay,
+            @Param("endDay") int endDay);
 }

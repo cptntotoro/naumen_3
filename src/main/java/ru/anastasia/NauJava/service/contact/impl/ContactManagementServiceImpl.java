@@ -38,6 +38,9 @@ import ru.anastasia.NauJava.service.note.NoteService;
 import ru.anastasia.NauJava.service.socialprofile.SocialProfileService;
 import ru.anastasia.NauJava.service.tag.TagService;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -207,10 +210,32 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     @Transactional(readOnly = true)
     @Override
     public List<ContactFullDetails> getListWithUpcomingBirthdays(int daysAhead) {
-        List<Contact> contactsWithBirthdays = contactService.findBirthdaysThisMonth();
+        List<Contact> contactsWithBirthdays = contactService.findWithUpcomingBirthdays(daysAhead);
         return contactsWithBirthdays.stream()
-                .map(contact -> getSummary(contact.getId()))
+                .map(contact -> {
+                    ContactFullDetails details = getSummary(contact.getId());
+                    // Добавляем информацию о дне рождения и днях до него
+                    Event birthday = eventService.findBirthdayByContactId(contact.getId());
+                    if (birthday != null) {
+                        details.setBirthday(birthday);
+                        details.setDaysUntil(calculateDaysUntil(birthday.getEventDate()));
+                    }
+                    return details;
+                })
+                .filter(details -> details.getBirthday() != null)
+                .sorted(Comparator.comparing(details -> details.getBirthday().getEventDate()))
                 .toList();
+    }
+
+    private int calculateDaysUntil(LocalDate birthday) {
+        LocalDate today = LocalDate.now();
+        LocalDate nextBirthday = birthday.withYear(today.getYear());
+
+        if (nextBirthday.isBefore(today)) {
+            nextBirthday = nextBirthday.plusYears(1);
+        }
+
+        return (int) ChronoUnit.DAYS.between(today, nextBirthday);
     }
 
     @Override
