@@ -65,23 +65,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Информация о результатах поиска -->
-                <!--                <div class="row mt-3" th:if="${param.search != null || param.company != null || param.tag != null}">-->
-                <!--                    <div class="col-12">-->
-                <!--                        <div class="d-flex justify-content-between align-items-center">-->
-                <!--                            <div class="text-muted small">-->
-                <!--                                <span th:if="${totalCount != null}">Найдено контактов: <strong th:text="${totalCount}"></strong></span>-->
-                <!--                                <span th:if="${param.search != null}"> по запросу "<strong th:text="${param.search}"></strong>"</span>-->
-                <!--                                <span th:if="${param.company != null}"> в компании "<strong th:text="${param.company}"></strong>"</span>-->
-                <!--                                <span th:if="${param.tag != null}"> с тегом "<strong th:text="${param.tag}"></strong>"</span>-->
-                <!--                            </div>-->
-                <!--                            <a th:href="@{/contacts}" class="btn btn-outline-secondary btn-sm">-->
-                <!--                                <i class="fas fa-times me-1"></i>Сбросить-->
-                <!--                            </a>-->
-                <!--                        </div>-->
-                <!--                    </div>-->
-                <!--                </div>-->
             </form>
         </div>
     </div>
@@ -207,10 +190,6 @@
     <!-- Пагинация -->
     <div th:if="${!contacts.isEmpty()}" class="pagination-container">
         <div class="d-flex justify-content-between align-items-center w-100">
-            <!-- Информация -->
-            <div class="pagination-info d-none d-md-block">
-                Страница <span th:text="${currentPage + 1}"></span> из <span th:text="${totalPages}"></span>
-            </div>
 
             <!-- Навигация -->
             <nav th:if="${totalPages > 1}">
@@ -259,12 +238,11 @@
             </nav>
 
             <!-- Селектор размера страницы -->
-            <div class="d-none d-md-flex align-items-center gap-2">
+            <div class="d-md-flex align-items-center gap-2">
                 <span class="text-muted small">На странице:</span>
                 <select class="form-select form-select-sm" style="width: auto;"
                         onchange="updatePageSize(this.value)">
-                    <!-- Исправленный синтаксис массива -->
-                    <option th:each="size : ${#numbers.sequence(12, 48, 12)}"
+                    <option th:each="size : ${#numbers.sequence(6, 18, 3)}"
                             th:value="${size}"
                             th:text="${size}"
                             th:selected="${pageSize == size}">

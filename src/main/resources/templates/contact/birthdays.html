@@ -7,106 +7,106 @@
 
     <!-- Подключение стилей -->
     <div th:replace="~{fragments/styles :: base-styles}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('contacts')}"></div>
+    <div th:replace="~{fragments/styles :: page-styles('birthdays')}"></div>
 </head>
-<body class="bg-light">
-<div th:replace="~{fragments/header :: header('Предстоящие дни рождения', null, null)}"></div>
+<body class="app-container">
+<div th:replace="~{fragments/header :: header('Предстоящие дни рождения', null, null, 'birthdays')}"></div>
 
 <div class="container">
     <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-pink text-white shadow-sm"
-                 style="background: linear-gradient(135deg, #e83e8c 0%, #6f42c1 100%);">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h3 class="h4 mb-2">
-                                <i class="fas fa-birthday-cake me-2"></i>Предстоящие дни рождения
-                            </h3>
-                            <p class="mb-0">Не пропустите важные события ваших контактов</p>
-                        </div>
-                        <div class="col-md-4 text-md-end">
-                            <h2 class="display-4 fw-bold" th:text="${contacts.size()}">0</h2>
-                            <p class="mb-0">предстоящих дней рождения</p>
-                        </div>
-                    </div>
-                </div>
+    <div class="birthdays-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h1 class="h3 mb-2">
+                    <i class="fas fa-birthday-cake me-2"></i>Предстоящие дни рождения
+                </h1>
+                <p class="opacity-90">Не пропустите важные события ваших контактов</p>
+            </div>
+            <div class="text-end">
+                <div class="birthdays-count" th:text="${contacts.size()}">0</div>
+                <p class="opacity-90 mb-0">предстоящих дней рождения</p>
             </div>
         </div>
     </div>
 
     <!-- Birthday Contacts -->
-    <div class="row g-4" th:if="${!contacts.empty}">
-        <div th:each="contact : ${contacts}" class="col-xl-6">
-            <div class="birthday-card card h-100">
+    <div class="contacts-grid" th:if="${!contacts.empty}">
+        <div th:each="contact : ${contacts}" class="contact-item">
+            <div class="birthday-card">
                 <div class="card-body">
-                    <div class="d-flex align-items-start">
-                        <img th:src="${contact.contact.avatarUrl} ?: '/images/avatar-placeholder.jpg'"
-                             alt="Avatar" class="avatar rounded-circle me-4 shadow">
-                        <div class="card-info">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title mb-0 fw-bold">
-                                    <span th:text="${contact.contact.firstName + ' ' + contact.contact.lastName}"></span>
-                                    <i th:if="${contact.contact.favorite}" class="fas fa-star text-warning ms-1"></i>
-                                </h5>
-                                <i class="fas fa-birthday-cake birthday-icon fa-lg"></i>
+                    <div class="d-flex align-items-start gap-4">
+                        <div class="avatar-container position-relative">
+                            <img th:src="${contact.contact.avatarUrl} ?: '/images/avatar-placeholder.jpg'"
+                                 alt="Avatar" class="birthday-avatar">
+                            <div class="favorite-star-icon" th:if="${contact.contact.isFavorite}">
+                                <i class="favorite-icon fas fa-star"></i>
+                            </div>
+                        </div>
+
+                        <div class="card-info flex-1">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h3 class="contact-name mb-1">
+                                        <span th:text="${contact.contact.firstName + ' ' + contact.contact.lastName}"></span>
+                                    </h3>
+                                    <p class="contact-display-name text-muted" th:if="${contact.contact.displayName}"
+                                       th:text="${contact.contact.displayName}"></p>
+                                </div>
+                                <i class="fas fa-birthday-cake birthday-icon"></i>
                             </div>
 
-                            <p class="text-muted mb-2" th:if="${contact.contact.displayName}"
-                               th:text="${contact.contact.displayName}"></p>
-
                             <!-- Birthday Info -->
-                            <div class="birthday-info mb-3">
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                            <div class="birthday-info">
+                                <div class="info-item">
+                                    <i class="fas fa-calendar-alt"></i>
                                     <strong>Дата рождения: </strong>
                                     <span class="ms-2 fw-semibold"
                                           th:text="${#temporals.format(contact.birthday.eventDate, 'dd.MM.yyyy')}"></span>
                                 </div>
 
                                 <!-- Days Until -->
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-clock text-info me-2"></i>
+                                <div class="info-item">
+                                    <i class="fas fa-clock"></i>
                                     <strong>До дня рождения: </strong>
-                                    <span class="badge bg-info days-count ms-2"
-                                          th:text="${contact.daysUntil + ' ' + #strings.pluralize(contact.daysUntil, 'день', 'дня', 'дней')}"></span>
+                                    <span class="days-count ms-2"
+                                          th:text="${contact.daysUntil} + ' ' + ${contact.daysUntil == 1 ? 'день' : (contact.daysUntil >= 2 && contact.daysUntil <= 4 ? 'дня' : 'дней')}"></span>
                                 </div>
                             </div>
 
                             <!-- Contact Info -->
                             <div class="contact-info">
                                 <div th:each="detail : ${contact.primaryContactDetails}">
-                                    <small class="text-muted d-block">
-                                        <i th:class="'fas fa-' + ${detail.detailType == 'EMAIL' ? 'envelope' : 'phone'} + ' me-1'"></i>
+                                    <div class="contact-detail">
+                                        <i th:class="'fas fa-' + ${detail.detailType == 'EMAIL' ? 'envelope' : 'phone'}"></i>
                                         <span th:text="${detail.value}"></span>
-                                    </small>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Tags -->
-                            <div class="tags mt-2" th:if="${contact.tags} && !contact.tags.empty}">
+                            <div class="contact-tags" th:if="${contact.tags != null and !contact.tags.empty}">
+                                <div class="tags-grid">
                                     <span th:each="tag : ${contact.tags}"
-                                          class="badge bg-light text-dark border me-1 mb-1 small">
+                                          class="tag-badge"
+                                          th:style="'background-color: ' + ${tag.color} + ';'">
                                         <i class="fas fa-tag me-1"></i>
                                         <span th:text="${tag.name}"></span>
                                     </span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-white border-0 pt-0">
-                    <div class="btn-group w-100">
+                <div class="card-footer">
+                    <div class="birthday-actions">
                         <a th:href="@{/contacts/{id}(id=${contact.contact.id})}"
-                           class="btn btn-outline-primary flex-fill">
+                           class="btn btn-outline-primary">
                             <i class="fas fa-eye me-1"></i>Просмотр
                         </a>
                         <a th:href="@{/contacts/{id}/edit(id=${contact.contact.id})}"
-                           class="btn btn-outline-secondary flex-fill">
+                           class="btn btn-outline-secondary">
                             <i class="fas fa-edit me-1"></i>Редактировать
-                        </a>
-                        <a th:href="@{tel:${contact.primaryPhone}}"
-                           class="btn btn-outline-success flex-fill" th:if="${contact.primaryPhone}">
-                            <i class="fas fa-phone me-1"></i>Позвонить
                         </a>
                     </div>
                 </div>
@@ -115,47 +115,37 @@
     </div>
 
     <!-- Empty State -->
-    <div th:if="${contacts.empty}" class="text-center py-5">
-        <div class="card shadow-sm border-0">
+    <div th:if="${contacts.empty}" class="empty-state">
+        <div class="card">
             <div class="card-body py-5">
-                <i class="fas fa-birthday-cake fa-4x text-muted mb-4"></i>
-                <h3 class="h4 text-muted mb-3">Нет предстоящих дней рождения</h3>
-                <p class="text-muted mb-4">Дни рождения появятся здесь за 30 дней до события</p>
-                <a th:href="@{/contacts}" class="btn btn-primary btn-lg me-3">
-                    <i class="fas fa-users me-2"></i>Все контакты
-                </a>
-                <a th:href="@{/events/new}" class="btn btn-outline-primary btn-lg">
-                    <i class="fas fa-plus me-2"></i>Добавить событие
-                </a>
+                <i class="fas fa-birthday-cake empty-state__icon"></i>
+                <h3 class="empty-state__title">Нет предстоящих дней рождения</h3>
+                <p class="empty-state__description">Дни рождения появятся здесь за 30 дней до события</p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a th:href="@{/contacts}" class="btn btn-primary">
+                        <i class="fas fa-users me-2"></i>Все контакты
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Upcoming Events Info -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="card bg-light">
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-4">
-                            <i class="fas fa-info-circle fa-2x text-primary mb-3"></i>
-                            <h5>Автоматическое отслеживание</h5>
-                            <p class="text-muted small">Система автоматически показывает дни рождения за 30 дней до
-                                события</p>
-                        </div>
-                        <div class="col-md-4">
-                            <i class="fas fa-bell fa-2x text-warning mb-3"></i>
-                            <h5>Ничего не пропустите</h5>
-                            <p class="text-muted small">Регулярно проверяйте эту страницу чтобы поздравить вовремя</p>
-                        </div>
-                        <div class="col-md-4">
-                            <i class="fas fa-sync-alt fa-2x text-success mb-3"></i>
-                            <h5>Ежегодное повторение</h5>
-                            <p class="text-muted small">Дни рождения автоматически повторяются каждый год</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="features-grid">
+        <div class="card feature-card">
+            <i class="fas fa-info-circle feature-icon"></i>
+            <h5>Автоматическое отслеживание</h5>
+            <p class="text-muted small">Система автоматически показывает дни рождения за 30 дней до события</p>
+        </div>
+        <div class="card feature-card">
+            <i class="fas fa-bell feature-icon"></i>
+            <h5>Ничего не пропустите</h5>
+            <p class="text-muted small">Регулярно проверяйте эту страницу чтобы поздравить вовремя</p>
+        </div>
+        <div class="card feature-card">
+            <i class="fas fa-sync-alt feature-icon"></i>
+            <h5>Ежегодное повторение</h5>
+            <p class="text-muted small">Дни рождения автоматически повторяются каждый год</p>
         </div>
     </div>
 </div>

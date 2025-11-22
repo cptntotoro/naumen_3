@@ -184,4 +184,12 @@ public interface ContactService {
      * @return Страница избранных контактов
      */
     Page<Contact> findFavorites(Pageable pageable);
+
+    /**
+     * Получить список контактов с грядущими днями рождения
+     *
+     * @param daysAhead Число дней, включая сегодняшнюю дату
+     * @return Список контактов
+     */
+    List<Contact> findWithUpcomingBirthdays(int daysAhead);
 }

@@ -9,7 +9,7 @@
     <div th:replace="~{fragments/styles :: page-styles('contacts')}"></div>
 </head>
 <body class="app-container">
-<div th:replace="~{fragments/header :: header('Избранные контакты', '/contacts', 'Все контакты', 'contacts')}"></div>
+<div th:replace="~{fragments/header :: header('Избранные контакты', null, null, 'contacts')}"></div>
 
 <div class="container">
     <!-- Stats -->
@@ -140,10 +140,6 @@
     <!-- Пагинация -->
     <div th:if="${!contacts.isEmpty()}" class="pagination-container">
         <div class="d-flex justify-content-between align-items-center w-100">
-            <!-- Информация -->
-            <div class="pagination-info d-none d-md-block">
-                Страница <span th:text="${currentPage + 1}"></span> из <span th:text="${totalPages}"></span>
-            </div>
 
             <!-- Навигация -->
             <nav th:if="${totalPages > 1}">
@@ -174,11 +170,11 @@
             </nav>
 
             <!-- Селектор размера страницы -->
-            <div class="d-none d-md-flex align-items-center gap-2">
+            <div class="d-md-flex align-items-center gap-2">
                 <span class="text-muted small">На странице:</span>
                 <select class="form-select form-select-sm" style="width: auto;"
                         onchange="updatePageSize(this.value)">
-                    <option th:each="size : ${#numbers.sequence(12, 48, 12)}"
+                    <option th:each="size : ${#numbers.sequence(6, 18, 3)}"
                             th:value="${size}"
                             th:text="${size}"
                             th:selected="${pageSize == size}">

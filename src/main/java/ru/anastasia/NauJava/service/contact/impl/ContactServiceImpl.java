@@ -17,6 +17,7 @@ import ru.anastasia.NauJava.service.contact.ContactService;
 import ru.anastasia.NauJava.service.event.EventService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -214,5 +215,42 @@ public class ContactServiceImpl implements ContactService {
     @Transactional(readOnly = true)
     public Page<Contact> findFavorites(Pageable pageable) {
         return contactRepository.findByIsFavoriteTrue(pageable);
+    }
+
+    @Override
+    public List<Contact> findWithUpcomingBirthdays(int daysAhead) {
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = today.plusDays(daysAhead);
+
+        // Для случаев, когда период переходит через год
+        if (today.getYear() == endDate.getYear()) {
+            // Период в пределах одного года
+            return contactRepository.findContactsWithUpcomingBirthdays(
+                    today.getMonthValue(),
+                    endDate.getMonthValue(),
+                    today.getDayOfMonth(),
+                    endDate.getDayOfMonth()
+            );
+        } else {
+            // Период переходит через год - нужно два запроса
+            List<Contact> firstPart = contactRepository.findContactsWithUpcomingBirthdays(
+                    today.getMonthValue(),
+                    12,
+                    today.getDayOfMonth(),
+                    31
+            );
+
+            List<Contact> secondPart = contactRepository.findContactsWithUpcomingBirthdays(
+                    1,
+                    endDate.getMonthValue(),
+                    1,
+                    endDate.getDayOfMonth()
+            );
+
+            List<Contact> result = new ArrayList<>();
+            result.addAll(firstPart);
+            result.addAll(secondPart);
+            return result;
+        }
     }
 }

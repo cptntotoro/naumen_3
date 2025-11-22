@@ -4,6 +4,12 @@
     gap: 1.5rem;
 }
 
+.tag-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 @media (max-width: 768px) {
     .tags-grid {
         grid-template-columns: 1fr;
