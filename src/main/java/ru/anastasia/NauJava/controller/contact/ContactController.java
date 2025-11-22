@@ -188,9 +188,26 @@ public class ContactController {
     }
 
     @GetMapping("/favorites")
-    public String favoriteContacts(Model model) {
-        List<ContactFullDetails> favoriteContacts = contactManagementService.getListFavoriteWithDetails();
-        model.addAttribute("contacts", favoriteContacts);
+    public String favoriteContacts(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "12") int size,
+            Model model) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Contact> favoriteContactsPage = contactService.findFavorites(pageable);
+
+        model.addAttribute("contacts", favoriteContactsPage.getContent());
+
+        model.addAttribute("contacts", favoriteContactsPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", favoriteContactsPage.getTotalPages());
+        model.addAttribute("totalCount", favoriteContactsPage.getTotalElements());
+
+        Long favoritesCount = contactService.countFavorites();
+        model.addAttribute("favoritesCount", favoritesCount);
+
         return "contact/favorites";
     }
 

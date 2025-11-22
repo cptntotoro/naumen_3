@@ -134,4 +134,18 @@ public interface ContactRepository extends JpaRepository<Contact, Long>, Contact
             @Param("companyName") String companyName,
             @Param("tagName") String tagName,
             Pageable pageable);
+
+    /**
+     * Получить страницу избранных контактов
+     *
+     * @param pageable Страница
+     * @return Страница избранных контактов
+     */
+    Page<Contact> findByIsFavoriteTrue(Pageable pageable);
+
+    /**
+     * Найти избранные контакты с пагинацией
+     */
+    @Query("SELECT c FROM Contact c WHERE c.isFavorite = true ORDER BY c.firstName, c.lastName")
+    Page<Contact> findFavoriteContacts(Pageable pageable);
 }

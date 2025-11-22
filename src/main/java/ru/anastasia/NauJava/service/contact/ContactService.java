@@ -176,4 +176,12 @@ public interface ContactService {
      * @return Страница контактов
      */
     Page<Contact> findAll(Pageable pageable);
+
+    /**
+     * Получить страницу избранных контактов
+     *
+     * @param pageable Страница
+     * @return Страница избранных контактов
+     */
+    Page<Contact> findFavorites(Pageable pageable);
 }
