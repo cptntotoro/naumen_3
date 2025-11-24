@@ -1,6 +1,7 @@
 package ru.anastasia.NauJava.service.contact.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.dto.company.ContactCompanyCreateDto;
@@ -46,6 +47,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ContactManagementServiceImpl implements ContactManagementService {
@@ -108,21 +110,29 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     @Transactional
     @Override
     public Contact create(ContactCreateDto contactCreateDto) {
+        log.info("Создание нового контакта: {} {}", contactCreateDto.getFirstName(), contactCreateDto.getLastName());
+
         Contact contact = buildContactFromCreateDto(contactCreateDto);
         contact = contactService.save(contact);
+        log.debug("Базовый контакт создан с ID: {}", contact.getId());
 
         addCompaniesToContact(contact, contactCreateDto.getContactCompanyCreateDtos());
         addContactDetailsToContact(contact, contactCreateDto.getContactDetailCreateDtos());
         addSocialProfilesToContact(contact, contactCreateDto.getSocialProfileCreateDtos());
         addTagsToContact(contact, contactCreateDto.getTagIds());
 
-        return contactService.save(contact);
+        Contact savedContact = contactService.save(contact);
+        log.info("Контакт {} {} успешно создан с ID: {}", savedContact.getFirstName(), savedContact.getLastName(), savedContact.getId());
+        return savedContact;
     }
 
     @Transactional
     @Override
     public Contact update(ContactUpdateDto contactUpdateDto) {
+        log.info("Обновление контакта с ID: {}", contactUpdateDto.getId());
+
         Contact contact = contactService.findById(contactUpdateDto.getId());
+        log.debug("Контакт с ID: {} найден для обновления", contactUpdateDto.getId());
 
         updateContactBasicInfo(contact, contactUpdateDto);
         updateContactCompanies(contact, contactUpdateDto.getCompanies());
@@ -132,20 +142,25 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         updateContactNotes(contact, contactUpdateDto.getNotes());
         updateContactEvents(contact, contactUpdateDto.getEvents());
 
-        return contactService.save(contact);
+        Contact updatedContact = contactService.save(contact);
+        log.info("Контакт с ID: {} успешно обновлен", contactUpdateDto.getId());
+        return updatedContact;
     }
 
     @Override
     @Transactional
     public void delete(Long contactId) {
+        log.info("Удаление контакта с ID: {}", contactId);
         contactService.deleteById(contactId);
+        log.info("Контакт с ID: {} успешно удален", contactId);
     }
 
     @Transactional(readOnly = true)
     @Override
     public ContactFullDetails getWithAllDetails(Long contactId) {
-        Contact contact = contactService.findById(contactId);
+        log.debug("Запрос полной информации о контакте с ID: {}", contactId);
 
+        Contact contact = contactService.findById(contactId);
         List<ContactDetail> contactDetails = contactDetailService.findByContactId(contactId);
         List<SocialProfile> socialProfiles = socialProfileService.findByContactId(contactId);
         List<Event> events = eventService.findByContactId(contactId);
@@ -154,6 +169,9 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         List<ContactTag> contactTags = tagService.findContactTagsByContactId(contactId);
         Event birthday = eventService.findBirthdayByContactId(contactId);
         List<ContactDetail> primaryDetails = contactDetailService.findPrimaryByContactId(contactId);
+
+        log.debug("Полная информация о контакте с ID: {} собрана ({} событий, {} заметок, {} тегов)",
+                contactId, events.size(), notes.size(), tags.size());
 
         return ContactFullDetails.builder()
                 .contact(contact)
@@ -171,6 +189,8 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     @Transactional(readOnly = true)
     @Override
     public ContactFullDetails getSummary(Long contactId) {
+        log.debug("Запрос краткой информации о контакте с ID: {}", contactId);
+
         Contact contact = contactService.findById(contactId);
         List<ContactDetail> primaryDetails = contactDetailService.findPrimaryByContactId(contactId);
         List<SocialProfile> mainSocialProfiles = socialProfileService.findByContactId(contactId);
@@ -189,6 +209,8 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     @Transactional
     @Override
     public Contact duplicate(Long contactId, String newFirstName, String newLastName) {
+        log.info("Дублирование контакта с ID: {}", contactId);
+
         ContactFullDetails originalDetails = getWithAllDetails(contactId);
         Contact original = originalDetails.getContact();
 
@@ -196,6 +218,8 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         String duplicateLastName = getDuplicateLastName(newLastName, original);
 
         Contact savedDuplicate = contactService.add(duplicateFirstName, duplicateLastName);
+        log.debug("Базовый дубликат создан с ID: {}", savedDuplicate.getId());
+
         savedDuplicate = updateDuplicateBasicInfo(savedDuplicate, original);
 
         duplicateContactDetails(originalDetails, savedDuplicate);
@@ -204,17 +228,20 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         duplicateTags(originalDetails, savedDuplicate);
         duplicateNotes(originalDetails, savedDuplicate);
 
-        return contactService.findById(savedDuplicate.getId());
+        Contact result = contactService.findById(savedDuplicate.getId());
+        log.info("Контакт с ID: {} успешно продублирован в контакт с ID: {}", contactId, result.getId());
+        return result;
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<ContactFullDetails> getListWithUpcomingBirthdays(int daysAhead) {
+        log.debug("Поиск контактов с предстоящими днями рождения в течение {} дней", daysAhead);
+
         List<Contact> contactsWithBirthdays = contactService.findWithUpcomingBirthdays(daysAhead);
-        return contactsWithBirthdays.stream()
+        List<ContactFullDetails> result = contactsWithBirthdays.stream()
                 .map(contact -> {
                     ContactFullDetails details = getSummary(contact.getId());
-                    // Добавляем информацию о дне рождения и днях до него
                     Event birthday = eventService.findBirthdayByContactId(contact.getId());
                     if (birthday != null) {
                         details.setBirthday(birthday);
@@ -225,6 +252,33 @@ public class ContactManagementServiceImpl implements ContactManagementService {
                 .filter(details -> details.getBirthday() != null)
                 .sorted(Comparator.comparing(details -> details.getBirthday().getEventDate()))
                 .toList();
+
+        log.debug("Найдено {} контактов с предстоящими днями рождения", result.size());
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public List<ContactFullDetails> getListFavoriteWithDetails() {
+        log.debug("Получение списка избранных контактов с деталями");
+
+        List<Contact> favoriteContacts = contactService.findFavorites();
+        List<ContactFullDetails> result = favoriteContacts.stream()
+                .map(contact -> getSummary(contact.getId()))
+                .toList();
+
+        log.debug("Найдено {} избранных контактов", result.size());
+        return result;
+    }
+
+    private Contact buildContactFromCreateDto(ContactCreateDto dto) {
+        return Contact.builder()
+                .firstName(dto.getFirstName())
+                .lastName(dto.getLastName())
+                .displayName(dto.getDisplayName())
+                .avatarUrl(dto.getAvatarUrl())
+                .isFavorite(dto.getIsFavorite())
+                .build();
     }
 
     private int calculateDaysUntil(LocalDate birthday) {
@@ -238,30 +292,15 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         return (int) ChronoUnit.DAYS.between(today, nextBirthday);
     }
 
-    @Override
-    @Transactional
-    public List<ContactFullDetails> getListFavoriteWithDetails() {
-        List<Contact> favoriteContacts = contactService.findFavorites();
-        return favoriteContacts.stream()
-                .map(contact -> getSummary(contact.getId()))
-                .toList();
-    }
-
-    private Contact buildContactFromCreateDto(ContactCreateDto dto) {
-        return Contact.builder()
-                .firstName(dto.getFirstName())
-                .lastName(dto.getLastName())
-                .displayName(dto.getDisplayName())
-                .avatarUrl(dto.getAvatarUrl())
-                .isFavorite(dto.getIsFavorite())
-                .build();
-    }
-
     // TODO: Только компания или только должность не добавляются
     // TODO: Сразу устанавливаются как основное место работы - нужно протянуть чекбокс
     private void addCompaniesToContact(Contact contact, List<ContactCompanyCreateDto> companyDtos) {
-        if (companyDtos.isEmpty()) return;
+        if (companyDtos.isEmpty()) {
+            log.trace("Нет компаний для добавления к контакту");
+            return;
+        }
 
+        log.debug("Добавление {} компаний к контакту", companyDtos.size());
         companyDtos.forEach(dto -> {
             Company company = companyService.findById(dto.getCompanyId());
             JobTitle jobTitle = jobTitleService.findById(dto.getJobTitleId());
@@ -287,8 +326,12 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     }
 
     private void addSocialProfilesToContact(Contact contact, List<SocialProfileCreateDto> profileDtos) {
-        if (profileDtos.isEmpty()) return;
+        if (profileDtos.isEmpty()) {
+            log.trace("Нет социальных профилей для добавления к контакту");
+            return;
+        }
 
+        log.debug("Добавление {} социальных профилей к контакту", profileDtos.size());
         profileDtos.forEach(dto -> contact.addSocialProfile(SocialProfile.builder()
                 .contact(contact)
                 .platform(dto.getPlatform())
@@ -299,8 +342,12 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     }
 
     private void addTagsToContact(Contact contact, Set<Long> tagIds) {
-        if (tagIds == null || tagIds.isEmpty()) return;
+        if (tagIds == null || tagIds.isEmpty()) {
+            log.trace("Нет тегов для добавления к контакту");
+            return;
+        }
 
+        log.debug("Добавление {} тегов к контакту", tagIds.size());
         List<Tag> tags = tagService.findAllById(tagIds);
 
         if (tags.size() != tagIds.size()) {
@@ -311,6 +358,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
                     .filter(id -> !foundTagIds.contains(id))
                     .collect(Collectors.toSet());
 
+            log.error("Не найдены теги с ID: {}", missingTagIds);
             throw new TagNotFoundException("Не найдены теги с ID: " + missingTagIds);
         }
 
@@ -329,6 +377,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     }
 
     private void updateContactCompanies(Contact contact, List<ContactCompanyUpdateDto> companyDtos) {
+        log.debug("Обновление компаний контакта с ID: {}. Старое количество: {}", contact.getId(), contact.getCompanies().size());
         List<ContactCompany> oldCompanies = List.copyOf(contact.getCompanies());
         contact.getCompanies().clear();
 
@@ -341,6 +390,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
             contactCompany.setJobTitle(jobTitle);
             contact.addCompany(contactCompany);
         });
+        log.debug("Обновлено компаний контакта с ID: {}. Новое количество: {}", contact.getId(), companyDtos.size());
     }
 
     private void updateContactDetails(Contact contact, List<ru.anastasia.NauJava.dto.contact.ContactDetailUpdateDto> detailDtos) {
@@ -455,11 +505,15 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     }
 
     private String getDuplicateFirstName(String newFirstName, Contact original) {
-        return newFirstName != null ? newFirstName : original.getFirstName() + " (копия)";
+        String result = newFirstName != null ? newFirstName : original.getFirstName() + " (копия)";
+        log.trace("Имя для дубликата: '{}' (оригинал: '{}')", result, original.getFirstName());
+        return result;
     }
 
     private String getDuplicateLastName(String newLastName, Contact original) {
-        return newLastName != null ? newLastName : original.getLastName();
+        String result = newLastName != null ? newLastName : original.getLastName();
+        log.trace("Фамилия для дубликата: '{}' (оригинал: '{}')", result, original.getLastName());
+        return result;
     }
 
     private Contact updateDuplicateBasicInfo(Contact duplicate, Contact original) {

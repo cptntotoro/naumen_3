@@ -1,6 +1,7 @@
 package ru.anastasia.NauJava.service.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -35,21 +37,38 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event create(Long contactId, EventCreateDto request) {
+        log.debug("Создание события для контакта ID: {}, тип: {}", contactId, request.getEventType());
+
         validateEventRequest(request);
         validateBirthdayCreation(contactId, request);
 
         Event event = eventMapper.eventCreateDtoToEvent(request);
-        return eventRepository.save(event);
+        Event savedEvent = eventRepository.save(event);
+
+        log.info("Событие успешно создано. ID: {}, тип: {}, дата: {}",
+                savedEvent.getId(), savedEvent.getEventType(), savedEvent.getEventDate());
+
+        return savedEvent;
     }
 
     @Override
     public Event findById(Long id) {
-        return eventRepository.findById(id)
-                .orElseThrow(() -> new EventNotFoundException("Событие не найдено с id: " + id));
+        log.debug("Поиск события по ID: {}", id);
+
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Событие не найдено с ID: {}", id);
+                    return new EventNotFoundException("Событие не найдено с id: " + id);
+                });
+
+        log.debug("Событие найдено: ID: {}, тип: {}", id, event.getEventType());
+        return event;
     }
 
     @Override
     public Event update(Event event) {
+        log.debug("Обновление события ID: {}", event.getId());
+
         Event existing = findById(event.getId());
         validateEvent(event);
 
@@ -59,89 +78,167 @@ public class EventServiceImpl implements EventService {
         existing.setNotes(event.getNotes());
         existing.setYearlyRecurrence(event.getYearlyRecurrence());
 
-        return eventRepository.save(existing);
+        Event updatedEvent = eventRepository.save(existing);
+
+        log.info("Событие успешно обновлено. ID: {}, тип: {}",
+                updatedEvent.getId(), updatedEvent.getEventType());
+
+        return updatedEvent;
     }
 
     @Override
     public void delete(Long id) {
+        log.debug("Удаление события ID: {}", id);
+
+        if (!eventRepository.existsById(id)) {
+            log.warn("Попытка удаления несуществующего события ID: {}", id);
+            throw new EventNotFoundException("Событие не найдено с id: " + id);
+        }
+
         eventRepository.deleteById(id);
+        log.info("Событие успешно удалено. ID: {}", id);
     }
 
     @Override
     public Event findBirthdayByContactId(Long contactId) {
+        log.debug("Поиск дня рождения для контакта ID: {}", contactId);
+
         List<Event> birthdayEvents = eventRepository.findByContactIdAndEventType(contactId, EventType.BIRTHDAY);
-        return birthdayEvents.isEmpty() ? null : birthdayEvents.getFirst();
+        Event birthday = birthdayEvents.isEmpty() ? null : birthdayEvents.getFirst();
+
+        if (birthday == null) {
+            log.debug("День рождения не найден для контакта ID: {}", contactId);
+        } else {
+            log.debug("День рождения найден для контакта ID: {}, дата: {}", contactId, birthday.getEventDate());
+        }
+
+        return birthday;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Map<LocalDate, List<Event>> getUpcomingEvents(int daysAhead) {
+        log.debug("Получение предстоящих событий на {} дней вперед", daysAhead);
+
         LocalDate start = LocalDate.now();
         LocalDate end = start.plusDays(daysAhead);
         List<Event> events = eventRepository.findByEventDateBetween(start, end);
-        return events.stream()
+
+        Map<LocalDate, List<Event>> result = events.stream()
                 .collect(Collectors.groupingBy(Event::getEventDate));
+
+        log.debug("Найдено {} событий на период с {} по {}",
+                events.size(), start, end);
+
+        return result;
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Event> findByContactId(Long contactId) {
-        return eventRepository.findByContactId(contactId);
+        log.debug("Поиск всех событий для контакта ID: {}", contactId);
+
+        List<Event> events = eventRepository.findByContactId(contactId);
+        log.debug("Найдено {} событий для контакта ID: {}", events.size(), contactId);
+
+        return events;
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<Event> findUpcomingBirthdays(int daysAhead) {
+        log.debug("Поиск предстоящих дней рождения на {} дней вперед", daysAhead);
+
         LocalDate start = LocalDate.now();
         LocalDate end = start.plusDays(daysAhead);
-        return eventRepository.findByEventTypeAndEventDateBetween(EventType.BIRTHDAY, start, end);
+        List<Event> birthdays = eventRepository.findByEventTypeAndEventDateBetween(EventType.BIRTHDAY, start, end);
+
+        log.debug("Найдено {} дней рождения на период с {} по {}",
+                birthdays.size(), start, end);
+
+        return birthdays;
     }
 
     @Transactional(readOnly = true)
     @Override
     public Long countUpcomingBirthdays(int daysAhead) {
+        log.debug("Подсчет количества предстоящих дней рождения на {} дней вперед", daysAhead);
+
         LocalDate start = LocalDate.now();
         LocalDate end = start.plusDays(daysAhead);
-        return eventRepository.countByEventTypeAndEventDateBetween(EventType.BIRTHDAY, start, end);
+        Long count = eventRepository.countByEventTypeAndEventDateBetween(EventType.BIRTHDAY, start, end);
+
+        log.debug("Найдено {} дней рождения на период с {} по {}", count, start, end);
+
+        return count;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Event> findByEventTypeAndEventDateBetween(EventType type, LocalDate start, LocalDate end) {
-        return eventRepository.findByEventTypeAndEventDateBetween(type, start, end);
+        log.debug("Поиск событий типа {} в период с {} по {}", type, start, end);
+
+        List<Event> events = eventRepository.findByEventTypeAndEventDateBetween(type, start, end);
+        log.debug("Найдено {} событий типа {} за указанный период", events.size(), type);
+
+        return events;
     }
 
     public boolean hasBirthday(Long contactId) {
-        return eventRepository.existsByContactIdAndEventType(contactId, EventType.BIRTHDAY);
+        log.trace("Проверка наличия дня рождения у контакта ID: {}", contactId);
+
+        boolean hasBirthday = eventRepository.existsByContactIdAndEventType(contactId, EventType.BIRTHDAY);
+        log.trace("Контакта ID: {} {} день рождения", contactId, hasBirthday ? "имеет" : "не имеет");
+
+        return hasBirthday;
     }
 
     private void validateEvent(Event event) {
+        log.trace("Валидация события ID: {}", event.getId());
+
         if (event.getEventType() == EventType.CUSTOM &&
                 (event.getCustomEventName() == null || event.getCustomEventName().trim().isEmpty())) {
+            log.warn("Ошибка валидации: для кастомного события не указано название. Событие ID: {}", event.getId());
             throw new IllegalEventStateException("Для кастомного события должно быть указано название");
         }
 
         if (event.getEventType() != EventType.CUSTOM &&
                 event.getCustomEventName() != null && !event.getCustomEventName().trim().isEmpty()) {
+            log.warn("Ошибка валидации: название кастомного события указано для стандартного события. Событие ID: {}, тип: {}",
+                    event.getId(), event.getEventType());
             throw new IllegalEventStateException("Название кастомного события должно быть пустым для стандартных событий");
         }
+
+        log.trace("Валидация события ID: {} прошла успешно", event.getId());
     }
 
     private void validateEventRequest(EventCreateDto request) {
+        log.trace("Валидация запроса на создание события типа: {}", request.getEventType());
+
         if (request.getEventType() == EventType.CUSTOM &&
                 isBlank(request.getCustomEventName())) {
+            log.warn("Ошибка валидации: для кастомного события не указано название");
             throw new IllegalEventStateException("Для кастомного события должно быть указано название");
         }
 
         if (request.getEventType() != EventType.CUSTOM &&
                 isNotBlank(request.getCustomEventName())) {
+            log.warn("Ошибка валидации: название кастомного события указано для стандартного события типа: {}",
+                    request.getEventType());
             throw new IllegalEventStateException("Название кастомного события должно быть пустым для стандартных событий");
         }
+
+        log.trace("Валидация запроса на создание события прошла успешно");
     }
 
     private void validateBirthdayCreation(Long contactId, EventCreateDto newEvent) {
+        log.trace("Проверка возможности создания дня рождения для контакта ID: {}", contactId);
+
         if (newEvent.getEventType() == EventType.BIRTHDAY && hasBirthday(contactId)) {
+            log.warn("Попытка создания второго дня рождения для контакта ID: {}", contactId);
             throw new IllegalEventStateException("У контакта уже есть день рождения. Можно иметь только одно событие типа 'День рождения'");
         }
+
+        log.trace("Проверка возможности создания дня рождения прошла успешно");
     }
 }
