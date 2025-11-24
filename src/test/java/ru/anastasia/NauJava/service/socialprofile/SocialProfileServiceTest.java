@@ -37,12 +37,30 @@ class SocialProfileServiceTest {
     @InjectMocks
     private SocialProfileServiceImpl socialProfileService;
 
-    @Test
-    void createSuccess() {
+    private Contact createTestContact() {
+        Contact contact = new Contact();
+        contact.setId(1L);
+        contact.setFirstName("Иван");
+        contact.setLastName("Петров");
+        return contact;
+    }
+
+    private SocialProfile createTestSocialProfile() {
+        Contact contact = createTestContact();
+
         SocialProfile profile = new SocialProfile();
+        profile.setId(1L);
+        profile.setContact(contact);
         profile.setPlatform(SocialPlatform.VK);
         profile.setUsername("иван_петров");
         profile.setProfileUrl("https://vk.com/ivan_petrov");
+        return profile;
+    }
+
+    @Test
+    void createSuccess() {
+        SocialProfile profile = createTestSocialProfile();
+        profile.setId(null);
 
         when(socialProfileRepository.save(any(SocialProfile.class))).thenReturn(profile);
 
@@ -56,7 +74,10 @@ class SocialProfileServiceTest {
 
     @Test
     void createWithCustomPlatformSuccess() {
+        Contact contact = createTestContact();
+
         SocialProfile profile = new SocialProfile();
+        profile.setContact(contact);
         profile.setPlatform(SocialPlatform.CUSTOM);
         profile.setCustomPlatformName("МойСайт");
         profile.setUsername("анна_сидорова");
@@ -74,7 +95,10 @@ class SocialProfileServiceTest {
 
     @Test
     void createWithCustomPlatformWithoutNameThrowsException() {
+        Contact contact = createTestContact();
+
         SocialProfile profile = new SocialProfile();
+        profile.setContact(contact);
         profile.setPlatform(SocialPlatform.CUSTOM);
         profile.setUsername("петр_иванов");
         profile.setProfileUrl("https://custom.com/petr_ivanov");
@@ -85,7 +109,10 @@ class SocialProfileServiceTest {
 
     @Test
     void createWithStandardPlatformWithCustomNameThrowsException() {
+        Contact contact = createTestContact();
+
         SocialProfile profile = new SocialProfile();
+        profile.setContact(contact);
         profile.setPlatform(SocialPlatform.TELEGRAM);
         profile.setCustomPlatformName("Телеграмм");
         profile.setUsername("мария");
@@ -98,13 +125,12 @@ class SocialProfileServiceTest {
     @Test
     void createForContactSuccess() {
         Long contactId = 1L;
-        Contact contact = new Contact();
-        contact.setId(contactId);
+        Contact contact = createTestContact();
 
         SocialProfile profile = new SocialProfile();
         profile.setPlatform(SocialPlatform.TELEGRAM);
         profile.setUsername("сергей_кузнецов");
-        profile.setProfileUrl("https://instagram.com/sergey_kuznetsov");
+        profile.setProfileUrl("https://t.me/sergey_kuznetsov");
 
         when(contactService.findById(contactId)).thenReturn(contact);
         when(socialProfileRepository.save(any(SocialProfile.class))).thenReturn(profile);
@@ -121,11 +147,15 @@ class SocialProfileServiceTest {
     @Test
     void findByContactIdSuccess() {
         Long contactId = 1L;
+        Contact contact = createTestContact();
+
         SocialProfile profile1 = new SocialProfile();
+        profile1.setContact(contact);
         profile1.setPlatform(SocialPlatform.VK);
         profile1.setUsername("ольга");
 
         SocialProfile profile2 = new SocialProfile();
+        profile2.setContact(contact);
         profile2.setPlatform(SocialPlatform.TELEGRAM);
         profile2.setUsername("николай");
 
@@ -143,10 +173,7 @@ class SocialProfileServiceTest {
     @Test
     void findByIdSuccess() {
         Long id = 1L;
-        SocialProfile profile = new SocialProfile();
-        profile.setId(id);
-        profile.setPlatform(SocialPlatform.VK);
-        profile.setUsername("елена");
+        SocialProfile profile = createTestSocialProfile();
 
         when(socialProfileRepository.findById(id)).thenReturn(Optional.of(profile));
 
@@ -154,7 +181,7 @@ class SocialProfileServiceTest {
 
         assertNotNull(result);
         assertEquals(id, result.getId());
-        assertEquals("елена", result.getUsername());
+        assertEquals("иван_петров", result.getUsername());
         verify(socialProfileRepository, times(1)).findById(id);
     }
 
@@ -171,8 +198,11 @@ class SocialProfileServiceTest {
     @Test
     void updateSuccess() {
         Long id = 1L;
+        Contact contact = createTestContact();
+
         SocialProfile existingProfile = new SocialProfile();
         existingProfile.setId(id);
+        existingProfile.setContact(contact);
         existingProfile.setPlatform(SocialPlatform.VK);
         existingProfile.setUsername("старое_имя");
 
@@ -196,8 +226,11 @@ class SocialProfileServiceTest {
 
     @Test
     void updateWithInvalidDataThrowsException() {
+        Contact contact = createTestContact();
+
         SocialProfile profile = new SocialProfile();
         profile.setId(1L);
+        profile.setContact(contact);
         profile.setPlatform(SocialPlatform.CUSTOM);
         profile.setUsername("дима");
 
@@ -208,9 +241,13 @@ class SocialProfileServiceTest {
     @Test
     void deleteSuccess() {
         Long id = 1L;
+        SocialProfile profile = createTestSocialProfile();
+
+        when(socialProfileRepository.findById(id)).thenReturn(Optional.of(profile));
 
         socialProfileService.delete(id);
 
+        verify(socialProfileRepository, times(1)).findById(id);
         verify(socialProfileRepository, times(1)).deleteById(id);
     }
 }

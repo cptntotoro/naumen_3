@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.contact.ContactDetail;
 import ru.anastasia.NauJava.entity.enums.DetailLabel;
 import ru.anastasia.NauJava.entity.enums.DetailType;
@@ -38,8 +39,15 @@ class ContactDetailServiceTest {
     private ContactDetailServiceImpl contactDetailService;
 
     private ContactDetail createTestContactDetail() {
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("Test")
+                .lastName("User")
+                .build();
+
         return ContactDetail.builder()
                 .id(1L)
+                .contact(contact)
                 .detailType(DetailType.EMAIL)
                 .label(DetailLabel.MAIN)
                 .value("test@example.com")
@@ -122,8 +130,19 @@ class ContactDetailServiceTest {
 
     @Test
     void create_WhenValidContactDetail_ShouldReturnSavedDetail() {
+        // Создаем тестовый контакт
+        Contact testContact = Contact.builder()
+                .id(1L)
+                .firstName("Test")
+                .lastName("User")
+                .build();
+
         ContactDetail testDetail = createTestContactDetail();
+        testDetail.setContact(testContact);
+
         ContactDetail savedDetail = createTestContactDetail();
+        savedDetail.setId(1L);
+        savedDetail.setContact(testContact);
 
         when(contactDetailRepository.save(testDetail)).thenReturn(savedDetail);
 
@@ -132,6 +151,7 @@ class ContactDetailServiceTest {
         assertNotNull(result);
         assertEquals(savedDetail.getId(), result.getId());
         assertEquals(savedDetail.getValue(), result.getValue());
+        assertEquals(savedDetail.getContact().getId(), result.getContact().getId());
         verify(contactDetailRepository, times(1)).save(testDetail);
     }
 
@@ -139,10 +159,12 @@ class ContactDetailServiceTest {
     void delete_WhenValidId_ShouldCallRepositoryDelete() {
         Long detailId = 1L;
 
+        when(contactDetailRepository.existsById(detailId)).thenReturn(true);
         doNothing().when(contactDetailRepository).deleteById(detailId);
 
         contactDetailService.delete(detailId);
 
+        verify(contactDetailRepository, times(1)).existsById(detailId);
         verify(contactDetailRepository, times(1)).deleteById(detailId);
     }
 

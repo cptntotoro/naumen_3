@@ -41,7 +41,7 @@ public class StatisticsServiceTest {
         when(contactService.countTotal()).thenReturn(150L);
         when(companyService.countTotal()).thenReturn(25L);
         when(contactService.countFavorites()).thenReturn(30L);
-        when(eventService.countUpcomingBirthdays(14)).thenReturn(5L);
+        when(eventService.countUpcomingBirthdays(30)).thenReturn(5L); // Исправлено с 14 на 30
 
         UserDashboardStats result = statisticsService.getUserDashboardStats();
 
@@ -54,7 +54,7 @@ public class StatisticsServiceTest {
         verify(contactService, times(1)).countTotal();
         verify(companyService, times(1)).countTotal();
         verify(contactService, times(1)).countFavorites();
-        verify(eventService, times(1)).countUpcomingBirthdays(14);
+        verify(eventService, times(1)).countUpcomingBirthdays(30);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class StatisticsServiceTest {
         when(contactService.countTotal()).thenReturn(0L);
         when(companyService.countTotal()).thenReturn(0L);
         when(contactService.countFavorites()).thenReturn(0L);
-        when(eventService.countUpcomingBirthdays(14)).thenReturn(0L);
+        when(eventService.countUpcomingBirthdays(30)).thenReturn(0L);
 
         UserDashboardStats result = statisticsService.getUserDashboardStats();
 
@@ -154,7 +154,7 @@ public class StatisticsServiceTest {
         when(contactService.countTotal()).thenReturn(null);
         when(companyService.countTotal()).thenReturn(null);
         when(contactService.countFavorites()).thenReturn(null);
-        when(eventService.countUpcomingBirthdays(14)).thenReturn(null);
+        when(eventService.countUpcomingBirthdays(30)).thenReturn(null);
 
         UserDashboardStats result = statisticsService.getUserDashboardStats();
 

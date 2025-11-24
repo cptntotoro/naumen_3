@@ -299,6 +299,7 @@ class EventServiceTest {
     void delete_WhenValidId_ShouldCallRepositoryDelete() {
         Long eventId = 1L;
 
+        when(eventRepository.existsById(eventId)).thenReturn(true);
         doNothing().when(eventRepository).deleteById(eventId);
 
         eventService.delete(eventId);
