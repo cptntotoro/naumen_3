@@ -10,8 +10,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import lombok.*;
-import ru.anastasia.NauJava.entity.company.Company;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import ru.anastasia.NauJava.entity.company.ContactCompany;
 import ru.anastasia.NauJava.entity.event.Event;
 import ru.anastasia.NauJava.entity.note.Note;
@@ -207,5 +213,9 @@ public class Contact {
     public void removeContactTag(ContactTag tag) {
         this.contactTags.remove(tag);
         tag.setContact(null);
+    }
+
+    public Object getFullName() {
+        return firstName + " " + lastName;
     }
 }

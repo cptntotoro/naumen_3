@@ -57,7 +57,7 @@ public class ContactRepositoryCustomImpl implements ContactRepositoryCustom {
 
     @Override
     public List<Contact> findContactsWithUpcomingEvents(int daysAhead) {
-        var cb = entityManager.getCriteriaBuilder();
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Contact> query = cb.createQuery(Contact.class);
         Root<Contact> contact = query.from(Contact.class);
 

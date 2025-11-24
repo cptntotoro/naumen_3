@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.company.JobTitle;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,7 +41,7 @@ class JobTitleRepositoryTest {
         jobTitle.setTitle(fullTitle);
         jobTitleRepository.save(jobTitle);
 
-        var foundTitles = jobTitleRepository.findByTitleContainingIgnoreCase(titlePart.toLowerCase());
+        List<JobTitle> foundTitles = jobTitleRepository.findByTitleContainingIgnoreCase(titlePart.toLowerCase());
 
         Assertions.assertFalse(foundTitles.isEmpty());
         Assertions.assertTrue(foundTitles.getFirst().getTitle().contains(titlePart));

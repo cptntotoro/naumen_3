@@ -18,11 +18,11 @@ public interface SocialProfileService {
     SocialProfile create(SocialProfile socialProfile);
 
     /**
-     * Создать социальный профиль для контакта
+     * Создать профиль в соцсети для контакта
      *
      * @param contactId Идентификатор контакта
-     * @param profile   Социальный профиль
-     * @return Созданный социальный профиль
+     * @param profile   Профиль в соцсети
+     * @return Созданный профиль в соцсети
      */
     SocialProfile createForContact(Long contactId, SocialProfile profile);
 

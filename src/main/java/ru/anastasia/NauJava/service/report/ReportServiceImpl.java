@@ -1,6 +1,7 @@
 package ru.anastasia.NauJava.service.report;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
@@ -18,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
@@ -42,19 +44,36 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional
     public Report createReport() {
+        log.info("Создание нового отчета");
+
         Report report = new Report();
         report.setStatus(ReportStatus.CREATED);
-        return reportRepository.save(report);
+        Report savedReport = reportRepository.save(report);
+
+        log.info("Отчет успешно создан. ID: {}, статус: {}",
+                savedReport.getId(), savedReport.getStatus());
+
+        return savedReport;
     }
 
     @Override
     public CompletableFuture<Void> generateReportAsync(Long reportId) {
+        log.info("Запуск асинхронной генерации отчета ID: {}", reportId);
+
         return CompletableFuture.runAsync(() -> {
+            log.debug("Начало генерации отчета ID: {} в потоке: {}",
+                    reportId, Thread.currentThread().getName());
+
             Report report = reportRepository.findById(reportId)
-                    .orElseThrow(() -> new RuntimeException("Не найден отчет с id: " + reportId));
+                    .orElseThrow(() -> {
+                        log.error("Отчет не найден для генерации. ID: {}", reportId);
+                        return new RuntimeException("Не найден отчет с id: " + reportId);
+                    });
 
             long startTotal = System.currentTimeMillis();
             LocalDateTime generationTime = LocalDateTime.now();
+
+            log.debug("Генерация отчета ID: {} начата в {}", reportId, generationTime);
 
             try {
                 AtomicLong userCount = new AtomicLong(0);
@@ -65,33 +84,56 @@ public class ReportServiceImpl implements ReportService {
                 AtomicLong contactTime = new AtomicLong(0);
                 AtomicReference<Exception> contactError = new AtomicReference<>();
 
+                // Параллельное выполнение запросов
+                log.debug("Запуск параллельных потоков для сбора данных отчета ID: {}", reportId);
+
                 Thread userThread = new Thread(() -> {
+                    String threadName = Thread.currentThread().getName();
+                    log.trace("Поток пользователей начал работу: {}", threadName);
+
                     long startUser = System.currentTimeMillis();
                     try {
-                        userCount.set(userService.countTotal());
+                        long count = userService.countTotal();
+                        userCount.set(count);
+                        log.debug("Сбор данных пользователей завершен. Найдено: {} пользователей, время: {} мс",
+                                count, System.currentTimeMillis() - startUser);
                     } catch (Exception e) {
                         userError.set(e);
+                        log.error("Ошибка при подсчете пользователей для отчета ID: {}. Причина: {}",
+                                reportId, e.getMessage(), e);
                     } finally {
                         userTime.set(System.currentTimeMillis() - startUser);
+                        log.trace("Поток пользователей завершил работу: {}", threadName);
                     }
                 });
 
                 Thread contactThread = new Thread(() -> {
+                    String threadName = Thread.currentThread().getName();
+                    log.trace("Поток контактов начал работу: {}", threadName);
+
                     long startContact = System.currentTimeMillis();
                     try {
-                        contactsRef.set(contactService.findAll());
+                        List<Contact> contacts = contactService.findAll();
+                        contactsRef.set(contacts);
+                        log.debug("Сбор данных контактов завершен. Найдено: {} контактов, время: {} мс",
+                                contacts.size(), System.currentTimeMillis() - startContact);
                     } catch (Exception e) {
                         contactError.set(e);
+                        log.error("Ошибка при загрузке контактов для отчета ID: {}. Причина: {}",
+                                reportId, e.getMessage(), e);
                     } finally {
                         contactTime.set(System.currentTimeMillis() - startContact);
+                        log.trace("Поток контактов завершил работу: {}", threadName);
                     }
                 });
 
                 userThread.start();
                 contactThread.start();
 
+                log.debug("Ожидание завершения потоков для отчета ID: {}", reportId);
                 userThread.join();
                 contactThread.join();
+                log.debug("Все потоки завершены для отчета ID: {}", reportId);
 
                 if (userError.get() != null) {
                     throw new RuntimeException("Ошибка подсчета пользователей: " + userError.get().getMessage(), userError.get());
@@ -101,6 +143,11 @@ public class ReportServiceImpl implements ReportService {
                 }
 
                 long totalTime = System.currentTimeMillis() - startTotal;
+
+                log.debug("Данные собраны для отчета ID: {}. Пользователи: {}, контакты: {}, общее время: {} мс",
+                        reportId, userCount.get(), contactsRef.get().size(), totalTime);
+
+                log.debug("Генерация HTML контента для отчета ID: {}", reportId);
 
                 Context context = new Context();
                 context.setVariable("userCount", userCount.get());
@@ -116,7 +163,14 @@ public class ReportServiceImpl implements ReportService {
                 report.setStatus(ReportStatus.COMPLETED);
                 reportRepository.save(report);
 
+                log.info("Отчет успешно сгенерирован. ID: {}, статус: {}, пользователей: {}, контактов: {}, общее время: {} мс",
+                        reportId, report.getStatus(), userCount.get(), contactsRef.get().size(), totalTime);
+
             } catch (Exception e) {
+                long errorTime = System.currentTimeMillis() - startTotal;
+                log.error("Ошибка генерации отчета ID: {}. Время выполнения: {} мс. Причина: {}",
+                        reportId, errorTime, e.getMessage(), e);
+
                 report.setStatus(ReportStatus.ERROR);
                 String errorContent = "<div class='alert alert-danger'>" +
                         "<h4>Ошибка при формировании отчёта</h4>" +
@@ -125,7 +179,12 @@ public class ReportServiceImpl implements ReportService {
                 report.setContent(errorContent);
                 reportRepository.save(report);
 
+                log.warn("Отчет ID: {} переведен в статус ERROR", reportId);
+
                 throw new RuntimeException("Ошибка генерации отчета: " + e.getMessage());
+            } finally {
+                log.debug("Завершение генерации отчета ID: {} в потоке: {}",
+                        reportId, Thread.currentThread().getName());
             }
         });
     }
@@ -133,8 +192,19 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional(readOnly = true)
     public Report getReport(Long id) {
-        return reportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Отчет не найден: " + id));
+        log.debug("Получение отчета по ID: {}", id);
+
+        Report report = reportRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Отчет не найден при запросе. ID: {}", id);
+                    return new RuntimeException("Отчет не найден: " + id);
+                });
+
+        log.debug("Отчет найден: ID: {}, статус: {}, длина контента: {} символов",
+                report.getId(), report.getStatus(),
+                report.getContent() != null ? report.getContent().length() : 0);
+
+        return report;
     }
 
     private String escapeHtml(String s) {

@@ -12,7 +12,7 @@ public interface UserService {
      *
      * @param user Пользователь
      */
-    void createUser(User user);
+    User createUser(User user);
 
     /**
      * Найти пользователя по username
