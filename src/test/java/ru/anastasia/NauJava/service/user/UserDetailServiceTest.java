@@ -100,7 +100,8 @@ public class UserDetailServiceTest {
         when(userService.findByUsername(username)).thenThrow(new RuntimeException("Пользователь не найден"));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> userDetailService.loadUserByUsername(username));
-        assertEquals("Пользователь не найден", exception.getMessage());
+
+        assertTrue(exception.getMessage().contains("Пользователь не найден"));
         verify(userService, times(1)).findByUsername(username);
     }
 

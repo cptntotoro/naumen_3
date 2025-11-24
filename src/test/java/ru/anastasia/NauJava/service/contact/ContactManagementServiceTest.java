@@ -317,7 +317,10 @@ public class ContactManagementServiceTest {
         when(contactService.save(any(Contact.class))).thenReturn(contact);
         when(companyService.findById(1L)).thenReturn(company);
         when(jobTitleService.findById(1L)).thenReturn(jobTitle);
-        when(tagService.findAllById(any())).thenReturn(Collections.singletonList(tag));
+        when(tagService.findAllById(any())).thenReturn(List.of(tag, Tag.builder()
+                .id(2L)
+                .name("семья")
+                .build()));
 
         Contact result = contactManagementService.create(createDto);
 
@@ -363,7 +366,18 @@ public class ContactManagementServiceTest {
         when(contactService.findById(1L)).thenReturn(contact);
         when(companyService.findById(2L)).thenReturn(company);
         when(jobTitleService.findById(2L)).thenReturn(jobTitle);
-        when(tagService.findAllById(any())).thenReturn(Collections.singletonList(tag));
+        when(tagService.findAllById(any())).thenReturn(
+                List.of(
+                        Tag.builder()
+                                .id(3L)
+                                .name("друзья")
+                                .build(),
+                        Tag.builder()
+                                .id(4L)
+                                .name("семья")
+                                .build()
+                )
+        );
         when(contactService.save(contact)).thenReturn(contact);
 
         Contact result = contactManagementService.update(updateDto);
@@ -536,16 +550,22 @@ public class ContactManagementServiceTest {
         List<Contact> contactsWithBirthdays = Collections.singletonList(createTestContact());
         ContactFullDetails summaryDetails = createTestContactFullDetails();
 
-        when(contactService.findBirthdaysThisMonth()).thenReturn(contactsWithBirthdays);
+        Event birthdayEvent = new Event();
+        birthdayEvent.setEventDate(LocalDate.now().plusDays(3));
+
+        when(contactService.findWithUpcomingBirthdays(daysAhead)).thenReturn(contactsWithBirthdays);
 
         ContactManagementServiceImpl serviceSpy = spy(contactManagementService);
+
         doReturn(summaryDetails).when(serviceSpy).getSummary(anyLong());
+        when(eventService.findBirthdayByContactId(anyLong())).thenReturn(birthdayEvent);
 
         List<ContactFullDetails> result = serviceSpy.getListWithUpcomingBirthdays(daysAhead);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(contactService, times(1)).findBirthdaysThisMonth();
+        verify(contactService, times(1)).findWithUpcomingBirthdays(daysAhead);
+        verify(eventService, times(1)).findBirthdayByContactId(anyLong());
     }
 
     @Test

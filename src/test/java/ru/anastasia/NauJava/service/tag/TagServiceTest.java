@@ -44,6 +44,14 @@ class TagServiceTest {
     @InjectMocks
     private TagServiceImpl tagService;
 
+    private Contact createTestContact() {
+        Contact contact = new Contact();
+        contact.setId(1L);
+        contact.setFirstName("Иван");
+        contact.setLastName("Петров");
+        return contact;
+    }
+
     @Test
     void createSuccess() {
         Tag tag = Tag.builder()
@@ -52,11 +60,19 @@ class TagServiceTest {
                 .description("важные контакты")
                 .build();
 
-        when(tagRepository.save(any(Tag.class))).thenReturn(tag);
+        Tag savedTag = Tag.builder()
+                .id(1L)
+                .name("важный")
+                .color("#FF0000")
+                .description("важные контакты")
+                .build();
+
+        when(tagRepository.save(any(Tag.class))).thenReturn(savedTag);
 
         Tag result = tagService.create(tag);
 
         assertNotNull(result);
+        assertEquals(1L, result.getId());
         assertEquals("важный", result.getName());
         assertEquals("#FF0000", result.getColor());
         verify(tagRepository, times(1)).save(tag);
@@ -107,8 +123,7 @@ class TagServiceTest {
     void addToContactWithExistingTagSuccess() {
         Long contactId = 1L;
         String tagName = "друзья";
-        Contact contact = new Contact();
-        contact.setId(contactId);
+        Contact contact = createTestContact();
 
         Tag existingTag = Tag.builder()
                 .id(2L)
@@ -139,46 +154,23 @@ class TagServiceTest {
     }
 
     @Test
-    void addToContactWithNewTagSuccess() {
+    void addToContactWhenTagNotFoundThrowsException() {
         Long contactId = 1L;
         String tagName = "новая метка";
-        Contact contact = new Contact();
-        contact.setId(contactId);
-
-        Tag newTag = Tag.builder()
-                .id(2L)
-                .name(tagName)
-                .color("#808080")
-                .build();
-
-        ContactTag contactTag = ContactTag.builder()
-                .id(3L)
-                .contact(contact)
-                .tag(newTag)
-                .build();
+        Contact contact = createTestContact();
 
         when(contactService.findById(contactId)).thenReturn(contact);
         when(tagRepository.findByName(tagName)).thenReturn(Optional.empty());
-        when(tagRepository.save(any(Tag.class))).thenReturn(newTag);
-        when(contactTagRepository.existsByContactIdAndTagId(contactId, newTag.getId())).thenReturn(false);
-        when(contactTagRepository.save(any(ContactTag.class))).thenReturn(contactTag);
 
-        ContactTag result = tagService.addToContact(contactId, tagName);
-
-        assertNotNull(result);
-        assertEquals(3L, result.getId());
-        verify(contactService, times(1)).findById(contactId);
-        verify(tagRepository, times(1)).findByName(tagName);
-        verify(tagRepository, times(1)).save(any(Tag.class));
-        verify(contactTagRepository, times(1)).save(any(ContactTag.class));
+        assertThrows(TagNotFoundException.class, () -> tagService.addToContact(contactId, tagName));
+        verify(contactTagRepository, never()).save(any(ContactTag.class));
     }
 
     @Test
     void addToContactWhenAlreadyExistsThrowsException() {
         Long contactId = 1L;
         String tagName = "семья";
-        Contact contact = new Contact();
-        contact.setId(contactId);
+        Contact contact = createTestContact();
 
         Tag tag = Tag.builder()
                 .id(2L)
@@ -325,28 +317,86 @@ class TagServiceTest {
     @Test
     void deleteSuccess() {
         Long tagId = 1L;
+        Tag tag = Tag.builder()
+                .id(tagId)
+                .name("тег для удаления")
+                .build();
+
+        when(tagRepository.findById(tagId)).thenReturn(Optional.of(tag));
 
         tagService.delete(tagId);
 
+        verify(tagRepository, times(1)).findById(tagId);
         verify(tagRepository, times(1)).deleteById(tagId);
+    }
+
+    @Test
+    void deleteNotFoundThrowsException() {
+        Long tagId = 999L;
+
+        when(tagRepository.findById(tagId)).thenReturn(Optional.empty());
+
+        assertThrows(TagNotFoundException.class, () -> tagService.delete(tagId));
+        verify(tagRepository, times(1)).findById(tagId);
+        verify(tagRepository, never()).deleteById(tagId);
     }
 
     @Test
     void findContactTagsByContactIdReturnsEmptyList() {
         Long contactId = 1L;
 
+        when(contactTagRepository.findByContactId(contactId)).thenReturn(List.of());
+
         List<ContactTag> result = tagService.findContactTagsByContactId(contactId);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
+        verify(contactTagRepository, times(1)).findByContactId(contactId);
+    }
+
+    @Test
+    void findContactTagsByContactIdSuccess() {
+        Long contactId = 1L;
+        ContactTag contactTag = ContactTag.builder()
+                .id(1L)
+                .contact(createTestContact())
+                .tag(Tag.builder().id(1L).name("тест").build())
+                .build();
+
+        when(contactTagRepository.findByContactId(contactId)).thenReturn(List.of(contactTag));
+
+        List<ContactTag> result = tagService.findContactTagsByContactId(contactId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactTagRepository, times(1)).findByContactId(contactId);
     }
 
     @Test
     void deleteContactTagSuccess() {
         Long contactTagId = 1L;
+        ContactTag contactTag = ContactTag.builder()
+                .id(contactTagId)
+                .contact(createTestContact())
+                .tag(Tag.builder().id(1L).name("тест").build())
+                .build();
+
+        when(contactTagRepository.findById(contactTagId)).thenReturn(Optional.of(contactTag));
 
         tagService.deleteContactTag(contactTagId);
 
+        verify(contactTagRepository, times(1)).findById(contactTagId);
         verify(contactTagRepository, times(1)).deleteById(contactTagId);
+    }
+
+    @Test
+    void deleteContactTagNotFoundThrowsException() {
+        Long contactTagId = 999L;
+
+        when(contactTagRepository.findById(contactTagId)).thenReturn(Optional.empty());
+
+        assertThrows(TagNotFoundException.class, () -> tagService.deleteContactTag(contactTagId));
+        verify(contactTagRepository, times(1)).findById(contactTagId);
+        verify(contactTagRepository, never()).deleteById(contactTagId);
     }
 }

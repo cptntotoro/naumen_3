@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -190,6 +189,7 @@ class NoteServiceTest {
     void delete_WhenValidId_ShouldCallRepositoryDelete() {
         Long noteId = 1L;
 
+        when(noteRepository.findById(noteId)).thenReturn(Optional.of(createTestNote()));
         doNothing().when(noteRepository).deleteById(noteId);
 
         noteService.delete(noteId);
@@ -198,13 +198,11 @@ class NoteServiceTest {
     }
 
     @Test
-    void delete_WhenNoteNotExists_ShouldNotThrowException() {
+    void delete_WhenNoteNotExists_ShouldThrowNoteNotFoundException() {
         Long nonExistentId = 999L;
 
-        doNothing().when(noteRepository).deleteById(nonExistentId);
+        when(noteRepository.findById(nonExistentId)).thenThrow(NoteNotFoundException.class);
 
-        assertDoesNotThrow(() -> noteService.delete(nonExistentId));
-
-        verify(noteRepository, times(1)).deleteById(nonExistentId);
+        assertThrows(NoteNotFoundException.class, () -> noteService.delete(nonExistentId));
     }
 }
