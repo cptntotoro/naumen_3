@@ -18,7 +18,7 @@ import ru.anastasia.NauJava.service.contact.ContactService;
 import ru.anastasia.NauJava.service.event.EventService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -311,37 +311,25 @@ public class ContactServiceImpl implements ContactService {
         LocalDate today = LocalDate.now();
         LocalDate endDate = today.plusDays(daysAhead);
 
+        String todayStr = today.format(DateTimeFormatter.ofPattern("MM-dd"));
+        String endDateStr = endDate.format(DateTimeFormatter.ofPattern("MM-dd"));
+
         List<Contact> result;
-        if (today.getYear() == endDate.getYear()) {
-            log.trace("Поиск дней рождения в пределах одного года");
-            result = contactRepository.findContactsWithUpcomingBirthdays(
-                    today.getMonthValue(),
-                    endDate.getMonthValue(),
-                    today.getDayOfMonth(),
-                    endDate.getDayOfMonth()
-            );
+
+        if (todayStr.compareTo(endDateStr) <= 0) {
+            // Диапазон в пределах одного года (не пересекает новый год)
+            result = contactRepository.findBirthdaysInRange(todayStr, endDateStr);
         } else {
-            log.trace("Поиск дней рождения с переходом через год");
-            List<Contact> firstPart = contactRepository.findContactsWithUpcomingBirthdays(
-                    today.getMonthValue(),
-                    12,
-                    today.getDayOfMonth(),
-                    31
-            );
-
-            List<Contact> secondPart = contactRepository.findContactsWithUpcomingBirthdays(
-                    1,
-                    endDate.getMonthValue(),
-                    1,
-                    endDate.getDayOfMonth()
-            );
-
-            result = new ArrayList<>();
-            result.addAll(firstPart);
-            result.addAll(secondPart);
+            // Диапазон пересекает новый год
+            result = contactRepository.findBirthdaysCrossingYear(todayStr, endDateStr);
         }
 
         log.debug("Найдено {} контактов с предстоящими днями рождения в течение {} дней", result.size(), daysAhead);
         return result;
+    }
+
+    @Override
+    public boolean existsById(Long contactId) {
+        return contactRepository.existsById(contactId);
     }
 }

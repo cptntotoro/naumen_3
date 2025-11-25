@@ -26,21 +26,16 @@ public class UserDetailServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.debug("Загрузка пользователя для аутентификации: '{}'", username);
 
-        long startTime = System.currentTimeMillis();
-
         try {
             User user = userService.findByUsername(username);
-            log.debug("Пользователь найден: ID: {}, активен: {}",
-                    user.getId(), user.getIsActive());
 
-            // Собираем роли для отладки
-            String roles = user.getRoles().stream()
-                    .map(role -> "ROLE_" + role.name())
-                    .collect(Collectors.joining(", "));
+            log.debug("Пользователь найден: ID: {}, активен: {}", user.getId(), user.getIsActive());
 
-            log.trace("Роли пользователя '{}': {}", username, roles);
+            if (!user.getIsActive()) {
+                log.warn("Попытка аутентификации неактивного пользователя: '{}'", username);
+            }
 
-            UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+            return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getUsername())
                     .password(user.getPassword())
                     .authorities(user.getRoles().stream()
@@ -49,28 +44,9 @@ public class UserDetailServiceImpl implements UserDetailsService {
                     .disabled(!user.getIsActive())
                     .build();
 
-            long executionTime = System.currentTimeMillis() - startTime;
-
-            if (!user.getIsActive()) {
-                log.warn("Попытка аутентификации неактивного пользователя: '{}'. Время выполнения: {} мс",
-                        username, executionTime);
-            } else {
-                log.debug("UserDetails успешно создан для пользователя '{}'. Роли: {}, время выполнения: {} мс",
-                        username, roles, executionTime);
-            }
-
-            return userDetails;
-
-        } catch (UsernameNotFoundException e) {
-            long errorTime = System.currentTimeMillis() - startTime;
-            log.warn("Пользователь не найден: '{}'. Время поиска: {} мс", username, errorTime);
-            throw e;
-
-        } catch (Exception e) {
-            long errorTime = System.currentTimeMillis() - startTime;
-            log.error("Ошибка при загрузке пользователя '{}'. Время выполнения: {} мс. Причина: {}",
-                    username, errorTime, e.getMessage(), e);
-            throw new UsernameNotFoundException("Ошибка при загрузке пользователя: " + username, e);
+        } catch (RuntimeException e) {
+            log.warn("Пользователь не найден: '{}'", username);
+            throw new UsernameNotFoundException("Пользователь не найден: " + username, e);
         }
     }
 }

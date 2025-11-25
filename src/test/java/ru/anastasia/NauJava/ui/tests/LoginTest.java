@@ -10,7 +10,6 @@ import ru.anastasia.NauJava.ui.pages.RegistrationPage;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class LoginTest extends BaseSeleniumTest {
 
@@ -19,38 +18,16 @@ class LoginTest extends BaseSeleniumTest {
         LoginPage loginPage = new LoginPage(driver, baseUrl);
         loginPage.navigateTo();
 
-        // Проверяем, что мы на странице логина
-        boolean isOnLoginPage = loginPage.isLoginPageDisplayed();
-        boolean isOnErrorPage = Objects.requireNonNull(driver.getCurrentUrl()).contains("/error") ||
-                Objects.requireNonNull(driver.getPageSource()).contains("Ошибка") ||
-                driver.getPageSource().contains("Произошла ошибка");
-
-        if (isOnErrorPage) {
-            System.out.println("Отображается страница ошибки вместо страницы логина");
-            driver.get(baseUrl + "/login");
-            wait.until(ExpectedConditions.urlContains("login"));
-        }
-
-        assertTrue(loginPage.isLoginPageDisplayed() || isOnLoginPage,
-                "Страница логина должна отображаться");
+        assertTrue(loginPage.isLoginPageDisplayed(), "Страница логина должна отображаться");
 
         // Вход с существующими тестовыми данными
         loginPage.login("testuser", "password");
 
         // Проверка успешного входа
-        wait.until(ExpectedConditions.or(
-                ExpectedConditions.urlContains("/home"),
-                ExpectedConditions.urlContains("/contacts"),
-                ExpectedConditions.urlContains("/admin"),
-                ExpectedConditions.urlContains("login?error")
-        ));
+        wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
 
         // Если произошла ошибка аутентификации
-        if (driver.getCurrentUrl().contains("login?error")) {
-            if (Objects.requireNonNull(driver.getPageSource()).contains("Ошибка") ||
-                    driver.getPageSource().contains("Произошла ошибка")) {
-                fail("Отображается страница ошибки вместо страницы логина с сообщением об ошибке");
-            }
+        if (Objects.requireNonNull(driver.getCurrentUrl()).contains("login?error")) {
             assertTrue(loginPage.isErrorDisplayed(),
                     "Должно отображаться сообщение об ошибке при неудачном входе");
             return;
@@ -58,10 +35,9 @@ class LoginTest extends BaseSeleniumTest {
 
         // Проверяем различные возможные URL после успешного входа
         String currentUrl = driver.getCurrentUrl();
-        boolean isOnHomePage = currentUrl.endsWith("/") || currentUrl.contains("/home") || currentUrl.contains("/contacts");
-        boolean isOnAdminPage = currentUrl.contains("/admin");
+        boolean isOnRootPage = currentUrl.equals(baseUrl + "/");
 
-        assertTrue(isOnHomePage || isOnAdminPage,
+        assertTrue(isOnRootPage,
                 "После успешного входа должна отображаться домашняя или админ страница. Текущий URL: " + currentUrl);
     }
 
@@ -175,11 +151,7 @@ class LoginTest extends BaseSeleniumTest {
 
         loginPage.login("testuser", "password");
 
-        wait.until(ExpectedConditions.or(
-                ExpectedConditions.urlContains("/home"),
-                ExpectedConditions.urlContains("/contacts"),
-                ExpectedConditions.urlContains("login?error")
-        ));
+        wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
 
         if (Objects.requireNonNull(driver.getCurrentUrl()).contains("login?error")) {
             System.out.println("Login failed in session timeout test. URL: " + driver.getCurrentUrl());

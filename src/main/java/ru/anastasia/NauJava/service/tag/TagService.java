@@ -59,6 +59,12 @@ public interface TagService {
      */
     Tag findById(Long id);
 
+    /**
+     * Получить теги по списку идентификаторов
+     *
+     * @param ids Список идентифиаторов тегов
+     * @return Список тегов
+     */
     List<Tag> findAllById(Collection<Long> ids);
 
     /**

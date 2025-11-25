@@ -8,13 +8,6 @@ import ru.anastasia.NauJava.entity.user.User;
 public interface UserService {
 
     /**
-     * Создать пользователя
-     *
-     * @param user Пользователь
-     */
-    User createUser(User user);
-
-    /**
      * Найти пользователя по username
      *
      * @param username Имя пользователя
@@ -36,4 +29,12 @@ public interface UserService {
      * @return Число пользователей
      */
     Long countTotal();
+
+    /**
+     * Зарегистрировать нового пользователя
+     *
+     * @param user Пользователь
+     * @return Пользователь
+     */
+    User registerUser(User user);
 }

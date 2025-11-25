@@ -2,6 +2,7 @@ package ru.anastasia.NauJava.controller.note;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,6 +18,7 @@ import ru.anastasia.NauJava.entity.note.Note;
 import ru.anastasia.NauJava.mapper.note.NoteMapper;
 import ru.anastasia.NauJava.service.note.NoteService;
 
+@Slf4j
 @Controller
 @RequestMapping("/notes")
 @RequiredArgsConstructor
@@ -41,15 +43,20 @@ public class NoteController {
     @PostMapping
     public String createNote(@Valid @ModelAttribute("noteDto") NoteCreateDto noteCreateDto, BindingResult bindingResult,
                              Model model) {
+        log.info("POST /notes - создание заметки [контакт: {}]", noteCreateDto.getContactId());
+
         if (bindingResult.hasErrors()) {
+            log.warn("Ошибки валидации при создании заметки: {}", bindingResult.getAllErrors());
             return "note/form";
         }
 
         try {
             Note note = noteMapper.noteCreateDtoToNote(noteCreateDto);
             noteService.create(noteCreateDto.getContactId(), note);
+            log.info("Заметка успешно создана [ID: {}, контакт: {}]", note.getId(), noteCreateDto.getContactId());
             return "redirect:/contacts/" + noteCreateDto.getContactId();
         } catch (RuntimeException e) {
+            log.error("Ошибка при создании заметки [контакт: {}]", noteCreateDto.getContactId(), e);
             model.addAttribute("error", e.getMessage());
             return "note/form";
         }
@@ -81,7 +88,16 @@ public class NoteController {
 
     @DeleteMapping("/{id}")
     public String deleteNote(@PathVariable Long id) {
-        noteService.delete(id);
+        log.info("DELETE /notes/{} - удаление заметки", id);
+
+        try {
+            noteService.delete(id);
+            log.info("Заметка успешно удалена [ID: {}]", id);
+        } catch (Exception e) {
+            log.error("Ошибка при удалении заметки [ID: {}]", id, e);
+            throw e;
+        }
+
         return "redirect:/notes";
     }
 }

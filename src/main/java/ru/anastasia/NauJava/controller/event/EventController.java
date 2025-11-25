@@ -2,6 +2,7 @@ package ru.anastasia.NauJava.controller.event;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,6 +17,7 @@ import ru.anastasia.NauJava.entity.event.Event;
 import ru.anastasia.NauJava.mapper.event.EventMapper;
 import ru.anastasia.NauJava.service.event.EventService;
 
+@Slf4j
 @Controller
 @RequestMapping("/events")
 @RequiredArgsConstructor
@@ -40,7 +42,11 @@ public class EventController {
     @PostMapping
     public String createEvent(@Valid @ModelAttribute("eventDto") EventCreateDto eventCreateDto,
                               BindingResult bindingResult, Model model) {
+        log.info("POST /events - создание события [тип: {}, контакт: {}]",
+                eventCreateDto.getEventType(), eventCreateDto.getContactId());
+
         if (bindingResult.hasErrors()) {
+            log.warn("Ошибки валидации при создании события: {}", bindingResult.getAllErrors());
             return "event/form";
         }
 
@@ -48,8 +54,11 @@ public class EventController {
 
         try {
             eventService.create(contactId, eventCreateDto);
+            log.info("Событие успешно создано [контакт: {}, тип: {}]", contactId, eventCreateDto.getEventType());
             return "redirect:/contacts/" + contactId;
         } catch (RuntimeException e) {
+            log.error("Ошибка при создании события [контакт: {}, тип: {}]",
+                    contactId, eventCreateDto.getEventType(), e);
             model.addAttribute("error", e.getMessage());
             return "event/form";
         }
@@ -81,7 +90,16 @@ public class EventController {
 
     @PostMapping("/{id}/delete")
     public String deleteEvent(@PathVariable Long id) {
-        eventService.delete(id);
+        log.info("POST /events/{}/delete - удаление события", id);
+
+        try {
+            eventService.delete(id);
+            log.info("Событие успешно удалено [ID: {}]", id);
+        } catch (Exception e) {
+            log.error("Ошибка при удалении события [ID: {}]", id, e);
+            throw e;
+        }
+
         return "redirect:/events";
     }
 }

@@ -8,7 +8,6 @@ import ru.anastasia.NauJava.ui.pages.LoginPage;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 class LogoutTest extends BaseSeleniumTest {
 
@@ -17,39 +16,16 @@ class LogoutTest extends BaseSeleniumTest {
         LoginPage loginPage = new LoginPage(driver, baseUrl);
         loginPage.navigateTo();
 
-        // Проверяем, что мы на странице логина или на странице ошибки
-        boolean isOnLoginPage = loginPage.isLoginPageDisplayed();
-        boolean isOnErrorPage = Objects.requireNonNull(driver.getCurrentUrl()).contains("/error") ||
-                Objects.requireNonNull(driver.getPageSource()).contains("Ошибка") ||
-                driver.getPageSource().contains("Произошла ошибка");
-
-        if (isOnErrorPage) {
-            System.out.println("Отображается страница ошибки вместо страницы логина");
-            driver.get(baseUrl + "/login");
-            wait.until(ExpectedConditions.urlContains("login"));
-        }
-
-        assertTrue(loginPage.isLoginPageDisplayed() || isOnLoginPage,
-                "Страница логина должна отображаться");
+        assertTrue(loginPage.isLoginPageDisplayed(), "Страница логина должна отображаться");
 
         // Вход с существующими тестовыми данными
         loginPage.login("testuser", "password");
 
         // Проверка успешного входа
-        wait.until(ExpectedConditions.or(
-                ExpectedConditions.urlContains("/home"),
-                ExpectedConditions.urlContains("/contacts"),
-                ExpectedConditions.urlContains("/admin"),
-                ExpectedConditions.urlContains("login?error")
-        ));
+        wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
 
         // Если произошла ошибка аутентификации, проверяем сообщение
-        if (driver.getCurrentUrl().contains("login?error")) {
-            if (Objects.requireNonNull(driver.getPageSource()).contains("Ошибка") ||
-                    driver.getPageSource().contains("Произошла ошибка")) {
-                System.out.println("После попытки входа отображается страница ошибки");
-                fail("Отображается страница ошибки вместо страницы логина с сообщением об ошибке");
-            }
+        if (Objects.requireNonNull(driver.getCurrentUrl()).contains("login?error")) {
             assertTrue(loginPage.isErrorDisplayed(),
                     "Должно отображаться сообщение об ошибке при неудачном входе");
             return; // Прерываем тест, если вход не удался
@@ -57,10 +33,9 @@ class LogoutTest extends BaseSeleniumTest {
 
         // Проверяем различные возможные URL после успешного входа
         String currentUrl = driver.getCurrentUrl();
-        boolean isOnHomePage = currentUrl.endsWith("/");
-        boolean isOnAdminPage = currentUrl.contains("/admin");
+        boolean isOnRootPage = currentUrl.equals(baseUrl + "/");
 
-        assertTrue(isOnHomePage || isOnAdminPage,
+        assertTrue(isOnRootPage,
                 "После успешного входа должна отображаться домашняя или админ страница. Текущий URL: " + currentUrl);
 
         // Выход из системы
@@ -88,10 +63,10 @@ class LogoutTest extends BaseSeleniumTest {
 
         // Проверка успешного входа
         wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlToBe(baseUrl + "/"),
                 ExpectedConditions.urlContains("/home"),
                 ExpectedConditions.urlContains("/contacts"),
-                ExpectedConditions.urlContains("/admin"),
-                ExpectedConditions.urlContains("login?error")
+                ExpectedConditions.urlContains("/admin")
         ));
 
         // Если вход не удался, прерываем тест
@@ -106,13 +81,22 @@ class LogoutTest extends BaseSeleniumTest {
 
         // Выходим из системы
         driver.findElement(By.xpath("//a[contains(@href, '/logout')]")).click();
-        wait.until(ExpectedConditions.urlContains("login"));
+
+        // Ожидаем перенаправления на страницу логина (может быть с параметром logout)
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("login"),
+                ExpectedConditions.urlToBe(baseUrl + "/login?logout")
+        ));
 
         // Пытаемся получить доступ к защищенной странице после выхода
         driver.get(baseUrl + "/contacts");
 
-        // Должны быть перенаправлены на страницу логина
-        wait.until(ExpectedConditions.urlContains("login"));
+        // Должны быть перенаправлены на страницу логина (может быть с параметром continue)
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("login"),
+                ExpectedConditions.urlContains("login?continue")
+        ));
+
         LoginPage loginPageAfterLogout = new LoginPage(driver, baseUrl);
         assertTrue(loginPageAfterLogout.isLoginPageDisplayed(),
                 "После выхода при доступе к защищенной странице должна отображаться страница входа");
@@ -130,12 +114,7 @@ class LogoutTest extends BaseSeleniumTest {
         loginPage.login("testuser", "password");
 
         // Проверка успешного входа
-        wait.until(ExpectedConditions.or(
-                ExpectedConditions.urlContains("/home"),
-                ExpectedConditions.urlContains("/contacts"),
-                ExpectedConditions.urlContains("/admin"),
-                ExpectedConditions.urlContains("login?error")
-        ));
+        wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
 
         // Если вход не удался, прерываем тест
         if (Objects.requireNonNull(driver.getCurrentUrl()).contains("login?error")) {

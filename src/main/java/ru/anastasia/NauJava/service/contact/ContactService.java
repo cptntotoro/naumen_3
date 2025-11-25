@@ -192,4 +192,12 @@ public interface ContactService {
      * @return Список контактов
      */
     List<Contact> findWithUpcomingBirthdays(int daysAhead);
+
+    /**
+     * Проверить существование контакта
+     *
+     * @param contactId Идентификатор контакта
+     * @return Да / Нет
+     */
+    boolean existsById(Long contactId);
 }

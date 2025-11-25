@@ -24,44 +24,26 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public User createUser(User user) {
-        log.info("Создание нового пользователя: {}", user.getUsername());
+    public User registerUser(User user) {
+        log.info("Регистрация нового пользователя: {}", user.getUsername());
 
         long startTime = System.currentTimeMillis();
 
         try {
-            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-                log.warn("Попытка создания пользователя с пустым паролем: {}", user.getUsername());
-                throw new IllegalArgumentException("Пароль не может быть пустым");
-            }
-
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            log.debug("Пароль пользователя '{}' успешно захэширован", user.getUsername());
-
-            if (user.getRoles() == null || user.getRoles().isEmpty()) {
-                user.setRoles(List.of(UserRole.USER));
-                log.debug("Установлена роль по умолчанию: USER для пользователя: {}", user.getUsername());
-            } else {
-                log.trace("Роли пользователя '{}': {}", user.getUsername(), user.getRoles());
-            }
-
-            if (user.getIsActive() == null) {
-                user.setIsActive(true);
-                log.debug("Установлен статус активности по умолчанию: true для пользователя: {}", user.getUsername());
-            }
+            validateUserForRegistration(user);
+            prepareUserForCreation(user);
 
             User savedUser = userRepository.save(user);
             long executionTime = System.currentTimeMillis() - startTime;
 
-            log.info("Пользователь успешно создан. ID: {}, username: {}, роли: {}, активен: {}, время выполнения: {} мс",
-                    savedUser.getId(), savedUser.getUsername(), savedUser.getRoles(),
-                    savedUser.getIsActive(), executionTime);
+            log.info("Регистрация пользователя завершена успешно. ID: {}, username: {}, время выполнения: {} мс",
+                    savedUser.getId(), savedUser.getUsername(), executionTime);
 
             return savedUser;
 
         } catch (Exception e) {
             long errorTime = System.currentTimeMillis() - startTime;
-            log.error("Ошибка при создании пользователя '{}'. Время выполнения: {} мс. Причина: {}",
+            log.error("Ошибка регистрации пользователя '{}'. Время выполнения: {} мс. Причина: {}",
                     user.getUsername(), errorTime, e.getMessage(), e);
             throw e;
         }
@@ -139,6 +121,48 @@ public class UserServiceImpl implements UserService {
             log.error("Ошибка при подсчете количества пользователей. Время выполнения: {} мс. Причина: {}",
                     errorTime, e.getMessage(), e);
             throw e;
+        }
+    }
+
+    /**
+     * Валидация пользователя для регистрации
+     */
+    private void validateUserForRegistration(User user) {
+        if (userExists(user.getUsername())) {
+            log.warn("Попытка регистрации существующего пользователя: {}", user.getUsername());
+            throw new IllegalArgumentException("Пользователь с таким именем уже существует");
+        }
+
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            log.warn("Попытка регистрации пользователя с пустым username");
+            throw new IllegalArgumentException("Имя пользователя не может быть пустым");
+        }
+
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            log.warn("Попытка регистрации пользователя с пустым паролем: {}", user.getUsername());
+            throw new IllegalArgumentException("Пароль не может быть пустым");
+        }
+    }
+
+    /**
+     * Подготовка пользователя к сохранению в БД
+     */
+    private void prepareUserForCreation(User user) {
+        if (user.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            log.debug("Пароль пользователя '{}' успешно захэширован", user.getUsername());
+        }
+
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            user.setRoles(List.of(UserRole.USER));
+            log.debug("Установлена роль по умолчанию: USER для пользователя: {}", user.getUsername());
+        } else {
+            log.trace("Роли пользователя '{}': {}", user.getUsername(), user.getRoles());
+        }
+
+        if (user.getIsActive() == null) {
+            user.setIsActive(true);
+            log.debug("Установлен статус активности по умолчанию: true для пользователя: {}", user.getUsername());
         }
     }
 }

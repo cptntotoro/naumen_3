@@ -6,7 +6,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import ru.anastasia.NauJava.entity.user.User;
 import ru.anastasia.NauJava.entity.user.UserRole;
-import ru.anastasia.NauJava.repository.user.UserRepository;
 import ru.anastasia.NauJava.service.user.UserService;
 
 import java.util.List;
@@ -20,24 +19,23 @@ public class AdminInitializer {
      */
     private final UserService userService;
 
-    /**
-     * Репозиторий пользователей
-     */
-    private final UserRepository userRepository;
-
     @EventListener(ApplicationReadyEvent.class)
     public void initAdmin() {
-        if (userRepository.findByUsername("admin").isEmpty()) {
-            User admin = User.builder()
-                    .username("admin")
-                    .password("admin")
-                    .firstName("System")
-                    .lastName("Administrator")
-                    .isActive(true)
-                    .roles(List.of(UserRole.ADMIN))
-                    .build();
+        String adminUsername = "admin";
 
-            userService.createUser(admin);
+        if (userService.userExists(adminUsername)) {
+            return;
         }
+
+        User admin = User.builder()
+                .username("admin")
+                .password("admin")
+                .firstName("System")
+                .lastName("Administrator")
+                .isActive(true)
+                .roles(List.of(UserRole.ADMIN))
+                .build();
+
+        userService.registerUser(admin);
     }
 }
