@@ -18,54 +18,54 @@
     <th:block th:fragment="page-styles(page)">
         <th:block th:switch="${page}">
             <th:block th:case="'home'">
-                <link th:href="@{/css/pages/dashboard.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/home.css}" rel="stylesheet">
+                <link th:href="@{/css/lists.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'contacts'">
-                <link th:href="@{/css/pages/contacts.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/contacts-list.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/contact/contacts.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/contact/contacts-list.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'companies'">
-                <link th:href="@{/css/pages/companies.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/companies-list.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/company/companies.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/company/companies-list.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'jobtitles'">
-                <link th:href="@{/css/pages/jobtitles.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/jobtitles-list.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/jobtitle/jobtitles.css}" rel="stylesheet">
+                <link th:href="@{/css/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/jobtitle/jobtitles-list.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'tags'">
-                <link th:href="@{/css/pages/tags.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/tags-list.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/tag/tags.css}" rel="stylesheet">
+                <link th:href="@{/css/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/tag/tags-list.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'birthdays'">
-                <link th:href="@{/css/pages/birthdays.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/contact/birthdays.css}" rel="stylesheet">
+                <link th:href="@{/css/lists.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'favorites'">
-                <link th:href="@{/css/pages/favorites.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/contact/favorites.css}" rel="stylesheet">
+                <link th:href="@{/css/lists.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'contact-details'">
-                <link th:href="@{/css/pages/contact-details.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/contact/contact-details.css}" rel="stylesheet">
+                <link th:href="@{/css/lists.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'forms'">
-                <link th:href="@{/css/pages/forms.css}" rel="stylesheet">
-                <link th:href="@{/css/pages/lists.css}" rel="stylesheet">
+                <link th:href="@{/css/forms.css}" rel="stylesheet">
+                <link th:href="@{/css/lists.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'admin'">
-                <link th:href="@{/css/admin.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/admin.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'error'">
-                <link th:href="@{/css/error.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/error.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'login'">
-                <link th:href="@{/css/login.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/auth/login.css}" rel="stylesheet">
             </th:block>
             <th:block th:case="'registration'">
-                <link th:href="@{/css/registration.css}" rel="stylesheet">
+                <link th:href="@{/css/pages/auth/registration.css}" rel="stylesheet">
             </th:block>
         </th:block>
     </th:block>
