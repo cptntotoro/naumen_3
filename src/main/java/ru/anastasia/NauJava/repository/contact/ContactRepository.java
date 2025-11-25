@@ -145,33 +145,47 @@ public interface ContactRepository extends JpaRepository<Contact, Long>, Contact
 
     /**
      * Получить контакты, у которых день рождения попадает в указанный диапазон дат
-     * <p>
-     * Метод ищет дни рождения, у которых месяц и день находятся между заданными границами.
-     * Например, для поиска дней рождения с 25 декабря по 15 января:
-     * - startMonth = 12 (декабрь), endMonth = 1 (январь)
-     * - startDay = 25, endDay = 15
      *
-     * @param startMonth начальный месяц диапазона (1-12)
-     * @param endMonth   конечный месяц диапазона (1-12)
-     * @param startDay   начальный день диапазона (1-31)
-     * @param endDay     конечный день диапазона (1-31)
-     * @return Список контактов
-     *
-     * @example - Найти дни рождения с 15 декабря по 10 января
-     * findContactsWithUpcomingBirthdays(12, 1, 15, 10)
      * <p>
-     * - Найти дни рождения с 1 по 31 марта
-     * findContactsWithUpcomingBirthdays(3, 3, 1, 31)
+     * Метод ищет дни рождения, даты которых (в формате MM-dd) попадают в указанный диапазон,
+     * включая граничные значения. Диапазон предполагается в пределах одного года, без перехода
+     * через новый год.
+     * </p>
+     *
+     * @param startDate начальная дата диапазона в формате "MM-dd" (например, "12-25")
+     * @param endDate   конечная дата диапазона в формате "MM-dd" (например, "12-31")
+     * @return список контактов, у которых день рождения попадает в указанный диапазон дат
+     *
+     * @example Поиск дней рождения с 20 марта по 25 марта: findBirthdaysInRange("03-20", "03-25")
      */
     @Query(value = "SELECT DISTINCT c.* FROM contacts c " +
             "JOIN events e ON c.id = e.contact_id " +
             "WHERE e.event_type = 'BIRTHDAY' " +
-            "AND EXTRACT(MONTH FROM e.event_date) BETWEEN :startMonth AND :endMonth " +
-            "AND EXTRACT(DAY FROM e.event_date) BETWEEN :startDay AND :endDay",
+            "AND TO_CHAR(e.event_date, 'MM-dd') BETWEEN :startDate AND :endDate",
             nativeQuery = true)
-    List<Contact> findContactsWithUpcomingBirthdays(
-            @Param("startMonth") int startMonth,
-            @Param("endMonth") int endMonth,
-            @Param("startDay") int startDay,
-            @Param("endDay") int endDay);
+    List<Contact> findBirthdaysInRange(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    /**
+     * Получить контакты, у которых день рождения в диапазоне, который пересекает границу календарного года
+     *
+     * <p>
+     * Метод предназначен для поиска дней рождения в диапазонах, которые начинаются в одном году
+     * и заканчиваются в следующем (например, с декабря по январь). Он ищет дни рождения, которые:
+     * </p>
+     * <ul>
+     *    <li>Находятся в конце года (начиная с startDate до конца года) <b>ИЛИ</b></li>
+     *    <li>Находятся в начале года (с начала года до endDate)</li>
+     * </ul>
+     *
+     * @param startDate Начальная дата диапазона в формате "MM-dd" (например, "12-20")
+     * @param endDate   Конечная дата диапазона в формате "MM-dd" (например, "01-05")
+     * @return Список контактов, у которых день рождения попадает в указанный диапазон дат
+     * @example Поиск дней рождения с 20 декабря по 5 января: findBirthdaysCrossingYear("12-20", "01-05")
+     */
+    @Query(value = "SELECT DISTINCT c.* FROM contacts c " +
+            "JOIN events e ON c.id = e.contact_id " +
+            "WHERE e.event_type = 'BIRTHDAY' " +
+            "AND (TO_CHAR(e.event_date, 'MM-dd') >= :startDate OR TO_CHAR(e.event_date, 'MM-dd') <= :endDate)",
+            nativeQuery = true)
+    List<Contact> findBirthdaysCrossingYear(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

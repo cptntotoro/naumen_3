@@ -8,6 +8,7 @@ import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.entity.event.Event;
+import ru.anastasia.NauJava.exception.contact.ContactNotFoundException;
 import ru.anastasia.NauJava.exception.event.IllegalEventStateException;
 import ru.anastasia.NauJava.service.contact.ContactService;
 import ru.anastasia.NauJava.service.event.EventService;
@@ -95,6 +96,7 @@ public class ContactEventFacadeServiceImpl implements ContactEventFacadeService 
         return result;
     }
 
+    // TODO: Метод нигде кроме тестов не используется
     @Override
     public Event addBirthdayToContact(Long contactId, EventCreateDto birthdayRequest) {
         log.info("Добавление дня рождения для контакта ID: {}", contactId);
@@ -107,8 +109,13 @@ public class ContactEventFacadeServiceImpl implements ContactEventFacadeService 
 
         log.debug("Валидация типа события прошла успешно для контакта ID: {}", contactId);
 
-        Contact contact = contactService.findById(contactId);
-        log.debug("Контакт найден: ID: {}, имя: {}", contactId, contact.getFullName());
+        boolean isContactExists = contactService.existsById(contactId);
+        if (isContactExists) {
+            log.debug("Контакт найден: ID: {}", contactId);
+        } else {
+            log.info("Контакт не найден: ID: {}", contactId);
+            throw new ContactNotFoundException("Не найден контакт с id: " + contactId);
+        }
 
         Event birthdayEvent = eventService.create(contactId, birthdayRequest);
 

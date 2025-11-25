@@ -2,6 +2,7 @@ package ru.anastasia.NauJava.controller.company;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,6 +20,7 @@ import ru.anastasia.NauJava.service.tag.TagService;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/companies")
 @RequiredArgsConstructor
@@ -40,11 +42,16 @@ public class CompanyController {
 
     @GetMapping
     public String listCompanies(Model model) {
+        log.debug("GET /companies - список компаний");
+
         List<Company> companies = companyService.findAll();
         List<Tag> tags = tagService.findAll();
 
         model.addAttribute("companies", companies);
         model.addAttribute("tags", tags);
+
+        log.debug("Загружено компаний: {}, тегов: {}", companies.size(), tags.size());
+
         return "company/list";
     }
 
@@ -58,15 +65,21 @@ public class CompanyController {
     @PostMapping
     public String createCompany(@Valid @ModelAttribute("companyDto") CompanyFormDto companyFormDto,
                                 BindingResult bindingResult, Model model) {
+        log.info("POST /companies - создание компании [название: {}]", companyFormDto.getName());
+
         if (bindingResult.hasErrors()) {
+            log.warn("Ошибки валидации при создании компании: {}", bindingResult.getAllErrors());
             model.addAttribute("isEdit", false);
             return "company/form";
         }
+
         try {
             Company company = companyMapper.companyFormDtoToCompany(companyFormDto);
-            companyService.create(company);
+            Company savedCompany = companyService.create(company);
+            log.info("Компания успешно создана [ID: {}, название: {}]", savedCompany.getId(), savedCompany.getName());
             return "redirect:/companies";
         } catch (RuntimeException e) {
+            log.error("Ошибка при создании компании [название: {}]", companyFormDto.getName(), e);
             model.addAttribute("error", e.getMessage());
             model.addAttribute("isEdit", false);
             return "company/form";
@@ -109,7 +122,16 @@ public class CompanyController {
 
     @PostMapping("/{id}/delete")
     public String deleteCompany(@PathVariable Long id) {
-        companyService.delete(id);
+        log.info("POST /companies/{}/delete - удаление компании", id);
+
+        try {
+            companyService.delete(id);
+            log.info("Компания успешно удалена [ID: {}]", id);
+        } catch (Exception e) {
+            log.error("Ошибка при удалении компании [ID: {}]", id, e);
+            throw e;
+        }
+
         return "redirect:/companies";
     }
 }

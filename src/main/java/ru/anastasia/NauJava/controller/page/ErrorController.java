@@ -2,12 +2,14 @@ package ru.anastasia.NauJava.controller.page;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Date;
 
+@Slf4j
 @Controller
 public class ErrorController implements org.springframework.boot.web.servlet.error.ErrorController {
 
@@ -20,12 +22,15 @@ public class ErrorController implements org.springframework.boot.web.servlet.err
             statusCode = Integer.parseInt(status.toString());
         }
 
+        String path = (String) request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI);
+
+        log.warn("Обработка ошибки [статус: {}, путь: {}]", statusCode, path);
+
         model.addAttribute("status", statusCode);
         model.addAttribute("message", getErrorMessage(statusCode));
         model.addAttribute("timestamp", new Date());
-        model.addAttribute("path", request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI));
+        model.addAttribute("path", path);
 
-        // Обработка информации об ошибке
         Object error = request.getAttribute(RequestDispatcher.ERROR_EXCEPTION);
         if (error != null) {
             model.addAttribute("error", error.toString());

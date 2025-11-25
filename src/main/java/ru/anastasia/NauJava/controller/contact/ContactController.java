@@ -2,6 +2,7 @@ package ru.anastasia.NauJava.controller.contact;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,7 @@ import ru.anastasia.NauJava.service.tag.TagService;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/contacts")
 @RequiredArgsConstructor
@@ -76,6 +78,8 @@ public class ContactController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "12") int size,
             Model model) {
+        log.info("GET /contacts - поиск контактов [search: {}, company: {}, tag: {}, page: {}, size: {}]",
+                search, companyName, tagName, page, size);
 
         List<Company> companies = companyService.findAll();
         List<Tag> tags = tagService.findAll();
@@ -84,6 +88,7 @@ public class ContactController {
         Page<Contact> contactPage;
 
         contactPage = contactService.searchContacts(search, companyName, tagName, pageable);
+        log.debug("Найдено контактов: {} из {}", contactPage.getNumberOfElements(), contactPage.getTotalElements());
 
         model.addAttribute("contacts", contactPage.getContent());
         model.addAttribute("companies", companies);
@@ -102,6 +107,7 @@ public class ContactController {
 
     @GetMapping("/new")
     public String newContactForm(Model model) {
+        log.debug("GET /contacts/new - форма создания контакта");
         model.addAttribute("contactCreateDto", new ContactCreateDto());
         model.addAttribute("allTags", tagService.findAll());
         model.addAttribute("allCompanies", companyService.findAll());
@@ -115,14 +121,21 @@ public class ContactController {
     @PostMapping
     public String createContact(@Valid @ModelAttribute("contactCreateDto") ContactCreateDto contactCreateDto,
                                 BindingResult bindingResult, Model model) {
+        log.info("POST /contacts - создание контакта [имя: {} {}]",
+                contactCreateDto.getFirstName(), contactCreateDto.getLastName());
+
         if (bindingResult.hasErrors()) {
+            log.warn("Ошибки валидации при создании контакта: {}", bindingResult.getAllErrors());
             return "contact/form";
         }
 
         try {
-            contactManagementService.create(contactCreateDto);
+            Contact contact = contactManagementService.create(contactCreateDto);
+            log.info("Контакт успешно создан [ID: {}, имя: {} {}]", contact.getId(), contact.getFirstName(), contact.getLastName());
             return "redirect:/contacts";
         } catch (RuntimeException e) {
+            log.error("Ошибка при создании контакта [имя: {} {}]",
+                    contactCreateDto.getFirstName(), contactCreateDto.getLastName(), e);
             newContactForm(model);
             model.addAttribute("contactCreateDto", contactCreateDto);
             model.addAttribute("error", e.getMessage());
@@ -132,9 +145,12 @@ public class ContactController {
 
     @GetMapping("/{id}/edit")
     public String editContactForm(@PathVariable Long id, Model model) {
+        log.debug("GET /contacts/{}/edit - форма редактирования контакта", id);
+
         ContactFullDetails contactDetails = contactManagementService.getWithAllDetails(id);
 
         if (contactDetails == null) {
+            log.warn("Контакт не найден при редактировании [ID: {}]", id);
             return "redirect:/contacts";
         }
 
@@ -148,20 +164,30 @@ public class ContactController {
 
         ContactUpdateDto contactUpdateDto = contactManagementMapper.contactFullDetailsToContactUpdateDto(contactDetails);
         model.addAttribute("contactUpdateDto", contactUpdateDto);
+
+        log.debug("Данные для редактирования контакта подготовлены [ID: {}, имя: {}]",
+                id, contactDetails.getFullName());
+
         return "contact/editform";
     }
 
     @PostMapping("/{id}/edit")
     public String updateContact(@Valid @ModelAttribute("contactUpdateDto") ContactUpdateDto contactUpdateDto,
                                 BindingResult bindingResult, Model model) {
+        log.info("POST /contacts/{}/edit - обновление контакта", contactUpdateDto.getId());
+
         if (bindingResult.hasErrors()) {
+            log.warn("Ошибки валидации при обновлении контакта [ID: {}]: {}",
+                    contactUpdateDto.getId(), bindingResult.getAllErrors());
             return "contact/editform";
         }
 
         try {
-            contactManagementService.update(contactUpdateDto);
+            Contact contact = contactManagementService.update(contactUpdateDto);
+            log.info("Контакт успешно обновлен [ID: {}, имя: {}, фамилия: {}]", contact.getId(), contact.getFirstName(), contact.getLastName());
             return "redirect:/contacts";
         } catch (RuntimeException e) {
+            log.error("Ошибка при обновлении контакта [ID: {}]", contactUpdateDto.getId(), e);
             model.addAttribute("error", e.getMessage());
             model.addAttribute("allTags", tagService.findAll());
             model.addAttribute("allCompanies", companyService.findAll());
@@ -176,6 +202,7 @@ public class ContactController {
 
     @GetMapping("/{id}")
     public String contactDetails(@PathVariable Long id, Model model) {
+        log.info("GET /contacts/{} - получение контакта", id);
         ContactFullDetails contactDetails = contactManagementService.getWithAllDetails(id);
         model.addAttribute("contactDetails", contactDetails);
         return "contact/details";
@@ -183,6 +210,7 @@ public class ContactController {
 
     @PostMapping("/{id}/duplicate")
     public String duplicateContact(@PathVariable Long id) {
+        log.info("POST /contacts/{}/duplicate - дублирование контакта", id);
         contactManagementService.duplicate(id, null, null);
         return "redirect:/contacts";
     }
@@ -192,13 +220,12 @@ public class ContactController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "12") int size,
             Model model) {
+        log.info("GET /contacts/favorites - получение избранных контактов");
 
         Pageable pageable = PageRequest.of(page, size);
-
         Page<Contact> favoriteContactsPage = contactService.findFavorites(pageable);
 
         model.addAttribute("contacts", favoriteContactsPage.getContent());
-
         model.addAttribute("contacts", favoriteContactsPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("pageSize", size);
@@ -213,6 +240,8 @@ public class ContactController {
 
     @GetMapping("/birthdays")
     public String upcomingBirthdays(Model model) {
+        log.info("GET /contacts/birthdays - получение контактов с предстоящими днями рождения (30 дней)");
+
         List<ContactFullDetails> birthdayContacts = contactManagementService.getListWithUpcomingBirthdays(30);
         model.addAttribute("contacts", birthdayContacts);
         return "contact/birthdays";
@@ -220,6 +249,8 @@ public class ContactController {
 
     @PostMapping("/{id}/delete")
     public String deleteContact(@PathVariable Long id) {
+        log.info("POST /contacts/{}/delete - удаление контакта", id);
+
         contactService.deleteById(id);
         return "redirect:/contacts";
     }

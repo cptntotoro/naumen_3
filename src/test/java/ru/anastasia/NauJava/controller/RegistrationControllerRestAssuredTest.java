@@ -128,8 +128,9 @@ public class RegistrationControllerRestAssuredTest {
                 .when()
                 .post("/registration")
                 .then()
-                .statusCode(HttpStatus.FOUND.value())
-                .header("Location", containsString("/login?registrationSuccess"));
+                .statusCode(HttpStatus.OK.value())
+                .body(containsString("Регистрация"))
+                .body(containsString("Пароль не может быть пустым"));
     }
 
     @Test

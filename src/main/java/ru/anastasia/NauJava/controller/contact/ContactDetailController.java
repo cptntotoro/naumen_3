@@ -46,16 +46,6 @@ public class ContactDetailController {
         return "contactdetail/form";
     }
 
-    @PostMapping
-    public String createContactDetail(@Valid @ModelAttribute("detailDto") ContactDetailCreateDto contactDetailCreateDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "contactdetail/form";
-        }
-        ContactDetail detail = contactDetailMapper.contactDetailCreateDtoToContactDetail(contactDetailCreateDto);
-        contactDetailService.create(detail);
-        return "redirect:/contact-details";
-    }
-
     @GetMapping("/{id}/edit")
     public String editContactDetailForm(@PathVariable Long id, Model model) {
         ContactDetail detail = contactDetailService.findById(id);

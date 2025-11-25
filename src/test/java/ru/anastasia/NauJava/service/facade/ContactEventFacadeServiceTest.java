@@ -207,6 +207,7 @@ public class ContactEventFacadeServiceTest {
         EventCreateDto birthdayDto = createTestBirthdayCreateDto();
         Event birthday = createTestBirthday();
 
+        when(contactService.existsById(contactId)).thenReturn(true);
         when(eventService.create(contactId, birthdayDto)).thenReturn(birthday);
 
         Event result = contactEventFacadeService.addBirthdayToContact(contactId, birthdayDto);
