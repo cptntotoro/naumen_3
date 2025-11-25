@@ -27,4 +27,10 @@ public class ContactCompanyUpdateDto {
      * Идентификатор должности
      */
     private Long jobTitleId;
+
+    /**
+     * Является ли текущим местом работы
+     */
+    @Builder.Default
+    private boolean isCurrent = false;
 }

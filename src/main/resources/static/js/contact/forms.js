@@ -32,6 +32,12 @@ window.addCompanyJobTitle = function () {
         elements[i].name = elements[i].name.replace('[INDEX]', '[' + index + ']');
     }
     document.getElementById('companyJobTitleContainer').appendChild(template);
+
+    // Инициализируем новый чекбокс
+    var newCheckbox = template.querySelector('.current-checkbox');
+    if (newCheckbox) {
+        updateCurrentText(newCheckbox);
+    }
 };
 
 window.addEvent = function () {
@@ -126,4 +132,56 @@ function initializePrimaryToggles() {
             });
         }
     });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Избранное
+    const favoriteCheckbox = document.getElementById('isFavorite');
+    if (favoriteCheckbox) {
+        updateFavoriteText(favoriteCheckbox);
+    }
+
+    // Основные контакты
+    const primaryCheckboxes = document.querySelectorAll('.primary-checkbox');
+    primaryCheckboxes.forEach(checkbox => {
+        updatePrimaryText(checkbox);
+    });
+
+    // Текущие места работы
+    document.querySelectorAll('.current-checkbox').forEach(checkbox => {
+        updateCurrentText(checkbox);
+    });
+});
+
+function toggleCurrentCheckbox(element) {
+    const checkbox = element.previousElementSibling;
+
+    // Если включаем это место работы как основное, отключаем все остальные
+    if (!checkbox.checked) {
+        // Находим все чекбоксы в этой же форме
+        const allCurrentCheckboxes = document.querySelectorAll('.current-checkbox');
+        allCurrentCheckboxes.forEach(cb => {
+            if (cb !== checkbox) {
+                cb.checked = false;
+                updateCurrentText(cb);
+            }
+        });
+    }
+
+    checkbox.checked = !checkbox.checked;
+    updateCurrentText(checkbox);
+}
+
+function updateCurrentText(checkbox) {
+    const label = checkbox.nextElementSibling;
+    const icon = label.querySelector('.current-icon');
+    const text = label.querySelector('.current-text');
+
+    if (checkbox.checked) {
+        icon.className = 'current-icon fas fa-check-circle text-success';
+        text.textContent = 'Текущее место работы';
+    } else {
+        icon.className = 'current-icon far fa-circle';
+        text.textContent = 'Текущее место работы';
+    }
 }
