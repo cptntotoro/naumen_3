@@ -26,5 +26,6 @@ public class ContactCompanyCreateDto {
     /**
      * Является ли текущим местом работы
      */
-    private boolean isCurrent;
+    @Builder.Default
+    private boolean isCurrent = false;
 }

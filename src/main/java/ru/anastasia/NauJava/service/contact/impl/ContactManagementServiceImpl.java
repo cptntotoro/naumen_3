@@ -378,6 +378,8 @@ public class ContactManagementServiceImpl implements ContactManagementService {
 
     private void updateContactCompanies(Contact contact, List<ContactCompanyUpdateDto> companyDtos) {
         log.debug("Обновление компаний контакта с ID: {}. Старое количество: {}", contact.getId(), contact.getCompanies().size());
+        validateContactCompanies(companyDtos);
+        
         List<ContactCompany> oldCompanies = List.copyOf(contact.getCompanies());
         contact.getCompanies().clear();
 
@@ -388,9 +390,20 @@ public class ContactManagementServiceImpl implements ContactManagementService {
             ContactCompany contactCompany = findOrCreateContactCompany(oldCompanies, dto.getId(), contact);
             contactCompany.setCompany(company);
             contactCompany.setJobTitle(jobTitle);
+            contactCompany.setIsCurrent(dto.isCurrent());
             contact.addCompany(contactCompany);
         });
         log.debug("Обновлено компаний контакта с ID: {}. Новое количество: {}", contact.getId(), companyDtos.size());
+    }
+
+    private void validateContactCompanies(List<ContactCompanyUpdateDto> companyDtos) {
+        long currentCount = companyDtos.stream()
+                .filter(ContactCompanyUpdateDto::isCurrent)
+                .count();
+
+        if (currentCount > 1) {
+            throw new IllegalArgumentException("Только одно место работы может быть текущим");
+        }
     }
 
     private void updateContactDetails(Contact contact, List<ru.anastasia.NauJava.dto.contact.ContactDetailUpdateDto> detailDtos) {
