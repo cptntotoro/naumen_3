@@ -120,7 +120,7 @@
                             </div>
                             <div class="contact-form-full-width">
                                 <div class="primary-toggle">
-                                    <input type="checkbox" name="contactDetailCreateDtos[INDEX].isPrimary"
+                                    <input type="checkbox"
                                            th:field="*{contactDetails[__${stat.index}__].isPrimary}"
                                            class="primary-checkbox" hidden
                                            onchange="updatePrimaryText(this)">
@@ -448,6 +448,18 @@
                 <option value="" disabled selected>Выберите должность</option>
                 <option th:each="job : ${allJobTitles}" th:value="${job.id}" th:text="${job.title}"></option>
             </select>
+        </div>
+        <div class="col-md-4">
+            <div class="current-job-toggle mt-4">
+                <input type="checkbox" name="companies[INDEX].current"
+                       class="current-checkbox"
+                       hidden
+                       onchange="updateCurrentText(this)">
+                <label class="current-label" onclick="toggleCurrentCheckbox(this)">
+                    <i class="current-icon far fa-circle"></i>
+                    <span class="current-text">Текущее место работы</span>
+                </label>
+            </div>
         </div>
     </div>
     <button type="button" class="btn btn-outline-danger btn-sm mt-3" onclick="window.removeFormField(this)">
