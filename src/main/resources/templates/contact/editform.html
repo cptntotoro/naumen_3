@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Редактирование контакта</title>
 
+    <link rel="icon" type="image/png" th:href="@{/images/favicon.ico}"/>
+
     <!-- Подключение стилей -->
     <div th:replace="~{fragments/styles :: base-styles}"></div>
     <div th:replace="~{fragments/styles :: page-styles('forms')}"></div>
@@ -54,7 +56,7 @@
                     <div class="contact-form-column">
                         <label for="avatarUrl" class="form-label fw-semibold">URL аватара</label>
                         <div class="input-group">
-                            <input type="url" class="form-control" id="avatarUrl"
+                            <input type="text" class="form-control" id="avatarUrl"
                                    th:field="*{avatarUrl}" placeholder="https://example.com/avatar.jpg">
                         </div>
                     </div>
