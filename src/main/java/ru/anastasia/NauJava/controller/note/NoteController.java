@@ -33,31 +33,26 @@ public class NoteController {
      */
     private final NoteMapper noteMapper;
 
-    @GetMapping("/new")
-    public String newNoteForm(Model model) {
-        model.addAttribute("noteDto", new NoteCreateDto());
-        return "note/form";
-    }
-
     @PostMapping
-    public String createNote(@Valid @ModelAttribute("noteDto") NoteCreateDto noteCreateDto, BindingResult bindingResult,
+    public String createNote(@Valid @ModelAttribute("noteDto") NoteCreateDto noteCreateDto,
+                             BindingResult bindingResult,
                              Model model) {
         log.info("POST /notes - создание заметки [контакт: {}]", noteCreateDto.getContactId());
 
         if (bindingResult.hasErrors()) {
             log.warn("Ошибки валидации при создании заметки: {}", bindingResult.getAllErrors());
-            return "note/form";
+            // Возвращаем на страницу контакта с ошибками
+            return "redirect:/contacts/" + noteCreateDto.getContactId() + "?error=note_validation";
         }
 
         try {
             Note note = noteMapper.noteCreateDtoToNote(noteCreateDto);
             noteService.create(noteCreateDto.getContactId(), note);
             log.info("Заметка успешно создана [ID: {}, контакт: {}]", note.getId(), noteCreateDto.getContactId());
-            return "redirect:/contacts/" + noteCreateDto.getContactId();
+            return "redirect:/contacts/" + noteCreateDto.getContactId() + "?success=note_created";
         } catch (RuntimeException e) {
             log.error("Ошибка при создании заметки [контакт: {}]", noteCreateDto.getContactId(), e);
-            model.addAttribute("error", e.getMessage());
-            return "note/form";
+            return "redirect:/contacts/" + noteCreateDto.getContactId() + "?error=note_creation";
         }
     }
 
@@ -65,7 +60,7 @@ public class NoteController {
     public String editNoteForm(@PathVariable Long id, Model model) {
         Note note = noteService.findById(id);
         if (note == null) {
-            return "redirect:/notes";
+            return "redirect:/contacts";
         }
         NoteUpdateDto dto = noteMapper.noteToNoteUpdateDto(note);
 
@@ -74,15 +69,25 @@ public class NoteController {
         return "note/edit";
     }
 
-    @PostMapping("/edit")
-    public String updateNote(@Valid @ModelAttribute("noteDto") NoteUpdateDto noteUpdateDto,
+    @PostMapping("/{id}/edit")
+    public String updateNote(@PathVariable Long id,
+                             @Valid @ModelAttribute("noteDto") NoteUpdateDto noteUpdateDto,
                              BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return "note/edit";
         }
+
+        Note existingNote = noteService.findById(id);
+        if (existingNote == null) {
+            return "redirect:/contacts";
+        }
+
         Note note = noteMapper.noteUpdateDtoToNote(noteUpdateDto);
+        note.setId(id);
+        note.setContact(existingNote.getContact());
         noteService.update(note);
-        return "redirect:/notes";
+
+        return "redirect:/contacts/" + existingNote.getContact().getId();
     }
 
     @PostMapping("/{id}/delete")

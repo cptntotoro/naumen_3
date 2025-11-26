@@ -236,12 +236,43 @@
             <h3 class="h5 fw-bold mb-0 section-header">
                 <i class="fas fa-sticky-note text-primary me-2"></i>Заметки
             </h3>
-            <a th:href="@{/notes/new?contactId={id}(id=${contactDetails.contact.id})}"
-               class="btn btn-outline-primary text-sm">
+            <button type="button"
+                    class="btn btn-outline-primary text-sm"
+                    onclick="toggleNoteForm()">
                 <i class="fas fa-plus mr-1"></i>Добавить
-            </a>
+            </button>
         </div>
         <div class="card-body">
+            <!-- Форма добавления новой заметки (скрыта по умолчанию) -->
+            <div class="note-form-container mb-6" id="noteFormContainer" style="display: none;">
+                <form th:action="@{/notes}" th:object="${noteDto}" method="post" class="note-form" id="noteForm">
+                    <input type="hidden" th:field="*{contactId}"/>
+
+                    <div class="form-group">
+                        <label for="noteContent" class="form-label fw-semibold">Новая заметка</label>
+                        <textarea th:field="*{content}"
+                                  class="form-control"
+                                  id="noteContent"
+                                  rows="3"
+                                  placeholder="Введите текст заметки... (Ctrl+Enter для сохранения)"
+                                  required></textarea>
+                        <div class="hotkey-hint">Ctrl+Enter для быстрого сохранения</div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('content')}"
+                             th:errors="*{content}"></div>
+                    </div>
+
+                    <div class="form-actions d-flex justify-content-end gap-3 mt-3">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="hideNoteForm()">
+                            <i class="fas fa-times me-1"></i>Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i>Сохранить заметку
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Список существующих заметок -->
             <div class="notes-grid">
                 <div th:each="note : ${contactDetails.notes}" class="note-item">
                     <div class="note-header">
@@ -265,13 +296,190 @@
                 </div>
             </div>
 
-            <div th:if="${contactDetails.notes.isEmpty()}" class="empty-state py-12">
+            <div th:if="${contactDetails.notes.isEmpty()}" class="empty-state py-8">
                 <i class="fas fa-sticky-note empty-state__icon text-primary"></i>
                 <div class="empty-state__title">Заметок пока нет</div>
+                <div class="empty-state__description">Нажмите кнопку "Добавить" чтобы создать первую заметку</div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Функции для управления формой заметки
+    function toggleNoteForm() {
+        const formContainer = document.getElementById('noteFormContainer');
+        const noteTextarea = document.getElementById('noteContent');
+
+        if (formContainer.style.display === 'none') {
+            formContainer.style.display = 'block';
+            // Плавное появление
+            formContainer.style.opacity = '0';
+            formContainer.style.transform = 'translateY(-10px)';
+
+            setTimeout(() => {
+                formContainer.style.transition = 'all 0.3s ease';
+                formContainer.style.opacity = '1';
+                formContainer.style.transform = 'translateY(0)';
+            }, 10);
+
+            // Фокусируемся на textarea
+            if (noteTextarea) {
+                setTimeout(() => {
+                    noteTextarea.focus();
+                }, 300);
+            }
+        } else {
+            hideNoteForm();
+        }
+    }
+
+    function hideNoteForm() {
+        const formContainer = document.getElementById('noteFormContainer');
+        const noteForm = document.getElementById('noteForm');
+
+        if (formContainer) {
+            formContainer.style.opacity = '0';
+            formContainer.style.transform = 'translateY(-10px)';
+
+            setTimeout(() => {
+                formContainer.style.display = 'none';
+                if (noteForm) {
+                    noteForm.reset();
+                }
+            }, 300);
+        }
+    }
+
+    // Авто-высота для textarea
+    function setupNoteTextarea() {
+        const noteTextarea = document.getElementById('noteContent');
+        if (noteTextarea) {
+            noteTextarea.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Обработка нажатия Ctrl+Enter для сохранения
+            noteTextarea.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    const form = document.getElementById('noteForm');
+                    if (form) {
+                        form.submit();
+                    }
+                }
+            });
+        }
+    }
+
+    // Обработка успешного добавления/удаления заметки
+    function handleNoteFormNotifications() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('success')) {
+            const successType = urlParams.get('success');
+            if (successType === 'note_created') {
+                showNotification('Заметка успешно добавлена', 'success');
+                hideNoteForm();
+
+                // Прокручиваем к новой заметке
+                setTimeout(() => {
+                    const firstNote = document.querySelector('.note-item');
+                    if (firstNote) {
+                        firstNote.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                    }
+                }, 500);
+
+            } else if (successType === 'note_deleted') {
+                showNotification('Заметка успешно удалена', 'success');
+            }
+        }
+
+        if (urlParams.has('error')) {
+            const errorType = urlParams.get('error');
+            if (errorType === 'note_validation') {
+                showNotification('Ошибка валидации заметки. Проверьте введенные данные.', 'error');
+                // Показываем форму при ошибке валидации
+                toggleNoteForm();
+            } else if (errorType === 'note_creation') {
+                showNotification('Ошибка при создании заметки', 'error');
+            }
+        }
+    }
+
+    // Функция показа уведомлений
+    function showNotification(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type === 'success' ? 'success' : 'error'}`;
+        alert.textContent = message;
+        alert.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 10000;
+        min-width: 300px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+
+        document.body.appendChild(alert);
+
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
+    }
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function () {
+        setupNoteTextarea();
+        handleNoteFormNotifications();
+
+        // Подтверждение удаления
+        document.querySelectorAll('form[data-confirm]').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                if (!confirm(this.getAttribute('data-confirm'))) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Автоматически показываем форму если есть ошибки валидации
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error') && urlParams.get('error').includes('note')) {
+            setTimeout(toggleNoteForm, 500);
+        }
+    });
+</script>
+
+<style>
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .note-form-container {
+        transition: all 0.3s ease;
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+    }
+
+    /* Стиль для подсказки Ctrl+Enter */
+    .note-form .form-control::after {
+        content: 'Ctrl+Enter для сохранения';
+        position: absolute;
+        bottom: -20px;
+        right: 0;
+        font-size: var(--font-size-xs);
+        color: var(--gray-400);
+    }
+</style>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <div th:replace="~{fragments/scripts :: base-scripts}"></div>

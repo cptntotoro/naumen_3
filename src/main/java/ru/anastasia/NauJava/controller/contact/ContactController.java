@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.anastasia.NauJava.dto.contact.ContactCreateDto;
 import ru.anastasia.NauJava.dto.contact.ContactUpdateDto;
+import ru.anastasia.NauJava.dto.note.NoteCreateDto;
 import ru.anastasia.NauJava.entity.company.Company;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.enums.DetailLabel;
@@ -203,8 +204,14 @@ public class ContactController {
     @GetMapping("/{id}")
     public String contactDetails(@PathVariable Long id, Model model) {
         log.info("GET /contacts/{} - получение контакта", id);
+
         ContactFullDetails contactDetails = contactManagementService.getWithAllDetails(id);
         model.addAttribute("contactDetails", contactDetails);
+
+        NoteCreateDto noteDto = new NoteCreateDto();
+        noteDto.setContactId(id);
+        model.addAttribute("noteDto", noteDto);
+
         return "contact/details";
     }
 
