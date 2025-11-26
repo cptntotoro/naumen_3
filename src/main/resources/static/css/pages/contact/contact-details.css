@@ -233,7 +233,7 @@
 .event-notes {
     color: var(--gray-600);
     font-size: var(--font-size-sm);
-    max-width: 200px;
+    max-width: 300px;
     word-wrap: break-word;
 }
 
@@ -308,6 +308,122 @@
     font-weight: 600;
     margin-bottom: var(--space-2);
     color: var(--gray-600);
+}
+
+/* ===== ФОРМА ЗАМЕТКИ ===== */
+.note-form-container {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    transition: all 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.note-form-container.show {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+.note-form .form-group {
+    margin-bottom: var(--space-4);
+    position: relative;
+}
+
+.note-form .form-label {
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
+}
+
+.note-form .form-control {
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-base);
+    transition: var(--transition);
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.note-form .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.note-form .form-actions {
+    border-top: 1px solid var(--gray-200);
+    padding-top: var(--space-4);
+}
+
+/* Кнопка добавления */
+.btn-outline-primary {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+    transition: var(--transition);
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    color: var(--white);
+    transform: translateY(-1px);
+}
+
+/* Подсказка для горячих клавиш */
+.hotkey-hint {
+    font-size: var(--font-size-xs);
+    color: var(--gray-400);
+    text-align: right;
+    margin-top: var(--space-1);
+}
+
+/* Уведомления */
+.alert {
+    padding: var(--space-4);
+    border-radius: var(--radius);
+    margin-bottom: var(--space-4);
+    border: 1px solid transparent;
+}
+
+.alert-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.alert-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+/* Анимация для новой заметки */
+.note-item:first-child {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ===== КНОПКИ ДЕЙСТВИЙ ===== */
