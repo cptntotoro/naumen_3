@@ -22,6 +22,7 @@ public interface NoteMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "contact", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     Note noteCreateDtoToNote(NoteCreateDto noteCreateDto);
 
     /**
@@ -32,6 +33,7 @@ public interface NoteMapper {
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "contact", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     Note noteUpdateDtoToNote(NoteUpdateDto noteUpdateDto);
 
     /**
