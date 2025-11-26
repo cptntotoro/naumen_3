@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +18,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import ru.anastasia.NauJava.entity.contact.Contact;
+
+import java.time.LocalDateTime;
 
 /**
  * Заметка
@@ -52,4 +55,15 @@ public class Note {
      */
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    /**
+     * Дата и время создания
+     */
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }

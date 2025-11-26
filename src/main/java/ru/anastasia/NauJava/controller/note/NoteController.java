@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,18 +85,24 @@ public class NoteController {
         return "redirect:/notes";
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/delete")
     public String deleteNote(@PathVariable Long id) {
-        log.info("DELETE /notes/{} - удаление заметки", id);
+        log.info("POST /notes/{}/delete - удаление заметки", id);
 
         try {
-            noteService.delete(id);
-            log.info("Заметка успешно удалена [ID: {}]", id);
+            Note note = noteService.findById(id);
+            if (note != null) {
+                Long contactId = note.getContact().getId();
+                noteService.delete(id);
+                log.info("Заметка успешно удалена [ID: {}, контакт: {}]", id, contactId);
+                return "redirect:/contacts/" + contactId;
+            } else {
+                log.warn("Заметка не найдена [ID: {}]", id);
+                return "redirect:/contacts";
+            }
         } catch (Exception e) {
             log.error("Ошибка при удалении заметки [ID: {}]", id, e);
-            throw e;
+            return "redirect:/contacts";
         }
-
-        return "redirect:/notes";
     }
 }
