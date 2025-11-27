@@ -45,6 +45,7 @@ public class Report {
      */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private ReportStatus status = ReportStatus.CREATED;
 
     /**
@@ -57,5 +58,6 @@ public class Report {
      * Дата создания
      */
     @Column(name = "created_at")
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

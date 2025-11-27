@@ -39,7 +39,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-start gap-4">
                         <div class="avatar-container position-relative">
-                            <img th:src="${contact.contact.avatarUrl} ?: '/images/avatar-placeholder.jpg'"
+                            <img th:src="@{${contact.contact.avatarUrl ?: '/images/avatar-placeholder.jpg'}}"
                                  alt="Avatar" class="birthday-avatar">
                             <div class="favorite-star-icon" th:if="${contact.contact.isFavorite}">
                                 <i class="favorite-icon fas fa-star"></i>
