@@ -31,16 +31,7 @@ public interface NoteMapper {
      * @param noteUpdateDto DTO обновления заметки
      * @return Заметка
      */
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "contact", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     Note noteUpdateDtoToNote(NoteUpdateDto noteUpdateDto);
-
-    /**
-     * Смаппить заметку в DTO обновления заметки
-     *
-     * @param note Заметка
-     * @return DTO обновления заметки
-     */
-    NoteUpdateDto noteToNoteUpdateDto(Note note);
 }

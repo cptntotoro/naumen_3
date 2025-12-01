@@ -1,7 +1,7 @@
 package ru.anastasia.NauJava.dto.note;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +23,12 @@ public class NoteUpdateDto {
     private Long id;
 
     /**
+     * Идентификатор контакта
+     */
+    @NotNull(message = "ID контакта обязателен")
+    private Long contactId;
+
+    /**
      * Тело заметки
      */
     @NotBlank(message = "Содержимое заметки обязательно")
@@ -31,6 +37,5 @@ public class NoteUpdateDto {
     /**
      * Дата и время создания
      */
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
