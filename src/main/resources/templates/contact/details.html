@@ -120,9 +120,14 @@
         <div class="card-body">
             <div class="card-body">
                 <div th:each="detail : ${contactDetails.contactDetails}">
-                    <div class="d-flex row gap-2 align-items-center border-bottom">
+                    <div class="d-flex row gap-2 align-items-center border-bottom py-2">
                         <div class="row align-items-center gap-4">
-                            <i th:class="'fas fa-' + ${detail.detailType == 'EMAIL' ? 'envelope' : 'phone'} + ' text-primary'"></i>
+                            <i th:class="'fas fa-' +
+                               ${detail.detailType.name() == 'EMAIL' ? 'envelope' :
+                                 detail.detailType.name() == 'PHONE' ? 'phone' :
+                                 detail.detailType.name() == 'ADDRESS' ? 'map-marker-alt' :
+                                 'globe'} +
+                               ' text-primary'"></i>
                             <div>
                                 <strong th:text="${detail.detailType.name()}"></strong>
                                 <small class="text-muted d-block"
@@ -130,10 +135,38 @@
                             </div>
                         </div>
                         <div class="text-end">
-                            <span class="fw-semibold" th:text="${detail.value}"></span>
-                            <i th:if="${detail.isPrimary}" class="fas fa-star text-warning ms-2"
-                               title="Основной способ связи"
-                               style="color:var(--warning);"></i>
+                            <!-- Для телефонов -->
+                            <span th:if="${detail.detailType.name() == 'PHONE'}">
+                                <a th:href="'tel:' + ${detail.value}"
+                                   class="fw-semibold text-decoration-none link-primary"
+                                   th:text="${detail.value}"></a>
+                            </span>
+
+                            <!-- Для email -->
+                            <span th:if="${detail.detailType.name() == 'EMAIL'}">
+                                <a th:href="'mailto:' + ${detail.value}"
+                                   class="fw-semibold text-decoration-none link-primary"
+                                   th:text="${detail.value}"></a>
+                            </span>
+
+                            <!-- Для вебсайтов -->
+                            <span th:if="${detail.detailType.name() == 'WEBSITE'}">
+                                <a th:href="${#strings.startsWith(detail.value, 'http') ? detail.value : 'https://' + detail.value}"
+                                   class="fw-semibold text-decoration-none link-primary"
+                                   target="_blank"
+                                   th:text="${detail.value}"></a>
+                            </span>
+
+                            <!-- Для остальных -->
+                            <span th:if="${detail.detailType.name() != 'PHONE' and
+                             detail.detailType.name() != 'EMAIL' and
+                             detail.detailType.name() != 'WEBSITE'}">
+                                <span class="fw-semibold" th:text="${detail.value}"></span>
+                            </span>
+
+                            <i th:if="${detail.isPrimary}"
+                               class="fas fa-star text-warning ms-2"
+                               title="Основной способ связи"></i>
                         </div>
                     </div>
                 </div>
@@ -204,9 +237,11 @@
                         <div class="event-details">
                             <div class="event-header">
                                 <span class="event-type" th:text="${event.eventType.name()}"></span>
-                                <span th:if="${event.customEventName}"
+                                <span th:if="${event.eventType == T(ru.anastasia.NauJava.entity.enums.EventType).CUSTOM}
+                                        and ${!#strings.isEmpty(event.customEventName)}"
                                       class="event-custom-name"
-                                      th:text="'(' + ${event.customEventName} + ')'"></span>
+                                      th:text="'(' + ${event.customEventName} + ')'">
+                                </span>
                             </div>
                         </div>
                     </div>
