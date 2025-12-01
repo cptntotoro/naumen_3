@@ -4,9 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,13 +33,11 @@ public class NoteController {
 
     @PostMapping
     public String createNote(@Valid @ModelAttribute("noteDto") NoteCreateDto noteCreateDto,
-                             BindingResult bindingResult,
-                             Model model) {
+                             BindingResult bindingResult) {
         log.info("POST /notes - создание заметки [контакт: {}]", noteCreateDto.getContactId());
 
         if (bindingResult.hasErrors()) {
             log.warn("Ошибки валидации при создании заметки: {}", bindingResult.getAllErrors());
-            // Возвращаем на страницу контакта с ошибками
             return "redirect:/contacts/" + noteCreateDto.getContactId() + "?error=note_validation";
         }
 
@@ -56,38 +52,30 @@ public class NoteController {
         }
     }
 
-    @GetMapping("/{id}/edit")
-    public String editNoteForm(@PathVariable Long id, Model model) {
-        Note note = noteService.findById(id);
-        if (note == null) {
-            return "redirect:/contacts";
-        }
-        NoteUpdateDto dto = noteMapper.noteToNoteUpdateDto(note);
-
-        model.addAttribute("noteDto", dto);
-        model.addAttribute("noteId", id);
-        return "note/edit";
-    }
-
-    @PostMapping("/{id}/edit")
+    @PostMapping("/{id}/update")
     public String updateNote(@PathVariable Long id,
                              @Valid @ModelAttribute("noteDto") NoteUpdateDto noteUpdateDto,
                              BindingResult bindingResult) {
+        log.info("POST /notes/{}/update - обновление заметки", id);
+
+        noteUpdateDto.setId(id);
+
         if (bindingResult.hasErrors()) {
-            return "note/edit";
+            log.warn("Ошибки валидации при обновлении заметки: {}", bindingResult.getAllErrors());
+            return "redirect:/contacts/" + noteUpdateDto.getContactId() +
+                    "?error=note_validation";
         }
 
-        Note existingNote = noteService.findById(id);
-        if (existingNote == null) {
-            return "redirect:/contacts";
+        try {
+            Note note = noteMapper.noteUpdateDtoToNote(noteUpdateDto);
+            noteService.update(note, noteUpdateDto.getContactId());
+
+            log.info("Заметка успешно обновлена [ID: {}, контакт: {}]", id, noteUpdateDto.getContactId());
+            return "redirect:/contacts/" + noteUpdateDto.getContactId() + "?success=note_updated";
+        } catch (RuntimeException e) {
+            log.error("Ошибка при обновлении заметки [ID: {}]", id, e);
+            return "redirect:/contacts/" + noteUpdateDto.getContactId() + "?error=note_update";
         }
-
-        Note note = noteMapper.noteUpdateDtoToNote(noteUpdateDto);
-        note.setId(id);
-        note.setContact(existingNote.getContact());
-        noteService.update(note);
-
-        return "redirect:/contacts/" + existingNote.getContact().getId();
     }
 
     @PostMapping("/{id}/delete")
@@ -100,14 +88,14 @@ public class NoteController {
                 Long contactId = note.getContact().getId();
                 noteService.delete(id);
                 log.info("Заметка успешно удалена [ID: {}, контакт: {}]", id, contactId);
-                return "redirect:/contacts/" + contactId;
+                return "redirect:/contacts/" + contactId + "?success=note_deleted";
             } else {
                 log.warn("Заметка не найдена [ID: {}]", id);
-                return "redirect:/contacts";
+                return "redirect:/contacts?error=note_not_found";
             }
         } catch (Exception e) {
             log.error("Ошибка при удалении заметки [ID: {}]", id, e);
-            return "redirect:/contacts";
+            return "redirect:/contacts?error=note_delete_error";
         }
     }
 }

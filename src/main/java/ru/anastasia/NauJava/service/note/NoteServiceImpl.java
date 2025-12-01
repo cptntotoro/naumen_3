@@ -75,15 +75,26 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public Note update(Note note) {
+    public Note update(Note note, Long contactId) {
         log.info("Обновление заметки ID: {}", note.getId());
 
-        Note existing = findById(note.getId());
-        log.debug("Текущий контент заметки ID: {}, длина: {} символов",
-                existing.getId(), existing.getContent() != null ? existing.getContent().length() : 0);
+        if (note.getId() == null) {
+            log.error("Попытка обновить заметку с null ID");
+            throw new IllegalArgumentException("ID заметки не может быть null");
+        }
 
-        existing.setContent(note.getContent());
-        Note updatedNote = noteRepository.save(existing);
+        Note existingNote = findById(note.getId());
+        log.debug("Текущий контент заметки ID: {}, длина: {} символов",
+                existingNote.getId(), existingNote.getContent() != null ? existingNote.getContent().length() : 0);
+
+        if (!existingNote.getContact().getId().equals(contactId)) {
+            log.warn("Попытка обновить заметку не принадлежащую контакту [noteId: {}, contactId: {}, actualContactId: {}]",
+                    existingNote.getId(), contactId, existingNote.getContact().getId());
+            throw new IllegalArgumentException("Заметка не принадлежит указанному контакту");
+        }
+
+        existingNote.setContent(note.getContent());
+        Note updatedNote = noteRepository.save(existingNote);
 
         log.info("Заметка успешно обновлена. ID: {}, новая длина контента: {} символов",
                 updatedNote.getId(),

@@ -13,7 +13,7 @@ public interface NoteService {
      * Создать заметку
      *
      * @param contactId Идентификатор контакта
-     * @param note   Заметка
+     * @param note      Заметка
      * @return Заметка
      */
     Note create(Long contactId, Note note);
@@ -37,10 +37,11 @@ public interface NoteService {
     /**
      * Обновить заметку
      *
-     * @param note Заметка
+     * @param note      Заметка
+     * @param contactId Идентификатотр контакта
      * @return Заметка
      */
-    Note update(Note note);
+    Note update(Note note, Long contactId);
 
     /**
      * Удалить заметку

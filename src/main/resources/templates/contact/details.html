@@ -262,7 +262,10 @@
                     </div>
 
                     <div class="form-actions d-flex justify-content-end gap-3 mt-3">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="hideNoteForm()">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                onclick="hideNoteForm()"
+                                id="cancelNoteForm">
                             <i class="fas fa-times me-1"></i>Отмена
                         </button>
                         <button type="submit" class="btn btn-primary btn-sm">
@@ -274,25 +277,61 @@
 
             <!-- Список существующих заметок -->
             <div class="notes-grid">
-                <div th:each="note : ${contactDetails.notes}" class="note-item">
-                    <div class="note-header">
-                        <div class="note-date"
-                             th:text="${#temporals.format(note.createdAt, 'dd.MM.yyyy HH:mm')}"></div>
-                        <div class="note-actions">
-                            <a th:href="@{/notes/{id}/edit(id=${note.id})}"
-                               class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form th:action="@{/notes/{id}/delete(id=${note.id})}" method="post" class="inline">
-                                <button type="submit"
-                                        class="btn btn-sm btn-outline-danger"
-                                        data-confirm="Удалить заметку?">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                <div th:each="note : ${contactDetails.notes}" class="note-item" th:id="'note-' + ${note.id}">
+                    <!-- Форма редактирования заметки (скрыта по умолчанию) -->
+                    <form th:action="@{/notes/{id}/update(id=${note.id})}"
+                          method="post"
+                          class="note-edit-form"
+                          th:id="'edit-form-' + ${note.id}"
+                          style="display: none;">
+                        <input type="hidden" name="id" th:value="${note.id}"/>
+                        <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+
+                        <div class="form-group mb-3">
+                            <textarea name="content"
+                                      class="form-control note-edit-textarea"
+                                      rows="3"
+                                      th:attr="data-note-id=${note.id}"
+                                      th:text="${note.content}"></textarea>
+                            <div class="hotkey-hint">Ctrl+Enter для сохранения</div>
                         </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    th:onclick="'cancelEdit(' + ${note.id} + ')'">
+                                Отмена
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                Сохранить
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Отображение заметки (по умолчанию видно) -->
+                    <div class="note-view" th:id="'view-' + ${note.id}">
+                        <div class="note-header">
+                            <div class="note-date"
+                                 th:text="${#temporals.format(note.createdAt, 'dd.MM.yyyy HH:mm')}"></div>
+                            <div class="note-actions">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'editNote(' + ${note.id} + ')'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form th:action="@{/notes/{id}/delete(id=${note.id})}"
+                                      method="post"
+                                      class="inline"
+                                      onsubmit="return confirm('Удалить заметку?')">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="note-content" th:text="${note.content}"></div>
                     </div>
-                    <div class="note-content" th:text="${note.content}"></div>
                 </div>
             </div>
 
@@ -306,6 +345,95 @@
 </div>
 
 <script>
+    // Функция для начала редактирования заметки
+    function editNote(noteId) {
+        // Скрываем вид просмотра
+        document.getElementById('view-' + noteId).style.display = 'none';
+
+        // Показываем форму редактирования
+        const editForm = document.getElementById('edit-form-' + noteId);
+        editForm.style.display = 'block';
+
+        // Фокусируемся на textarea
+        const textarea = editForm.querySelector('.note-edit-textarea');
+        if (textarea) {
+            setTimeout(() => {
+                textarea.focus();
+                textarea.style.height = 'auto';
+                textarea.style.height = (textarea.scrollHeight) + 'px';
+            }, 10);
+        }
+
+        // Закрытие по ESC
+        if (textarea) {
+            const escHandler = function (e) {
+                if (e.key === 'Escape') {
+                    cancelEdit(noteId);
+                    textarea.removeEventListener('keydown', escHandler);
+                }
+            };
+            textarea.addEventListener('keydown', escHandler);
+        }
+    }
+
+    // Функция отмены редактирования
+    function cancelEdit(noteId) {
+        // Показываем вид просмотра
+        document.getElementById('view-' + noteId).style.display = 'block';
+
+        // Скрываем форму редактирования
+        document.getElementById('edit-form-' + noteId).style.display = 'none';
+
+        // Сбрасываем форму
+        document.getElementById('edit-form-' + noteId).reset();
+    }
+
+    // Настройка авто-высоты для всех textarea редактирования
+    function setupEditTextareas() {
+        document.querySelectorAll('.note-edit-textarea').forEach(textarea => {
+            textarea.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Обработка Ctrl+Enter для сохранения
+            textarea.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    const noteId = this.getAttribute('data-note-id');
+                    document.getElementById('edit-form-' + noteId).submit();
+                }
+            });
+        });
+    }
+
+    // Авто-высота для textarea создания заметки
+    function setupCreateTextarea() {
+        const noteTextarea = document.getElementById('noteContent');
+        if (noteTextarea) {
+            noteTextarea.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Обработка нажатия Ctrl+Enter для сохранения
+            noteTextarea.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    const form = document.getElementById('noteForm');
+                    if (form) {
+                        form.submit();
+                        e.preventDefault(); // Предотвращаем перенос строки
+                    }
+                }
+
+                // Обработка Escape для закрытия формы
+                if (e.key === 'Escape') {
+                    hideNoteForm();
+                    e.preventDefault();
+                }
+            });
+        }
+    }
+
     // Функции для управления формой заметки
     function toggleNoteForm() {
         const formContainer = document.getElementById('noteFormContainer');
@@ -327,6 +455,14 @@
             if (noteTextarea) {
                 setTimeout(() => {
                     noteTextarea.focus();
+                    // Добавляем обработчик ESC для textarea
+                    const escHandler = function (e) {
+                        if (e.key === 'Escape') {
+                            hideNoteForm();
+                            noteTextarea.removeEventListener('keydown', escHandler);
+                        }
+                    };
+                    noteTextarea.addEventListener('keydown', escHandler);
                 }, 300);
             }
         } else {
@@ -337,6 +473,7 @@
     function hideNoteForm() {
         const formContainer = document.getElementById('noteFormContainer');
         const noteForm = document.getElementById('noteForm');
+        const noteTextarea = document.getElementById('noteContent');
 
         if (formContainer) {
             formContainer.style.opacity = '0';
@@ -347,33 +484,38 @@
                 if (noteForm) {
                     noteForm.reset();
                 }
+                if (noteTextarea) {
+                    // Сбрасываем высоту textarea
+                    noteTextarea.style.height = 'auto';
+                    // Удаляем все обработчики ESC (на всякий случай)
+                }
             }, 300);
         }
     }
 
-    // Авто-высота для textarea
-    function setupNoteTextarea() {
-        const noteTextarea = document.getElementById('noteContent');
-        if (noteTextarea) {
-            noteTextarea.addEventListener('input', function () {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
+    // Функция показа уведомлений
+    function showNotification(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type === 'success' ? 'success' : 'error'}`;
+        alert.textContent = message;
+        alert.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        `;
 
-            // Обработка нажатия Ctrl+Enter для сохранения
-            noteTextarea.addEventListener('keydown', function (e) {
-                if (e.ctrlKey && e.key === 'Enter') {
-                    const form = document.getElementById('noteForm');
-                    if (form) {
-                        form.submit();
-                    }
-                }
-            });
-        }
+        document.body.appendChild(alert);
+
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
     }
 
-    // Обработка успешного добавления/удаления заметки
-    function handleNoteFormNotifications() {
+    // Обработка успешного добавления/обновления/удаления заметки
+    function handleNotifications() {
         const urlParams = new URLSearchParams(window.location.search);
 
         if (urlParams.has('success')) {
@@ -382,13 +524,17 @@
                 showNotification('Заметка успешно добавлена', 'success');
                 hideNoteForm();
 
-                // Прокручиваем к новой заметке
+                // Прокручиваем к новой заметке (последней в списке)
                 setTimeout(() => {
-                    const firstNote = document.querySelector('.note-item');
-                    if (firstNote) {
-                        firstNote.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                    const notes = document.querySelectorAll('.note-item');
+                    if (notes.length > 0) {
+                        const lastNote = notes[notes.length - 1];
+                        lastNote.scrollIntoView({behavior: 'smooth', block: 'nearest'});
                     }
                 }, 500);
+
+            } else if (successType === 'note_updated') {
+                showNotification('Заметка успешно обновлена', 'success');
 
             } else if (successType === 'note_deleted') {
                 showNotification('Заметка успешно удалена', 'success');
@@ -399,39 +545,35 @@
             const errorType = urlParams.get('error');
             if (errorType === 'note_validation') {
                 showNotification('Ошибка валидации заметки. Проверьте введенные данные.', 'error');
-                // Показываем форму при ошибке валидации
-                toggleNoteForm();
+
+                // Определяем, какая форма вызвала ошибку (создание или редактирование)
+                const urlNoteId = window.location.pathname.match(/\/notes\/(\d+)\//);
+                if (urlNoteId && urlNoteId[1]) {
+                    // Ошибка при редактировании - показываем форму редактирования
+                    editNote(urlNoteId[1]);
+                } else {
+                    // Ошибка при создании - показываем форму создания
+                    toggleNoteForm();
+                }
+
             } else if (errorType === 'note_creation') {
                 showNotification('Ошибка при создании заметки', 'error');
+                toggleNoteForm();
+
+            } else if (errorType === 'note_update') {
+                showNotification('Ошибка при обновлении заметки', 'error');
             }
         }
     }
 
-    // Функция показа уведомлений
-    function showNotification(message, type) {
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type === 'success' ? 'success' : 'error'}`;
-        alert.textContent = message;
-        alert.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        z-index: 10000;
-        min-width: 300px;
-        animation: slideInRight 0.3s ease-out;
-    `;
-
-        document.body.appendChild(alert);
-
-        setTimeout(() => {
-            alert.remove();
-        }, 3000);
-    }
-
     // Инициализация при загрузке страницы
     document.addEventListener('DOMContentLoaded', function () {
-        setupNoteTextarea();
-        handleNoteFormNotifications();
+        // Настройка textarea
+        setupEditTextareas();
+        setupCreateTextarea();
+
+        // Обработка уведомлений
+        handleNotifications();
 
         // Подтверждение удаления
         document.querySelectorAll('form[data-confirm]').forEach(form => {
@@ -442,10 +584,28 @@
             });
         });
 
+        // Обработка ESC для всей страницы при открытой форме создания
+        document.addEventListener('keydown', function (e) {
+            const formContainer = document.getElementById('noteFormContainer');
+            if (e.key === 'Escape' && formContainer && formContainer.style.display === 'block') {
+                hideNoteForm();
+                e.preventDefault();
+            }
+        });
+
         // Автоматически показываем форму если есть ошибки валидации
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('error') && urlParams.get('error').includes('note')) {
-            setTimeout(toggleNoteForm, 500);
+            setTimeout(() => {
+                const urlNoteId = window.location.pathname.match(/\/notes\/(\d+)\//);
+                if (urlNoteId && urlNoteId[1]) {
+                    // Ошибка редактирования
+                    editNote(urlNoteId[1]);
+                } else {
+                    // Ошибка создания
+                    toggleNoteForm();
+                }
+            }, 500);
         }
     });
 </script>
