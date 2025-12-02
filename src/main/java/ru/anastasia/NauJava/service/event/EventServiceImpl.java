@@ -100,6 +100,21 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Event saveEvent(Event event) {
+        log.debug("Сохранение события ID: {}, тип: {}",
+                event.getId() != null ? event.getId() : "новое",
+                event.getEventType());
+
+        validateEvent(event);
+        Event savedEvent = eventRepository.save(event);
+
+        log.debug("Событие сохранено. ID: {}, тип: {}",
+                savedEvent.getId(), savedEvent.getEventType());
+
+        return savedEvent;
+    }
+
+    @Override
     public Event findBirthdayByContactId(Long contactId) {
         log.debug("Поиск дня рождения для контакта ID: {}", contactId);
 

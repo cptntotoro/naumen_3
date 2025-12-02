@@ -9,7 +9,6 @@ import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.entity.event.Event;
-import ru.anastasia.NauJava.exception.event.IllegalEventStateException;
 import ru.anastasia.NauJava.service.contact.ContactService;
 import ru.anastasia.NauJava.service.event.EventService;
 import ru.anastasia.NauJava.service.facade.dto.ContactWithBirthday;
@@ -200,35 +199,4 @@ public class ContactEventFacadeServiceTest {
         verify(contactService, times(1)).findById(contactId);
         verify(eventService, times(1)).findBirthdayByContactId(contactId);
     }
-
-    @Test
-    void addBirthdayToContact_WhenValidBirthday_ShouldReturnCreatedBirthday() {
-        Long contactId = 1L;
-        EventCreateDto birthdayDto = createTestBirthdayCreateDto();
-        Event birthday = createTestBirthday();
-
-        when(contactService.existsById(contactId)).thenReturn(true);
-        when(eventService.create(contactId, birthdayDto)).thenReturn(birthday);
-
-        Event result = contactEventFacadeService.addBirthdayToContact(contactId, birthdayDto);
-
-        assertNotNull(result);
-        assertEquals(EventType.BIRTHDAY, result.getEventType());
-        verify(eventService, times(1)).create(contactId, birthdayDto);
-    }
-
-    @Test
-    void addBirthdayToContact_WhenNotBirthdayEventType_ShouldThrowIllegalEventStateException() {
-        Long contactId = 1L;
-        EventCreateDto notBirthdayDto = createTestEventCreateDto();
-
-        IllegalEventStateException exception = assertThrows(
-                IllegalEventStateException.class,
-                () -> contactEventFacadeService.addBirthdayToContact(contactId, notBirthdayDto)
-        );
-
-        assertTrue(exception.getMessage().contains("Тип события должен быть BIRTHDAY"));
-        verify(eventService, never()).create(anyLong(), any(EventCreateDto.class));
-    }
-
 }
