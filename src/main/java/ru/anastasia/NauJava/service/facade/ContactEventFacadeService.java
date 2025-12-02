@@ -45,14 +45,4 @@ public interface ContactEventFacadeService {
      * @return Контакт с днем рождения
      */
     ContactWithBirthday getContactWithBirthday(Long contactId);
-
-//    /**
-//     * Добавить день рождения к контакту
-//     *
-//     * @param contactId       Идентификатор контакта
-//     * @param birthdayRequest DTO создания события
-//     * @return Событие
-//     */
-//    // TODO: Нигде не используется
-//    Event addBirthdayToContact(Long contactId, EventCreateDto birthdayRequest);
 }

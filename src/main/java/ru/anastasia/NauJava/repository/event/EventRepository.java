@@ -76,4 +76,14 @@ public interface EventRepository extends CrudRepository<Event, Long> {
      * @return Да / Нет
      */
     boolean existsByContactIdAndEventType(Long contactId, EventType eventType);
+
+    /**
+     * Проверить существование события контакта определенного типа у контакта, исключая указанный ID
+     *
+     * @param contactId       Идентификатор контакта
+     * @param eventType       Тип события
+     * @param excludedEventId Идентификатор события, которое нужно исключить из проверки
+     * @return Да / Нет
+     */
+    boolean existsByContactIdAndEventTypeAndIdNot(Long contactId, EventType eventType, Long excludedEventId);
 }
