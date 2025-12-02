@@ -72,13 +72,23 @@ public class ContactController {
      */
     private final JobTitleService jobTitleService;
 
+    /**
+     * Страница по умолчанию
+     */
+    private static final String DEFAULT_PAGE = "0";
+
+    /**
+     * Размер страницы по умолчанию
+     */
+    private static final String DEFAULT_PAGE_SIZE = "12";
+
     @GetMapping
     public String listContacts(
             @RequestParam(value = "search", required = false) String search,
             @RequestParam(value = "company", required = false) String companyName,
             @RequestParam(value = "tag", required = false) String tagName,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "12") int size,
+            @RequestParam(value = "page", defaultValue = DEFAULT_PAGE) int page,
+            @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE) int size,
             Model model) {
         log.info("GET /contacts - поиск контактов [search: {}, company: {}, tag: {}, page: {}, size: {}]",
                 search, companyName, tagName, page, size);
@@ -110,6 +120,7 @@ public class ContactController {
     @GetMapping("/new")
     public String newContactForm(Model model) {
         log.debug("GET /contacts/new - форма создания контакта");
+        // TODO: нет ивентов
         model.addAttribute("contactCreateDto", new ContactCreateDto());
         model.addAttribute("allTags", tagService.findAll());
         model.addAttribute("allCompanies", companyService.findAll());
@@ -231,8 +242,8 @@ public class ContactController {
 
     @GetMapping("/favorites")
     public String favoriteContacts(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "12") int size,
+            @RequestParam(value = "page", defaultValue = DEFAULT_PAGE) int page,
+            @RequestParam(value = "size", defaultValue = DEFAULT_PAGE_SIZE) int size,
             Model model) {
         log.info("GET /contacts/favorites - получение избранных контактов");
 

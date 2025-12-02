@@ -84,7 +84,6 @@ public class ReportServiceImpl implements ReportService {
                 AtomicLong contactTime = new AtomicLong(0);
                 AtomicReference<Exception> contactError = new AtomicReference<>();
 
-                // Параллельное выполнение запросов
                 log.debug("Запуск параллельных потоков для сбора данных отчета ID: {}", reportId);
 
                 Thread userThread = new Thread(() -> {

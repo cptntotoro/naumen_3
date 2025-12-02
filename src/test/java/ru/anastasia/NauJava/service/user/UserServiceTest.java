@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.anastasia.NauJava.entity.user.User;
 import ru.anastasia.NauJava.repository.user.UserRepository;
 import ru.anastasia.NauJava.service.user.impl.UserServiceImpl;
@@ -27,70 +26,8 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @InjectMocks
     private UserServiceImpl userService;
-
-//    @Test
-//    void createUserSuccess() {
-//        User user = User.builder()
-//                .username("иван_петров")
-//                .password("пароль123")
-//                .firstName("Иван")
-//                .lastName("Петров")
-//                .build();
-//
-//        when(passwordEncoder.encode("пароль123")).thenReturn("зашифрованный_пароль");
-//        when(userRepository.save(any(User.class))).thenReturn(user);
-//
-//        userService.createUser(user);
-//
-//        assertEquals("зашифрованный_пароль", user.getPassword());
-//        assertEquals(List.of(UserRole.USER), user.getRoles());
-//        assertTrue(user.getIsActive());
-//        verify(passwordEncoder, times(1)).encode("пароль123");
-//        verify(userRepository, times(1)).save(user);
-//    }
-//
-//    @Test
-//    void createUserWithExistingRoles() {
-//        User user = User.builder()
-//                .username("администратор")
-//                .password("admin123")
-//                .roles(List.of(UserRole.ADMIN, UserRole.USER))
-//                .isActive(false)
-//                .build();
-//
-//        when(passwordEncoder.encode("admin123")).thenReturn("зашифрованный_admin");
-//        when(userRepository.save(any(User.class))).thenReturn(user);
-//
-//        userService.createUser(user);
-//
-//        assertEquals("зашифрованный_admin", user.getPassword());
-//        assertEquals(List.of(UserRole.ADMIN, UserRole.USER), user.getRoles());
-//        assertFalse(user.getIsActive());
-//        verify(passwordEncoder, times(1)).encode("admin123");
-//        verify(userRepository, times(1)).save(user);
-//    }
-//
-//    @Test
-//    void createUserWithNullActive() {
-//        User user = User.builder()
-//                .username("пользователь")
-//                .password("pass")
-//                .isActive(null)
-//                .build();
-//
-//        when(passwordEncoder.encode("pass")).thenReturn("encoded");
-//        when(userRepository.save(any(User.class))).thenReturn(user);
-//
-//        userService.createUser(user);
-//
-//        assertTrue(user.getIsActive());
-//        verify(userRepository, times(1)).save(user);
-//    }
 
     @Test
     void findByUsernameSuccess() {

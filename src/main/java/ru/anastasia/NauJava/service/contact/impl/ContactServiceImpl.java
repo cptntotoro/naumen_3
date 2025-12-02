@@ -19,9 +19,9 @@ import ru.anastasia.NauJava.service.event.EventService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
@@ -120,8 +120,7 @@ public class ContactServiceImpl implements ContactService {
     @Transactional(readOnly = true)
     public List<Contact> findAll() {
         log.debug("Получение всех контактов");
-        List<Contact> contacts = StreamSupport.stream(contactRepository.findAll().spliterator(), false)
-                .collect(Collectors.toList());
+        List<Contact> contacts = new ArrayList<>(contactRepository.findAll());
         log.debug("Загружено {} контактов", contacts.size());
         return contacts;
     }
@@ -211,9 +210,7 @@ public class ContactServiceImpl implements ContactService {
                     contact.setIsFavorite(true);
                     contactRepository.save(contact);
                     log.info("Контакт с ID: {} добавлен в избранное", contactId);
-                }, () -> {
-                    log.warn("Попытка добавить в избранное несуществующий контакт с ID: {}", contactId);
-                });
+                }, () -> log.warn("Попытка добавить в избранное несуществующий контакт с ID: {}", contactId));
     }
 
     @Override
@@ -224,9 +221,7 @@ public class ContactServiceImpl implements ContactService {
                     contact.setIsFavorite(false);
                     contactRepository.save(contact);
                     log.info("Контакт с ID: {} удален из избранного", contactId);
-                }, () -> {
-                    log.warn("Попытка удалить из избранного несуществующий контакт с ID: {}", contactId);
-                });
+                }, () -> log.warn("Попытка удалить из избранного несуществующий контакт с ID: {}", contactId));
     }
 
     @Override
