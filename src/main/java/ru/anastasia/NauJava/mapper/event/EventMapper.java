@@ -25,14 +25,6 @@ public interface EventMapper {
     Event eventCreateDtoToEvent(EventCreateDto eventCreateDto);
 
     /**
-     * Смаппить событие в DTO обновления события
-     *
-     * @param event Событие
-     * @return DTO обновления события
-     */
-    EventUpdateDto eventToEventUpdateDto(Event event);
-
-    /**
      * Смаппить DTO обновления события в событие
      *
      * @param eventUpdateDto DTO обновления события

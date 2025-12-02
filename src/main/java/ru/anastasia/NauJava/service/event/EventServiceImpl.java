@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
+import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.entity.event.Event;
 import ru.anastasia.NauJava.exception.event.EventNotFoundException;
@@ -43,6 +44,11 @@ public class EventServiceImpl implements EventService {
         validateBirthdayCreation(contactId, request);
 
         Event event = eventMapper.eventCreateDtoToEvent(request);
+
+        Contact contact = new Contact();
+        contact.setId(contactId);
+        event.setContact(contact);
+
         Event savedEvent = eventRepository.save(event);
 
         log.info("Событие успешно создано. ID: {}, тип: {}, дата: {}",
@@ -66,20 +72,10 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event update(Long contactId, Event event) {
-        log.debug("Обновление события ID: {} для контакта ID: {}", event.getId(), contactId);
+    public Event update(Event event) {
+        log.debug("Обновление события ID: {}", event.getId());
 
         Event existingEvent = findById(event.getId());
-
-        if (!existingEvent.getContact().getId().equals(contactId)) {
-            log.warn("Событие ID: {} не принадлежит контакту ID: {}", event.getId(), contactId);
-            throw new IllegalEventStateException("Событие не принадлежит указанному контакту");
-        }
-
-        // Проверяем уникальность дня рождения (если тип меняется на BIRTHDAY)
-        if (event.getEventType() == EventType.BIRTHDAY && existingEvent.getEventType() != EventType.BIRTHDAY) {
-            validateBirthdayUniqueness(contactId, event.getId());
-        }
 
         existingEvent.setEventType(event.getEventType());
         existingEvent.setCustomEventName(event.getCustomEventName());
@@ -91,8 +87,8 @@ public class EventServiceImpl implements EventService {
 
         Event updatedEvent = eventRepository.save(existingEvent);
 
-        log.info("Событие успешно обновлено. ID: {}, тип: {}, контакт ID: {}",
-                updatedEvent.getId(), updatedEvent.getEventType(), contactId);
+        log.info("Событие успешно обновлено. ID: {}, тип: {}",
+                updatedEvent.getId(), updatedEvent.getEventType());
 
         return updatedEvent;
     }
@@ -117,12 +113,26 @@ public class EventServiceImpl implements EventService {
                 event.getEventType());
 
         validateEvent(event);
+
         Event savedEvent = eventRepository.save(event);
 
         log.debug("Событие сохранено. ID: {}, тип: {}",
                 savedEvent.getId(), savedEvent.getEventType());
 
         return savedEvent;
+    }
+
+    @Override
+    public boolean hasOtherBirthday(Long contactId, Long excludedEventId) {
+        log.trace("Проверка наличия другого дня рождения у контакта ID: {}, исключая событие ID: {}",
+                contactId, excludedEventId);
+
+        boolean hasOtherBirthday = eventRepository.existsByContactIdAndEventTypeAndIdNot(
+                contactId, EventType.BIRTHDAY, excludedEventId);
+
+        log.trace("Контакта ID: {} {} другой день рождения", contactId, hasOtherBirthday ? "имеет" : "не имеет");
+
+        return hasOtherBirthday;
     }
 
     @Override
@@ -210,21 +220,6 @@ public class EventServiceImpl implements EventService {
         return events;
     }
 
-
-    private void validateBirthdayUniqueness(Long contactId, Long excludedEventId) {
-        log.trace("Проверка уникальности дня рождения для контакта ID: {}", contactId);
-
-        boolean hasOtherBirthday = eventRepository.existsByContactIdAndEventTypeAndIdNot(
-                contactId, EventType.BIRTHDAY, excludedEventId);
-
-        if (hasOtherBirthday) {
-            log.warn("Попытка создания второго дня рождения для контакта ID: {}", contactId);
-            throw new IllegalEventStateException("У контакта уже есть день рождения. Можно иметь только одно событие типа 'День рождения'");
-        }
-
-        log.trace("Проверка уникальности дня рождения прошла успешно");
-    }
-
     public boolean hasBirthday(Long contactId) {
         log.trace("Проверка наличия дня рождения у контакта ID: {}", contactId);
 
@@ -237,17 +232,16 @@ public class EventServiceImpl implements EventService {
     private void validateEvent(Event event) {
         log.trace("Валидация события ID: {}", event.getId());
 
-        if (event.getEventType() == EventType.CUSTOM &&
-                (event.getCustomEventName() == null || event.getCustomEventName().trim().isEmpty())) {
-            log.warn("Ошибка валидации: для кастомного события не указано название. Событие ID: {}", event.getId());
-            throw new IllegalEventStateException("Для кастомного события должно быть указано название");
+        if (event.getEventType() == null) {
+            throw new IllegalEventStateException("Тип события обязателен");
         }
 
-        if (event.getEventType() != EventType.CUSTOM &&
-                event.getCustomEventName() != null && !event.getCustomEventName().trim().isEmpty()) {
-            log.warn("Ошибка валидации: название кастомного события указано для стандартного события. Событие ID: {}, тип: {}",
-                    event.getId(), event.getEventType());
-            throw new IllegalEventStateException("Название кастомного события должно быть пустым для стандартных событий");
+        if (event.getEventDate() == null) {
+            throw new IllegalEventStateException("Дата события обязательна");
+        }
+
+        if (event.getContact() == null) {
+            throw new IllegalEventStateException("Событие должно быть связано с контактом");
         }
 
         log.trace("Валидация события ID: {} прошла успешно", event.getId());

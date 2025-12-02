@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.dto.event.EventUpdateDto;
-import ru.anastasia.NauJava.entity.event.Event;
-import ru.anastasia.NauJava.mapper.event.EventMapper;
-import ru.anastasia.NauJava.service.event.EventService;
-import ru.anastasia.NauJava.service.facade.ContactEventFacadeService;
+import ru.anastasia.NauJava.service.facade.ContactEventManagementService;
 
 @Slf4j
 @Controller
@@ -25,22 +22,11 @@ import ru.anastasia.NauJava.service.facade.ContactEventFacadeService;
 public class EventController {
 
     /**
-     * Фасадный сервис для управления событиями контактов
-     */
-    private final ContactEventFacadeService contactEventFacadeService;
-
-    /**
      * Сервис управления событиями контактов
      */
-    private final EventService eventService;
-
-    /**
-     * Маппер событий
-     */
-    private final EventMapper eventMapper;
+    private final ContactEventManagementService contactEventManagementService;
 
     // TODO: Распространить RedirectAttributes на другие контроллеры
-    // TODO: Срабатывает добавление второго дня рождения для того же контакта
     @PostMapping
     public String createEvent(@Valid @ModelAttribute("eventDto") EventCreateDto eventCreateDto,
                               BindingResult bindingResult,
@@ -59,7 +45,7 @@ public class EventController {
         Long contactId = eventCreateDto.getContactId();
 
         try {
-            contactEventFacadeService.createEventForContact(contactId, eventCreateDto);
+            contactEventManagementService.createEventForContact(contactId, eventCreateDto);
             log.info("Событие успешно создано [контакт: {}, тип: {}]", contactId, eventCreateDto.getEventType());
             redirectAttributes.addAttribute("success", "event_created");
             return "redirect:/contacts/" + contactId;
@@ -89,12 +75,7 @@ public class EventController {
         }
 
         try {
-            if (eventUpdateDto.getId() == null) {
-                eventUpdateDto.setId(id);
-            }
-
-            Event event = eventMapper.eventUpdateDtoToEvent(eventUpdateDto);
-            eventService.update(contactId, event);
+            contactEventManagementService.updateEventForContact(contactId, id, eventUpdateDto);
 
             log.info("Событие успешно обновлено [ID: {}] для контакта [ID: {}]", id, contactId);
             redirectAttributes.addAttribute("success", "event_updated");
@@ -114,7 +95,8 @@ public class EventController {
         log.info("POST /events/{}/delete - удаление события для контакта ID: {}", id, contactId);
 
         try {
-            eventService.delete(id);
+            contactEventManagementService.deleteEventForContact(contactId, id);
+
             log.info("Событие успешно удалено [ID: {}] для контакта [ID: {}]", id, contactId);
             redirectAttributes.addAttribute("success", "event_deleted");
         } catch (Exception e) {
