@@ -4,13 +4,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.dto.event.EventUpdateDto;
@@ -41,6 +40,7 @@ public class EventController {
     private final EventMapper eventMapper;
 
     // TODO: Распространить RedirectAttributes на другие контроллеры
+    // TODO: Срабатывает добавление второго дня рождения для того же контакта
     @PostMapping
     public String createEvent(@Valid @ModelAttribute("eventDto") EventCreateDto eventCreateDto,
                               BindingResult bindingResult,
@@ -72,42 +72,57 @@ public class EventController {
         }
     }
 
-    @GetMapping("/{id}/edit")
-    public String editEventForm(@PathVariable Long id, Model model) {
-        Event event = eventService.findById(id);
-        if (event == null) {
-            return "redirect:/events";
-        }
+    @PostMapping("/{id}/update")
+    public String updateEvent(@PathVariable Long id,
+                              @Valid @ModelAttribute("eventDto") EventUpdateDto eventUpdateDto,
+                              BindingResult bindingResult,
+                              @RequestParam("contactId") Long contactId,
+                              RedirectAttributes redirectAttributes) {
+        log.info("POST /events/{}/update - обновление события для контакта ID: {}", id, contactId);
 
-        EventUpdateDto dto = eventMapper.eventToEventUpdateDto(event);
-
-        model.addAttribute("eventDto", dto);
-        model.addAttribute("eventId", id);
-        return "event/edit";
-    }
-
-    @PostMapping("/edit")
-    public String updateEvent(@Valid @ModelAttribute("eventDto") EventUpdateDto eventUpdateDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "event/edit";
+            log.warn("Ошибки валидации при обновлении события: {}", bindingResult.getAllErrors());
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.eventDto", bindingResult);
+            redirectAttributes.addFlashAttribute("eventDto", eventUpdateDto);
+            redirectAttributes.addAttribute("error", "event_validation");
+            return "redirect:/contacts/" + contactId;
         }
-        Event event = eventMapper.eventUpdateDtoToEvent(eventUpdateDto);
-        eventService.update(event);
-        return "redirect:/events";
+
+        try {
+            if (eventUpdateDto.getId() == null) {
+                eventUpdateDto.setId(id);
+            }
+
+            Event event = eventMapper.eventUpdateDtoToEvent(eventUpdateDto);
+            eventService.update(contactId, event);
+
+            log.info("Событие успешно обновлено [ID: {}] для контакта [ID: {}]", id, contactId);
+            redirectAttributes.addAttribute("success", "event_updated");
+        } catch (Exception e) {
+            log.error("Ошибка при обновлении события [ID: {}] для контакта [ID: {}]", id, contactId, e);
+            redirectAttributes.addAttribute("error", "event_update_failed");
+            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось обновить событие: " + e.getMessage());
+        }
+
+        return "redirect:/contacts/" + contactId;
     }
 
     @PostMapping("/{id}/delete")
-    public String deleteEvent(@PathVariable Long id) {
-        log.info("POST /events/{}/delete - удаление события", id);
+    public String deleteEvent(@PathVariable Long id,
+                              @RequestParam("contactId") Long contactId,
+                              RedirectAttributes redirectAttributes) {
+        log.info("POST /events/{}/delete - удаление события для контакта ID: {}", id, contactId);
 
         try {
             eventService.delete(id);
-            log.info("Событие успешно удалено [ID: {}]", id);
+            log.info("Событие успешно удалено [ID: {}] для контакта [ID: {}]", id, contactId);
+            redirectAttributes.addAttribute("success", "event_deleted");
         } catch (Exception e) {
-            log.error("Ошибка при удалении события [ID: {}]", id, e);
-            throw e;
+            log.error("Ошибка при удалении события [ID: {}] для контакта [ID: {}]", id, contactId, e);
+            redirectAttributes.addAttribute("error", "event_delete_failed");
+            redirectAttributes.addFlashAttribute("errorMessage", "Не удалось удалить событие: " + e.getMessage());
         }
 
-        return "redirect:/events";
+        return "redirect:/contacts/" + contactId;
     }
 }

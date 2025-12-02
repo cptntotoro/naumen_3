@@ -83,10 +83,11 @@ public interface EventService {
     /**
      * Обновить событие
      *
+     * @param contactId Идентификатор контакта
      * @param event Событие
      * @return Событие
      */
-    Event update(Event event);
+    Event update(Long contactId, Event event);
 
     /**
      * Удаллить событие

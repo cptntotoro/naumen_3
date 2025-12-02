@@ -66,22 +66,33 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event update(Event event) {
-        log.debug("Обновление события ID: {}", event.getId());
+    public Event update(Long contactId, Event event) {
+        log.debug("Обновление события ID: {} для контакта ID: {}", event.getId(), contactId);
 
-        Event existing = findById(event.getId());
-        validateEvent(event);
+        Event existingEvent = findById(event.getId());
 
-        existing.setEventType(event.getEventType());
-        existing.setCustomEventName(event.getCustomEventName());
-        existing.setEventDate(event.getEventDate());
-        existing.setNotes(event.getNotes());
-        existing.setYearlyRecurrence(event.getYearlyRecurrence());
+        if (!existingEvent.getContact().getId().equals(contactId)) {
+            log.warn("Событие ID: {} не принадлежит контакту ID: {}", event.getId(), contactId);
+            throw new IllegalEventStateException("Событие не принадлежит указанному контакту");
+        }
 
-        Event updatedEvent = eventRepository.save(existing);
+        // Проверяем уникальность дня рождения (если тип меняется на BIRTHDAY)
+        if (event.getEventType() == EventType.BIRTHDAY && existingEvent.getEventType() != EventType.BIRTHDAY) {
+            validateBirthdayUniqueness(contactId, event.getId());
+        }
 
-        log.info("Событие успешно обновлено. ID: {}, тип: {}",
-                updatedEvent.getId(), updatedEvent.getEventType());
+        existingEvent.setEventType(event.getEventType());
+        existingEvent.setCustomEventName(event.getCustomEventName());
+        existingEvent.setEventDate(event.getEventDate());
+        existingEvent.setNotes(event.getNotes());
+        existingEvent.setYearlyRecurrence(event.getYearlyRecurrence());
+
+        validateEvent(existingEvent);
+
+        Event updatedEvent = eventRepository.save(existingEvent);
+
+        log.info("Событие успешно обновлено. ID: {}, тип: {}, контакт ID: {}",
+                updatedEvent.getId(), updatedEvent.getEventType(), contactId);
 
         return updatedEvent;
     }
@@ -197,6 +208,21 @@ public class EventServiceImpl implements EventService {
         log.debug("Найдено {} событий типа {} за указанный период", events.size(), type);
 
         return events;
+    }
+
+
+    private void validateBirthdayUniqueness(Long contactId, Long excludedEventId) {
+        log.trace("Проверка уникальности дня рождения для контакта ID: {}", contactId);
+
+        boolean hasOtherBirthday = eventRepository.existsByContactIdAndEventTypeAndIdNot(
+                contactId, EventType.BIRTHDAY, excludedEventId);
+
+        if (hasOtherBirthday) {
+            log.warn("Попытка создания второго дня рождения для контакта ID: {}", contactId);
+            throw new IllegalEventStateException("У контакта уже есть день рождения. Можно иметь только одно событие типа 'День рождения'");
+        }
+
+        log.trace("Проверка уникальности дня рождения прошла успешно");
     }
 
     public boolean hasBirthday(Long contactId) {
