@@ -224,36 +224,237 @@
             <h3 class="h5 fw-bold mb-0 section-header">
                 <i class="fas fa-calendar text-primary me-2"></i>События
             </h3>
-            <a th:href="@{/events/new?contactId={id}(id=${contactDetails.contact.id})}"
-               class="btn btn-outline-primary text-sm">
+            <button type="button"
+                    class="btn btn-outline-primary text-sm"
+                    onclick="toggleEventForm()">
                 <i class="fas fa-plus mr-1"></i>Добавить
-            </a>
+            </button>
         </div>
         <div class="card-body">
-            <div class="events-grid">
-                <div th:each="event : ${contactDetails.events}" class="event-item">
-                    <div class="event-info">
-                        <i class="fas fa-calendar event-icon"></i>
-                        <div class="event-details">
-                            <div class="event-header">
-                                <span class="event-type" th:text="${event.eventType.name()}"></span>
-                                <span th:if="${event.eventType == T(ru.anastasia.NauJava.entity.enums.EventType).CUSTOM}
-                                        and ${!#strings.isEmpty(event.customEventName)}"
-                                      class="event-custom-name"
-                                      th:text="'(' + ${event.customEventName} + ')'">
-                                </span>
+            <!-- Форма добавления нового события (скрыта по умолчанию) -->
+            <div class="event-form-container mb-6" id="eventFormContainer" style="display: none;">
+                <form th:action="@{/events}" th:object="${eventDto}" method="post" class="event-form" id="eventForm">
+                    <input type="hidden" th:field="*{contactId}" th:value="${contactDetails.contact.id}"/>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="eventType" class="form-label fw-semibold">Тип события <span
+                                        class="text-danger">*</span></label>
+                                <select th:field="*{eventType}"
+                                        class="form-select"
+                                        id="eventType"
+                                        required
+                                        onchange="toggleCustomEventName()">
+                                    <option value="" disabled>Выберите тип события</option>
+                                    <option th:each="type : ${eventTypes}"
+                                            th:value="${type}"
+                                            th:text="${type}">
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('eventType')}"
+                                     th:errors="*{eventType}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6" id="customEventNameContainer" style="display: none;">
+                            <div class="form-group">
+                                <label for="customEventName" class="form-label fw-semibold">Кастомное имя
+                                    события</label>
+                                <input th:field="*{customEventName}"
+                                       type="text"
+                                       class="form-control"
+                                       id="customEventName"
+                                       placeholder="Введите название события">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('customEventName')}"
+                                     th:errors="*{customEventName}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="eventDate" class="form-label fw-semibold">Дата события <span
+                                        class="text-danger">*</span></label>
+                                <input th:field="*{eventDate}"
+                                       type="date"
+                                       class="form-control"
+                                       id="eventDate"
+                                       required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('eventDate')}"
+                                     th:errors="*{eventDate}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="eventNotes" class="form-label fw-semibold">Заметки</label>
+                                <textarea th:field="*{notes}"
+                                          class="form-control"
+                                          id="eventNotes"
+                                          rows="2"
+                                          placeholder="Дополнительные заметки о событии... (Ctrl+Enter для сохранения)"></textarea>
+                                <div class="hotkey-hint">Ctrl+Enter для быстрого сохранения</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('notes')}"
+                                     th:errors="*{notes}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input th:field="*{yearlyRecurrence}"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       id="yearlyRecurrence">
+                                <label class="form-check-label fw-semibold" for="yearlyRecurrence">
+                                    Ежегодное повторение события
+                                </label>
+                                <div class="form-text">Событие будет отмечаться каждый год автоматически</div>
                             </div>
                         </div>
                     </div>
-                    <div class="event-meta">
-                        <div class="event-date"
-                             th:text="${#temporals.format(event.eventDate, 'dd.MM.yyyy')}"></div>
-                        <div th:if="${event.notes}"
-                             class="event-notes"
-                             th:text="${event.notes}"></div>
-                        <i th:if="${event.yearlyRecurrence}"
-                           class="fas fa-sync-alt recurrence-icon"
-                           title="Повторяется ежегодно"></i>
+
+                    <div class="form-actions d-flex justify-content-end gap-3 mt-4">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                onclick="hideEventForm()"
+                                id="cancelEventForm">
+                            <i class="fas fa-times me-1"></i>Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i>Сохранить событие
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Список существующих событий -->
+            <div class="events-grid">
+                <div th:each="event : ${contactDetails.events}" class="event-item" th:id="'event-' + ${event.id}">
+                    <!-- Форма редактирования события (скрыта по умолчанию) -->
+                    <form th:action="@{/events/{id}/edit(id=${event.id})}"
+                          method="post"
+                          class="event-edit-form"
+                          th:id="'edit-event-form-' + ${event.id}"
+                          style="display: none;">
+                        <input type="hidden" name="id" th:value="${event.id}"/>
+                        <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <div class="form-group mb-2">
+                                    <select name="eventType"
+                                            class="form-select form-select-sm"
+                                            required
+                                            onchange="toggleEditCustomEventName(${event.id})">
+                                        <option value="" disabled>Тип события</option>
+                                        <option th:each="type : ${eventTypes}"
+                                                th:value="${type}"
+                                                th:text="${type}"
+                                                th:selected="${event.eventType == type}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group mb-2" th:id="'edit-custom-container-' + ${event.id}"
+                                     th:style="${event.eventType == T(ru.anastasia.NauJava.entity.enums.EventType).CUSTOM} ? 'display: block;' : 'display: none;'">
+                                    <input type="text"
+                                           name="customEventName"
+                                           class="form-control form-control-sm"
+                                           th:value="${event.customEventName}"
+                                           placeholder="Название события">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group mb-2">
+                                    <input type="date"
+                                           name="eventDate"
+                                           class="form-control form-control-sm"
+                                           th:value="${#temporals.format(event.eventDate, 'yyyy-MM-dd')}"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group mb-2">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="yearlyRecurrence"
+                                               th:checked="${event.yearlyRecurrence}">
+                                        <label class="form-check-label text-sm">Ежегодно</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group mb-2">
+                                <textarea name="notes"
+                                          class="form-control form-control-sm event-edit-notes"
+                                          rows="2"
+                                          th:attr="data-event-id=${event.id}"
+                                          th:text="${event.notes}"
+                                          placeholder="Заметки..."></textarea>
+                                    <div class="hotkey-hint text-end">Ctrl+Enter для сохранения</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-2">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    th:onclick="'cancelEventEdit(' + ${event.id} + ')'">
+                                Отмена
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                Сохранить
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Отображение события (по умолчанию видно) -->
+                    <div class="event-view" th:id="'event-view-' + ${event.id}">
+                        <div class="event-info">
+                            <i class="fas fa-calendar event-icon"></i>
+                            <div class="event-details">
+                                <div class="event-header">
+                                    <span class="event-type" th:text="${event.eventType.name()}"></span>
+                                    <span th:if="${event.eventType == T(ru.anastasia.NauJava.entity.enums.EventType).CUSTOM}
+                                        and ${!#strings.isEmpty(event.customEventName)}"
+                                          class="event-custom-name"
+                                          th:text="'(' + ${event.customEventName} + ')'">
+                                </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-meta">
+                            <div class="event-date"
+                                 th:text="${#temporals.format(event.eventDate, 'dd.MM.yyyy')}"></div>
+                            <div th:if="${event.notes}"
+                                 class="event-notes"
+                                 th:text="${event.notes}"></div>
+                            <i th:if="${event.yearlyRecurrence}"
+                               class="fas fa-sync-alt recurrence-icon"
+                               title="Повторяется ежегодно"></i>
+                            <div class="event-actions mt-2">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'editEvent(' + ${event.id} + ')'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form th:action="@{/events/{id}/delete(id=${event.id})}"
+                                      method="post"
+                                      class="inline ms-1"
+                                      onsubmit="return confirm('Удалить событие?')">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -261,6 +462,7 @@
             <div th:if="${contactDetails.events.isEmpty()}" class="empty-state py-12">
                 <i class="fas fa-calendar empty-state__icon text-primary"></i>
                 <div class="empty-state__title">События не добавлены</div>
+                <div class="empty-state__description">Нажмите кнопку "Добавить" чтобы создать первое событие</div>
             </div>
         </div>
     </div>
@@ -380,6 +582,225 @@
 </div>
 
 <script>
+    // Функции для работы с событиями
+    function toggleEventForm() {
+        const formContainer = document.getElementById('eventFormContainer');
+        const eventSelect = document.getElementById('eventType');
+
+        if (formContainer.style.display === 'none') {
+            formContainer.style.display = 'block';
+            // Плавное появление
+            formContainer.style.opacity = '0';
+            formContainer.style.transform = 'translateY(-10px)';
+
+            setTimeout(() => {
+                formContainer.style.transition = 'all 0.3s ease';
+                formContainer.style.opacity = '1';
+                formContainer.style.transform = 'translateY(0)';
+
+                // Устанавливаем сегодняшнюю дату по умолчанию
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('eventDate').value = today;
+
+                // Фокусируемся на первом поле
+                if (eventSelect) {
+                    setTimeout(() => {
+                        eventSelect.focus();
+
+                        // Добавляем обработчик ESC
+                        const escHandler = function (e) {
+                            if (e.key === 'Escape') {
+                                hideEventForm();
+                                eventSelect.removeEventListener('keydown', escHandler);
+                            }
+                        };
+                        eventSelect.addEventListener('keydown', escHandler);
+                    }, 300);
+                }
+            }, 10);
+        } else {
+            hideEventForm();
+        }
+    }
+
+    function hideEventForm() {
+        const formContainer = document.getElementById('eventFormContainer');
+        const eventForm = document.getElementById('eventForm');
+
+        if (formContainer) {
+            formContainer.style.opacity = '0';
+            formContainer.style.transform = 'translateY(-10px)';
+
+            setTimeout(() => {
+                formContainer.style.display = 'none';
+                if (eventForm) {
+                    eventForm.reset();
+                    // Скрываем поле кастомного имени
+                    document.getElementById('customEventNameContainer').style.display = 'none';
+                }
+            }, 300);
+        }
+    }
+
+    function toggleCustomEventName() {
+        const eventType = document.getElementById('eventType');
+        const customContainer = document.getElementById('customEventNameContainer');
+
+        if (eventType && customContainer) {
+            if (eventType.value === 'CUSTOM') {
+                customContainer.style.display = 'block';
+                document.getElementById('customEventName').focus();
+            } else {
+                customContainer.style.display = 'none';
+                document.getElementById('customEventName').value = '';
+            }
+        }
+    }
+
+    function toggleEditCustomEventName(eventId) {
+        const eventType = document.querySelector(`#edit-event-form-${eventId} select[name="eventType"]`);
+        const customContainer = document.getElementById(`edit-custom-container-${eventId}`);
+
+        if (eventType && customContainer) {
+            if (eventType.value === 'CUSTOM') {
+                customContainer.style.display = 'block';
+            } else {
+                customContainer.style.display = 'none';
+            }
+        }
+    }
+
+    // Функция для начала редактирования события
+    function editEvent(eventId) {
+        // Скрываем вид просмотра
+        document.getElementById('event-view-' + eventId).style.display = 'none';
+
+        // Показываем форму редактирования
+        const editForm = document.getElementById('edit-event-form-' + eventId);
+        editForm.style.display = 'block';
+
+        // Фокусируемся на первом поле
+        const firstInput = editForm.querySelector('select[name="eventType"]');
+        if (firstInput) {
+            setTimeout(() => {
+                firstInput.focus();
+            }, 10);
+        }
+
+        // Настройка авто-высоты для textarea
+        const textarea = editForm.querySelector('.event-edit-notes');
+        if (textarea) {
+            textarea.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Обработка Ctrl+Enter для сохранения
+            textarea.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    editForm.submit();
+                }
+            });
+        }
+
+        // Закрытие по ESC
+        if (firstInput) {
+            const escHandler = function (e) {
+                if (e.key === 'Escape') {
+                    cancelEventEdit(eventId);
+                    firstInput.removeEventListener('keydown', escHandler);
+                }
+            };
+            firstInput.addEventListener('keydown', escHandler);
+        }
+    }
+
+    // Функция отмены редактирования события
+    function cancelEventEdit(eventId) {
+        // Показываем вид просмотра
+        document.getElementById('event-view-' + eventId).style.display = 'flex';
+
+        // Скрываем форму редактирования
+        document.getElementById('edit-event-form-' + eventId).style.display = 'none';
+
+        // Сбрасываем форму
+        document.getElementById('edit-event-form-' + eventId).reset();
+    }
+
+    // Настройка горячих клавиш для формы создания события
+    function setupEventHotkeys() {
+        const eventTextarea = document.getElementById('eventNotes');
+        if (eventTextarea) {
+            eventTextarea.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    const form = document.getElementById('eventForm');
+                    if (form) {
+                        form.submit();
+                        e.preventDefault();
+                    }
+                }
+
+                // Обработка Escape для закрытия формы
+                if (e.key === 'Escape') {
+                    hideEventForm();
+                    e.preventDefault();
+                }
+            });
+        }
+    }
+
+    // Обработка уведомлений для событий
+    function handleEventNotifications() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('success')) {
+            const successType = urlParams.get('success');
+            if (successType === 'event_created') {
+                showNotification('Событие успешно добавлено', 'success');
+                hideEventForm();
+
+                // Прокручиваем к новому событию
+                setTimeout(() => {
+                    const events = document.querySelectorAll('.event-item');
+                    if (events.length > 0) {
+                        const lastEvent = events[events.length - 1];
+                        lastEvent.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                    }
+                }, 500);
+
+            } else if (successType === 'event_updated') {
+                showNotification('Событие успешно обновлено', 'success');
+
+            } else if (successType === 'event_deleted') {
+                showNotification('Событие успешно удалено', 'success');
+            }
+        }
+
+        if (urlParams.has('error')) {
+            const errorType = urlParams.get('error');
+            if (errorType === 'event_validation') {
+                showNotification('Ошибка валидации события. Проверьте введенные данные.', 'error');
+
+                // Показываем форму события при ошибке валидации
+                const urlEventId = window.location.pathname.match(/\/events\/(\d+)\//);
+                if (urlEventId && urlEventId[1]) {
+                    // Ошибка при редактировании
+                    editEvent(urlEventId[1]);
+                } else {
+                    // Ошибка при создании
+                    toggleEventForm();
+                }
+
+            } else if (errorType === 'event_creation') {
+                showNotification('Ошибка при создании события', 'error');
+                toggleEventForm();
+
+            } else if (errorType === 'event_update') {
+                showNotification('Ошибка при обновлении события', 'error');
+            }
+        }
+    }
+
     // Функция для начала редактирования заметки
     function editNote(noteId) {
         // Скрываем вид просмотра
@@ -607,8 +1028,17 @@
         setupEditTextareas();
         setupCreateTextarea();
 
-        // Обработка уведомлений
+        // Настройка hotkeys для событий
+        setupEventHotkeys();
+
+        // Получаем параметры URL один раз
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Обработка уведомлений для заметок
         handleNotifications();
+
+        // Обработка уведомлений для событий
+        handleEventNotifications();
 
         // Подтверждение удаления
         document.querySelectorAll('form[data-confirm]').forEach(form => {
@@ -619,17 +1049,24 @@
             });
         });
 
-        // Обработка ESC для всей страницы при открытой форме создания
+        // Обработка ESC для всей страницы при открытых формах
         document.addEventListener('keydown', function (e) {
-            const formContainer = document.getElementById('noteFormContainer');
-            if (e.key === 'Escape' && formContainer && formContainer.style.display === 'block') {
-                hideNoteForm();
-                e.preventDefault();
+            const noteFormContainer = document.getElementById('noteFormContainer');
+            const eventFormContainer = document.getElementById('eventFormContainer');
+
+            if (e.key === 'Escape') {
+                if (noteFormContainer && noteFormContainer.style.display === 'block') {
+                    hideNoteForm();
+                    e.preventDefault();
+                }
+                if (eventFormContainer && eventFormContainer.style.display === 'block') {
+                    hideEventForm();
+                    e.preventDefault();
+                }
             }
         });
 
-        // Автоматически показываем форму если есть ошибки валидации
-        const urlParams = new URLSearchParams(window.location.search);
+        // Автоматически показываем форму если есть ошибки валидации заметок
         if (urlParams.has('error') && urlParams.get('error').includes('note')) {
             setTimeout(() => {
                 const urlNoteId = window.location.pathname.match(/\/notes\/(\d+)\//);
@@ -639,6 +1076,20 @@
                 } else {
                     // Ошибка создания
                     toggleNoteForm();
+                }
+            }, 500);
+        }
+
+        // Автоматически показываем форму если есть ошибки валидации событий
+        if (urlParams.has('error') && urlParams.get('error').includes('event')) {
+            setTimeout(() => {
+                const urlEventId = window.location.pathname.match(/\/events\/(\d+)\//);
+                if (urlEventId && urlEventId[1]) {
+                    // Ошибка редактирования
+                    editEvent(urlEventId[1]);
+                } else {
+                    // Ошибка создания
+                    toggleEventForm();
                 }
             }, 500);
         }
@@ -665,14 +1116,43 @@
         padding: var(--space-5);
     }
 
-    /* Стиль для подсказки Ctrl+Enter */
-    .note-form .form-control::after {
-        content: 'Ctrl+Enter для сохранения';
-        position: absolute;
-        bottom: -20px;
-        right: 0;
-        font-size: var(--font-size-xs);
-        color: var(--gray-400);
+    .event-form-container {
+        transition: all 0.3s ease;
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+    }
+
+    .event-edit-form {
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: var(--space-4);
+        margin-bottom: var(--space-3);
+    }
+
+    .event-edit-notes {
+        resize: vertical;
+        min-height: 60px;
+    }
+
+    .event-actions {
+        display: flex;
+        gap: var(--space-2);
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        .event-edit-form .row {
+            flex-direction: column;
+        }
+
+        .event-edit-form .col-md-3,
+        .event-edit-form .col-md-4 {
+            width: 100%;
+            margin-bottom: var(--space-2);
+        }
     }
 </style>
 

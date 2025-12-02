@@ -151,7 +151,7 @@
     color: var(--gray-700);
 }
 
-/* ===== СОБЫТИЯ - ИСПРАВЛЕННЫЕ СТИЛИ ===== */
+/* ===== СОБЫТИЯ ===== */
 .events-grid {
     display: flex;
     flex-direction: column;
@@ -160,8 +160,8 @@
 
 .event-item {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: flex-start;
     padding: var(--space-4);
     background: var(--gray-50);
     border-radius: var(--radius-lg);

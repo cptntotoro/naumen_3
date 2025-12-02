@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.anastasia.NauJava.dto.contact.ContactCreateDto;
 import ru.anastasia.NauJava.dto.contact.ContactUpdateDto;
+import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.dto.note.NoteCreateDto;
 import ru.anastasia.NauJava.entity.company.Company;
 import ru.anastasia.NauJava.entity.contact.Contact;
@@ -207,6 +208,12 @@ public class ContactController {
 
         ContactFullDetails contactDetails = contactManagementService.getWithAllDetails(id);
         model.addAttribute("contactDetails", contactDetails);
+
+        EventCreateDto eventDto = new EventCreateDto();
+        eventDto.setContactId(id);
+        model.addAttribute("eventDto", eventDto);
+
+        model.addAttribute("eventTypes", EventType.values());
 
         NoteCreateDto noteDto = new NoteCreateDto();
         noteDto.setContactId(id);

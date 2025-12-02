@@ -6,10 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.entity.event.Event;
-import ru.anastasia.NauJava.exception.contact.ContactNotFoundException;
-import ru.anastasia.NauJava.exception.event.IllegalEventStateException;
+import ru.anastasia.NauJava.mapper.event.EventMapper;
 import ru.anastasia.NauJava.service.contact.ContactService;
 import ru.anastasia.NauJava.service.event.EventService;
 import ru.anastasia.NauJava.service.facade.ContactEventFacadeService;
@@ -34,6 +32,27 @@ public class ContactEventFacadeServiceImpl implements ContactEventFacadeService 
      * Сервис управления событиями контактов
      */
     private final EventService eventService;
+
+    /**
+     * Маппер событий
+     */
+    private final EventMapper eventMapper;
+
+    @Override
+    public Event createEventForContact(Long contactId, EventCreateDto eventCreateDto) {
+        log.debug("Создание события для контакта ID: {}, тип: {}", contactId, eventCreateDto.getEventType());
+
+        Contact contact = contactService.findById(contactId);
+
+        Event event = eventMapper.eventCreateDtoToEvent(eventCreateDto);
+        event.setContact(contact);
+        Event savedEvent = eventService.saveEvent(event);
+
+        log.info("Событие успешно создано. ID: {}, тип: {}, дата: {}",
+                savedEvent.getId(), savedEvent.getEventType(), savedEvent.getEventDate());
+
+        return savedEvent;
+    }
 
     @Transactional(readOnly = true)
     @Override
@@ -94,34 +113,5 @@ public class ContactEventFacadeServiceImpl implements ContactEventFacadeService 
         }
 
         return result;
-    }
-
-    // TODO: Метод нигде кроме тестов не используется
-    @Override
-    public Event addBirthdayToContact(Long contactId, EventCreateDto birthdayRequest) {
-        log.info("Добавление дня рождения для контакта ID: {}", contactId);
-
-        if (birthdayRequest.getEventType() != EventType.BIRTHDAY) {
-            log.warn("Попытка добавить не Birthday событие для контакта ID: {}. Полученный тип: {}",
-                    contactId, birthdayRequest.getEventType());
-            throw new IllegalEventStateException("Тип события должен быть BIRTHDAY");
-        }
-
-        log.debug("Валидация типа события прошла успешно для контакта ID: {}", contactId);
-
-        boolean isContactExists = contactService.existsById(contactId);
-        if (isContactExists) {
-            log.debug("Контакт найден: ID: {}", contactId);
-        } else {
-            log.info("Контакт не найден: ID: {}", contactId);
-            throw new ContactNotFoundException("Не найден контакт с id: " + contactId);
-        }
-
-        Event birthdayEvent = eventService.create(contactId, birthdayRequest);
-
-        log.info("День рождения успешно добавлен для контакта ID: {}. Дата: {}, ID события: {}",
-                contactId, birthdayEvent.getEventDate(), birthdayEvent.getId());
-
-        return birthdayEvent;
     }
 }

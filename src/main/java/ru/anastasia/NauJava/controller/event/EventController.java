@@ -11,17 +11,24 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.dto.event.EventUpdateDto;
 import ru.anastasia.NauJava.entity.event.Event;
 import ru.anastasia.NauJava.mapper.event.EventMapper;
 import ru.anastasia.NauJava.service.event.EventService;
+import ru.anastasia.NauJava.service.facade.ContactEventFacadeService;
 
 @Slf4j
 @Controller
 @RequestMapping("/events")
 @RequiredArgsConstructor
 public class EventController {
+
+    /**
+     * Фасадный сервис для управления событиями контактов
+     */
+    private final ContactEventFacadeService contactEventFacadeService;
 
     /**
      * Сервис управления событиями контактов
@@ -33,34 +40,35 @@ public class EventController {
      */
     private final EventMapper eventMapper;
 
-    @GetMapping("/new")
-    public String newEventForm(Model model) {
-        model.addAttribute("eventDto", new EventCreateDto());
-        return "event/form";
-    }
-
+    // TODO: Распространить RedirectAttributes на другие контроллеры
     @PostMapping
     public String createEvent(@Valid @ModelAttribute("eventDto") EventCreateDto eventCreateDto,
-                              BindingResult bindingResult, Model model) {
+                              BindingResult bindingResult,
+                              RedirectAttributes redirectAttributes) {
         log.info("POST /events - создание события [тип: {}, контакт: {}]",
                 eventCreateDto.getEventType(), eventCreateDto.getContactId());
 
         if (bindingResult.hasErrors()) {
             log.warn("Ошибки валидации при создании события: {}", bindingResult.getAllErrors());
-            return "event/form";
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.eventDto", bindingResult);
+            redirectAttributes.addFlashAttribute("eventDto", eventCreateDto);
+            redirectAttributes.addAttribute("error", "event_validation");
+            return "redirect:/contacts/" + eventCreateDto.getContactId();
         }
 
         Long contactId = eventCreateDto.getContactId();
 
         try {
-            eventService.create(contactId, eventCreateDto);
+            contactEventFacadeService.createEventForContact(contactId, eventCreateDto);
             log.info("Событие успешно создано [контакт: {}, тип: {}]", contactId, eventCreateDto.getEventType());
+            redirectAttributes.addAttribute("success", "event_created");
             return "redirect:/contacts/" + contactId;
         } catch (RuntimeException e) {
             log.error("Ошибка при создании события [контакт: {}, тип: {}]",
                     contactId, eventCreateDto.getEventType(), e);
-            model.addAttribute("error", e.getMessage());
-            return "event/form";
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addAttribute("error", "event_creation");
+            return "redirect:/contacts/" + contactId;
         }
     }
 

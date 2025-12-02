@@ -13,6 +13,15 @@ import java.util.List;
 public interface ContactEventFacadeService {
 
     /**
+     * Создать событие для контакта
+     *
+     * @param contactId       Идентификатор контакта
+     * @param eventCreateDto  DTO создания события
+     * @return Созданное событие
+     */
+    Event createEventForContact(Long contactId, EventCreateDto eventCreateDto);
+
+    /**
      * Получить контакт с его событиями
      *
      * @param contactId Идентификатор контакта
@@ -37,12 +46,13 @@ public interface ContactEventFacadeService {
      */
     ContactWithBirthday getContactWithBirthday(Long contactId);
 
-    /**
-     * Добавить день рождения к контакту
-     *
-     * @param contactId       Идентификатор контакта
-     * @param birthdayRequest DTO создания события
-     * @return Событие
-     */
-    Event addBirthdayToContact(Long contactId, EventCreateDto birthdayRequest);
+//    /**
+//     * Добавить день рождения к контакту
+//     *
+//     * @param contactId       Идентификатор контакта
+//     * @param birthdayRequest DTO создания события
+//     * @return Событие
+//     */
+//    // TODO: Нигде не используется
+//    Event addBirthdayToContact(Long contactId, EventCreateDto birthdayRequest);
 }

@@ -94,4 +94,12 @@ public interface EventService {
      * @param id Идентификатор
      */
     void delete(Long id);
+
+    /**
+     * Сохранить событие
+     *
+     * @param event Событие
+     * @return Сохраненное событие
+     */
+    Event saveEvent(Event event);
 }
