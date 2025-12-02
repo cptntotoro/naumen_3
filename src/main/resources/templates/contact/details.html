@@ -331,7 +331,7 @@
             <div class="events-grid">
                 <div th:each="event : ${contactDetails.events}" class="event-item" th:id="'event-' + ${event.id}">
                     <!-- Форма редактирования события (скрыта по умолчанию) -->
-                    <form th:action="@{/events/{id}/edit(id=${event.id})}"
+                    <form th:action="@{/events/{id}/update(id=${event.id})}"
                           method="post"
                           class="event-edit-form"
                           th:id="'edit-event-form-' + ${event.id}"
@@ -448,6 +448,7 @@
                                       method="post"
                                       class="inline ms-1"
                                       onsubmit="return confirm('Удалить событие?')">
+                                    <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
                                     <button type="submit"
                                             class="btn btn-sm btn-outline-danger">
                                         <i class="fas fa-trash"></i>
@@ -795,8 +796,11 @@
                 showNotification('Ошибка при создании события', 'error');
                 toggleEventForm();
 
-            } else if (errorType === 'event_update') {
+            } else if (errorType === 'event_update_failed') {
                 showNotification('Ошибка при обновлении события', 'error');
+
+            } else if (errorType === 'event_delete_failed') {
+                showNotification('Ошибка при удалении события', 'error');
             }
         }
     }
@@ -1095,66 +1099,6 @@
         }
     });
 </script>
-
-<style>
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    .note-form-container {
-        transition: all 0.3s ease;
-        background: var(--gray-50);
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius-lg);
-        padding: var(--space-5);
-    }
-
-    .event-form-container {
-        transition: all 0.3s ease;
-        background: var(--gray-50);
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius-lg);
-        padding: var(--space-5);
-    }
-
-    .event-edit-form {
-        background: var(--gray-50);
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        padding: var(--space-4);
-        margin-bottom: var(--space-3);
-    }
-
-    .event-edit-notes {
-        resize: vertical;
-        min-height: 60px;
-    }
-
-    .event-actions {
-        display: flex;
-        gap: var(--space-2);
-        justify-content: flex-end;
-    }
-
-    @media (max-width: 768px) {
-        .event-edit-form .row {
-            flex-direction: column;
-        }
-
-        .event-edit-form .col-md-3,
-        .event-edit-form .col-md-4 {
-            width: 100%;
-            margin-bottom: var(--space-2);
-        }
-    }
-</style>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <div th:replace="~{fragments/scripts :: base-scripts}"></div>
