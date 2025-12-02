@@ -32,7 +32,7 @@ import ru.anastasia.NauJava.service.contact.ContactManagementService;
 import ru.anastasia.NauJava.service.contact.ContactService;
 import ru.anastasia.NauJava.service.event.EventService;
 import ru.anastasia.NauJava.service.facade.ContactDetailFacadeService;
-import ru.anastasia.NauJava.service.facade.ContactEventFacadeService;
+import ru.anastasia.NauJava.service.facade.ContactEventManagementService;
 import ru.anastasia.NauJava.service.facade.ContactTagFacadeService;
 import ru.anastasia.NauJava.service.facade.dto.ContactFullDetails;
 import ru.anastasia.NauJava.service.note.NoteService;
@@ -83,9 +83,9 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     private final ContactService contactService;
 
     /**
-     * Фасад для операций с контактами и событиями
+     * Сервис управления событиями контактов
      */
-    private final ContactEventFacadeService eventFacade;
+    private final ContactEventManagementService contactEventManagementService;
 
     /**
      * Фасад для операций с контактами и тегами
@@ -293,7 +293,6 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     }
 
     // TODO: Только компания или только должность не добавляются
-    // TODO: Сразу устанавливаются как основное место работы - нужно протянуть чекбокс
     private void addCompaniesToContact(Contact contact, List<ContactCompanyCreateDto> companyDtos) {
         if (companyDtos.isEmpty()) {
             log.trace("Нет компаний для добавления к контакту");
@@ -379,7 +378,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     private void updateContactCompanies(Contact contact, List<ContactCompanyUpdateDto> companyDtos) {
         log.debug("Обновление компаний контакта с ID: {}. Старое количество: {}", contact.getId(), contact.getCompanies().size());
         validateContactCompanies(companyDtos);
-        
+
         List<ContactCompany> oldCompanies = List.copyOf(contact.getCompanies());
         contact.getCompanies().clear();
 
@@ -582,7 +581,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
                         .yearlyRecurrence(event.getYearlyRecurrence())
                         .build())
                 .toList();
-        eventFacade.addEventsToContact(duplicate.getId(), eventDtos);
+        contactEventManagementService.addEventsToContact(duplicate.getId(), eventDtos);
     }
 
     private void duplicateTags(ContactFullDetails originalDetails, Contact duplicate) {

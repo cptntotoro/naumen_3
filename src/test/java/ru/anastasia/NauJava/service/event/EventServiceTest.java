@@ -250,52 +250,6 @@ class EventServiceTest {
     }
 
     @Test
-    void update_WhenCustomEventWithoutName_ShouldThrowIllegalEventStateException() {
-        Event invalidEvent = Event.builder()
-                .id(1L)
-                .eventType(EventType.CUSTOM)
-                .customEventName("   ")
-                .eventDate(LocalDate.now())
-                .build();
-
-        Event existingEvent = createTestEvent();
-
-        when(eventRepository.findById(invalidEvent.getId())).thenReturn(Optional.of(existingEvent));
-
-        IllegalEventStateException exception = assertThrows(
-                IllegalEventStateException.class,
-                () -> eventService.update(invalidEvent)
-        );
-
-        assertTrue(exception.getMessage().contains("Для кастомного события должно быть указано название"));
-        verify(eventRepository, times(1)).findById(invalidEvent.getId());
-        verify(eventRepository, never()).save(any(Event.class));
-    }
-
-    @Test
-    void update_WhenStandardEventWithCustomName_ShouldThrowIllegalEventStateException() {
-        Event invalidEvent = Event.builder()
-                .id(1L)
-                .eventType(EventType.ANNIVERSARY)
-                .customEventName("Кастомное название")
-                .eventDate(LocalDate.now())
-                .build();
-
-        Event existingEvent = createTestEvent();
-
-        when(eventRepository.findById(invalidEvent.getId())).thenReturn(Optional.of(existingEvent));
-
-        IllegalEventStateException exception = assertThrows(
-                IllegalEventStateException.class,
-                () -> eventService.update(invalidEvent)
-        );
-
-        assertTrue(exception.getMessage().contains("Название кастомного события должно быть пустым для стандартных событий"));
-        verify(eventRepository, times(1)).findById(invalidEvent.getId());
-        verify(eventRepository, never()).save(any(Event.class));
-    }
-
-    @Test
     void delete_WhenValidId_ShouldCallRepositoryDelete() {
         Long eventId = 1L;
 

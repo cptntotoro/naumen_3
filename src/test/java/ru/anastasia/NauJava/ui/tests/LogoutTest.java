@@ -62,12 +62,7 @@ class LogoutTest extends BaseSeleniumTest {
         loginPage.login("testuser", "password");
 
         // Проверка успешного входа
-        wait.until(ExpectedConditions.or(
-                ExpectedConditions.urlToBe(baseUrl + "/"),
-                ExpectedConditions.urlContains("/home"),
-                ExpectedConditions.urlContains("/contacts"),
-                ExpectedConditions.urlContains("/admin")
-        ));
+        wait.until(ExpectedConditions.urlToBe(baseUrl + "/"));
 
         // Если вход не удался, прерываем тест
         if (Objects.requireNonNull(driver.getCurrentUrl()).contains("login?error")) {

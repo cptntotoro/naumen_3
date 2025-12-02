@@ -83,14 +83,13 @@ public interface EventService {
     /**
      * Обновить событие
      *
-     * @param contactId Идентификатор контакта
      * @param event Событие
      * @return Событие
      */
-    Event update(Long contactId, Event event);
+    Event update(Event event);
 
     /**
-     * Удаллить событие
+     * Удалить событие
      *
      * @param id Идентификатор
      */
@@ -103,4 +102,21 @@ public interface EventService {
      * @return Сохраненное событие
      */
     Event saveEvent(Event event);
+
+    /**
+     * Проверить существование другого дня рождения у контакта, исключая событие
+     *
+     * @param contactId Идентификатор контакта
+     * @param eventId   Идентификатор события
+     * @return Да / Нет
+     */
+    boolean hasOtherBirthday(Long contactId, Long eventId);
+
+    /**
+     * Проверить существование дня рождения у контакта
+     *
+     * @param contactId Идентификатор контакта
+     * @return Да / Нет
+     */
+    boolean hasBirthday(Long contactId);
 }

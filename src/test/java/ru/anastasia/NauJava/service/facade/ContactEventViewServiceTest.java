@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.entity.event.Event;
@@ -13,7 +12,7 @@ import ru.anastasia.NauJava.service.contact.ContactService;
 import ru.anastasia.NauJava.service.event.EventService;
 import ru.anastasia.NauJava.service.facade.dto.ContactWithBirthday;
 import ru.anastasia.NauJava.service.facade.dto.ContactWithEvents;
-import ru.anastasia.NauJava.service.facade.impl.ContactEventFacadeServiceImpl;
+import ru.anastasia.NauJava.service.facade.impl.ContactEventViewServiceImpl;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -23,17 +22,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ContactEventFacadeServiceTest {
+public class ContactEventViewServiceTest {
 
     @Mock
     private ContactService contactService;
@@ -42,7 +38,7 @@ public class ContactEventFacadeServiceTest {
     private EventService eventService;
 
     @InjectMocks
-    private ContactEventFacadeServiceImpl contactEventFacadeService;
+    private ContactEventViewServiceImpl contactEventFacadeService;
 
     private Contact createTestContact() {
         return Contact.builder()
@@ -70,23 +66,6 @@ public class ContactEventFacadeServiceTest {
                 .eventDate(LocalDate.of(1990, 5, 15))
                 .yearlyRecurrence(true)
                 .contact(createTestContact())
-                .build();
-    }
-
-    private EventCreateDto createTestEventCreateDto() {
-        return EventCreateDto.builder()
-                .eventType(EventType.ANNIVERSARY)
-                .eventDate(LocalDate.now().plusDays(5))
-                .notes("Тестовая встреча")
-                .yearlyRecurrence(false)
-                .build();
-    }
-
-    private EventCreateDto createTestBirthdayCreateDto() {
-        return EventCreateDto.builder()
-                .eventType(EventType.BIRTHDAY)
-                .eventDate(LocalDate.of(1990, 5, 15))
-                .yearlyRecurrence(true)
                 .build();
     }
 
@@ -123,46 +102,6 @@ public class ContactEventFacadeServiceTest {
 
         verify(contactService, times(1)).findById(contactId);
         verify(eventService, never()).findByContactId(anyLong());
-    }
-
-    @Test
-    void addEventsToContact_WhenValidData_ShouldReturnCreatedEvents() {
-        Long contactId = 1L;
-        Contact contact = createTestContact();
-        List<EventCreateDto> eventDtos = Arrays.asList(
-                createTestEventCreateDto(),
-                createTestEventCreateDto()
-        );
-        Event event1 = createTestEvent();
-        Event event2 = createTestEvent();
-        event2.setId(2L);
-
-        when(contactService.findById(contactId)).thenReturn(contact);
-        when(eventService.create(eq(contactId), any(EventCreateDto.class)))
-                .thenReturn(event1, event2);
-
-        List<Event> result = contactEventFacadeService.addEventsToContact(contactId, eventDtos);
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(contactService, times(1)).findById(contactId);
-        verify(eventService, times(2)).create(eq(contactId), any(EventCreateDto.class));
-    }
-
-    @Test
-    void addEventsToContact_WhenEmptyEventsList_ShouldReturnEmptyList() {
-        Long contactId = 1L;
-        Contact contact = createTestContact();
-        List<EventCreateDto> emptyEventDtos = List.of();
-
-        when(contactService.findById(contactId)).thenReturn(contact);
-
-        List<Event> result = contactEventFacadeService.addEventsToContact(contactId, emptyEventDtos);
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(contactService, times(1)).findById(contactId);
-        verify(eventService, never()).create(anyLong(), any(EventCreateDto.class));
     }
 
     @Test

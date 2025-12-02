@@ -34,7 +34,7 @@ import ru.anastasia.NauJava.service.company.JobTitleService;
 import ru.anastasia.NauJava.service.contact.impl.ContactManagementServiceImpl;
 import ru.anastasia.NauJava.service.event.EventService;
 import ru.anastasia.NauJava.service.facade.ContactDetailFacadeService;
-import ru.anastasia.NauJava.service.facade.ContactEventFacadeService;
+import ru.anastasia.NauJava.service.facade.ContactEventViewService;
 import ru.anastasia.NauJava.service.facade.ContactTagFacadeService;
 import ru.anastasia.NauJava.service.facade.dto.ContactFullDetails;
 import ru.anastasia.NauJava.service.note.NoteService;
@@ -84,7 +84,7 @@ public class ContactManagementServiceTest {
     private ContactService contactService;
 
     @Mock
-    private ContactEventFacadeService eventFacade;
+    private ContactEventViewService eventFacade;
 
     @Mock
     private ContactTagFacadeService tagFacade;

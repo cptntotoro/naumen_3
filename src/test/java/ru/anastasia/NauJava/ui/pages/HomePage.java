@@ -6,6 +6,8 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import java.util.Objects;
+
 public class HomePage extends BasePage {
 
     @FindBy(xpath = "//h1[contains(., 'Главная')]")
@@ -34,7 +36,7 @@ public class HomePage extends BasePage {
     public boolean isHomePageDisplayed() {
         try {
             wait.until(ExpectedConditions.visibilityOf(pageTitle));
-            return pageTitle.isDisplayed() && driver.getCurrentUrl().contains("/");
+            return pageTitle.isDisplayed() && Objects.requireNonNull(driver.getCurrentUrl()).contains("/");
         } catch (Exception e) {
             return false;
         }
