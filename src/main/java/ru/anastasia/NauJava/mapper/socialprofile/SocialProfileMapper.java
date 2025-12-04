@@ -3,6 +3,7 @@ package ru.anastasia.NauJava.mapper.socialprofile;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import ru.anastasia.NauJava.dto.socialprofile.SocialProfileCreateDto;
 import ru.anastasia.NauJava.dto.socialprofile.SocialProfileUpdateDto;
 import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 
@@ -24,10 +25,12 @@ public interface SocialProfileMapper {
     SocialProfile socialProfileUpdateDtoToSocialProfile(SocialProfileUpdateDto socialProfileUpdateDto);
 
     /**
-     * Смаппить профиль в соцсети в DTO обновления профиля в соцсети
+     * Смаппить DTO создания профиля в соцсетях в профиль в соцсети
      *
-     * @param profile Профиль в соцсети
-     * @return DTO обновления профиля в соцсети
+     * @param socialProfileCreateDto DTO создания профиля в соцсетях
+     * @return Профиль в соцсети
      */
-    SocialProfileUpdateDto socialProfileToSocialProfileUpdateDto(SocialProfile profile);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "contact", ignore = true)
+    SocialProfile socialProfileCreateDtoToSocialProfile(SocialProfileCreateDto socialProfileCreateDto);
 }

@@ -14,6 +14,12 @@ import ru.anastasia.NauJava.entity.enums.SocialPlatform;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SocialProfileCreateDto {
+
+    /**
+     * Идентификатор контакта
+     */
+    private Long contactId;
+
     /**
      * Тип социальной платформы
      */

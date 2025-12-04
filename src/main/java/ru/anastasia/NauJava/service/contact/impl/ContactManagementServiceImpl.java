@@ -292,7 +292,6 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         return (int) ChronoUnit.DAYS.between(today, nextBirthday);
     }
 
-    // TODO: Только компания или только должность не добавляются
     private void addCompaniesToContact(Contact contact, List<ContactCompanyCreateDto> companyDtos) {
         if (companyDtos.isEmpty()) {
             log.trace("Нет компаний для добавления к контакту");
