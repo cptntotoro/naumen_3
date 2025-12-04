@@ -21,6 +21,11 @@ public class SocialProfileUpdateDto {
     private Long id;
 
     /**
+     * Идентификатор контакта
+     */
+    private Long contactId;
+
+    /**
      * Тип социальной платформы
      */
     @NotNull(message = "Платформа обязательна")
