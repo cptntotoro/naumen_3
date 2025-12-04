@@ -161,18 +161,24 @@
 .event-item {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     padding: var(--space-4);
     background: var(--gray-50);
     border-radius: var(--radius-lg);
     border: 1px solid var(--gray-200);
     transition: var(--transition);
-    gap: var(--space-4);
+    margin-bottom: var(--space-3);
 }
 
 .event-item:hover {
     background: var(--gray-100);
     border-color: var(--gray-300);
+}
+
+.event-view {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
 }
 
 .event-info {
@@ -217,24 +223,23 @@
 
 .event-meta {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: var(--space-2);
-    text-align: right;
+    align-items: center;
+    gap: var(--space-3);
     flex-shrink: 0;
 }
 
 .event-date {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--gray-700);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
 }
 
 .event-notes {
     color: var(--gray-600);
     font-size: var(--font-size-sm);
-    max-width: 300px;
+    max-width: 400px;
     word-wrap: break-word;
+    margin-top: var(--space-1);
 }
 
 .recurrence-icon {
@@ -554,12 +559,15 @@
     padding: var(--space-5);
 }
 
-.event-edit-form {
+.event-edit-form,
+.social-edit-form {
     background: var(--gray-50);
     border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     padding: var(--space-4);
-    margin-bottom: var(--space-3);
+    margin-top: var(--space-3);
+    transition: all 0.3s ease;
+    width: 100%;
 }
 
 .event-edit-notes {
@@ -570,7 +578,6 @@
 .event-actions {
     display: flex;
     gap: var(--space-2);
-    justify-content: flex-end;
 }
 
 @media (max-width: 768px) {
@@ -580,6 +587,135 @@
 
     .event-edit-form .col-md-3,
     .event-edit-form .col-md-4 {
+        width: 100%;
+        margin-bottom: var(--space-2);
+    }
+}
+
+.social-form-container {
+    transition: all 0.3s ease;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+}
+
+
+.social-profile-item {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    transition: var(--transition);
+    margin-bottom: var(--space-3);
+}
+
+.social-profile-view {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.social-profile-info {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    flex: 1;
+}
+
+.social-icon {
+    font-size: 1.25rem;
+    color: var(--primary);
+    margin-top: var(--space-1);
+    flex-shrink: 0;
+}
+
+.social-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+}
+
+.social-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.social-platform {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: var(--font-size-base);
+}
+
+.social-custom-name {
+    color: var(--gray-500);
+    font-size: var(--font-size-sm);
+    font-style: italic;
+}
+
+.social-profile-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
+}
+
+.social-username {
+    font-weight: 500;
+    color: var(--gray-700);
+    font-size: var(--font-size-sm);
+}
+
+.social-url {
+    font-size: var(--font-size-xs);
+    color: var(--primary);
+    text-decoration: none;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.social-url:hover {
+    text-decoration: underline;
+}
+
+.social-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+@media (max-width: 768px) {
+    .event-view,
+    .social-profile-view {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .event-meta,
+    .social-profile-meta {
+        align-self: flex-end;
+    }
+
+    .event-notes,
+    .social-url {
+        max-width: 100%;
+    }
+
+    .event-edit-form .row,
+    .social-edit-form .row {
+        flex-direction: column;
+    }
+
+    .event-edit-form .col-md-4,
+    .social-edit-form .col-md-4 {
         width: 100%;
         margin-bottom: var(--space-2);
     }

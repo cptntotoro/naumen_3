@@ -26,7 +26,6 @@ public class EventController {
      */
     private final ContactEventManagementService contactEventManagementService;
 
-    // TODO: Распространить RedirectAttributes на другие контроллеры
     @PostMapping
     public String createEvent(@Valid @ModelAttribute("eventDto") EventCreateDto eventCreateDto,
                               BindingResult bindingResult,
@@ -47,6 +46,9 @@ public class EventController {
         try {
             contactEventManagementService.createEventForContact(contactId, eventCreateDto);
             log.info("Событие успешно создано [контакт: {}, тип: {}]", contactId, eventCreateDto.getEventType());
+            // TODO: Проверить всплывашки. Сейчас отображается: "Событие успешно добавлено"
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Событие '" + eventCreateDto.getEventType().name() + "' успешно создано");
             redirectAttributes.addAttribute("success", "event_created");
             return "redirect:/contacts/" + contactId;
         } catch (RuntimeException e) {

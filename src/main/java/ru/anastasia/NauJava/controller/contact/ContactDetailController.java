@@ -40,12 +40,6 @@ public class ContactDetailController {
         return "contactdetail/list";
     }
 
-    @GetMapping("/new")
-    public String newContactDetailForm(Model model) {
-        model.addAttribute("detailDto", new ContactDetailCreateDto());
-        return "contactdetail/form";
-    }
-
     @GetMapping("/{id}/edit")
     public String editContactDetailForm(@PathVariable Long id, Model model) {
         ContactDetail detail = contactDetailService.findById(id);
