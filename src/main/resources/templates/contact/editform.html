@@ -226,13 +226,13 @@
                             <div class="col-md-4">
                                 <div class="current-job-toggle mt-4">
                                     <input type="checkbox"
-                                           th:field="*{companies[__${stat.index}__].current}"
+                                           th:field="*{companies[__${stat.index}__].isCurrent}"
                                            class="current-checkbox"
                                            hidden
                                            onchange="updateCurrentText(this)">
                                     <label class="current-label" onclick="toggleCurrentCheckbox(this)">
                                         <i class="current-icon"
-                                           th:classappend="${company.current} ? 'fas fa-check-circle text-success' : 'far fa-circle'"></i>
+                                           th:classappend="${company.isCurrent} ? 'fas fa-check-circle text-success' : 'far fa-circle'"></i>
                                         <span class="current-text">Текущее место работы</span>
                                     </label>
                                 </div>
@@ -453,7 +453,7 @@
         </div>
         <div class="col-md-4">
             <div class="current-job-toggle mt-4">
-                <input type="checkbox" name="companies[INDEX].current"
+                <input type="checkbox" name="companies[INDEX].isCurrent"
                        class="current-checkbox"
                        hidden
                        onchange="updateCurrentText(this)">

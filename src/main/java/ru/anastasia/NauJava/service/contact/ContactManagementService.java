@@ -54,13 +54,6 @@ public interface ContactManagementService {
     List<ContactFullDetails> getListWithUpcomingBirthdays(int daysAhead);
 
     /**
-     * Получить избранные контакты с основной информацией
-     *
-     * @return Список избранных контактов
-     */
-    List<ContactFullDetails> getListFavoriteWithDetails();
-
-    /**
      * Создать контакт
      *
      * @param contactCreateDto DTO создания контакта

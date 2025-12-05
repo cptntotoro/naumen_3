@@ -226,15 +226,6 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Contact> findFavorites() {
-        log.debug("Получение списка избранных контактов");
-        List<Contact> favorites = contactRepository.findByIsFavoriteTrue();
-        log.debug("Найдено {} избранных контактов", favorites.size());
-        return favorites;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<Contact> findBirthdaysThisMonth() {
         log.debug("Поиск контактов с днями рождения в текущем месяце");
         LocalDate now = LocalDate.now();

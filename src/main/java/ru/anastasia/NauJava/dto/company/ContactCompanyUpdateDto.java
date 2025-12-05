@@ -31,6 +31,5 @@ public class ContactCompanyUpdateDto {
     /**
      * Является ли текущим местом работы
      */
-    @Builder.Default
-    private boolean isCurrent = false;
+    private Boolean isCurrent;
 }

@@ -257,20 +257,6 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         return result;
     }
 
-    @Override
-    @Transactional
-    public List<ContactFullDetails> getListFavoriteWithDetails() {
-        log.debug("Получение списка избранных контактов с деталями");
-
-        List<Contact> favoriteContacts = contactService.findFavorites();
-        List<ContactFullDetails> result = favoriteContacts.stream()
-                .map(contact -> getSummary(contact.getId()))
-                .toList();
-
-        log.debug("Найдено {} избранных контактов", result.size());
-        return result;
-    }
-
     private Contact buildContactFromCreateDto(ContactCreateDto dto) {
         return Contact.builder()
                 .firstName(dto.getFirstName())
@@ -306,7 +292,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
                     .contact(contact)
                     .company(company)
                     .jobTitle(jobTitle)
-                    .isCurrent(dto.isCurrent())
+                    .isCurrent(dto.getIsCurrent())
                     .build());
         });
     }
@@ -388,7 +374,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
             ContactCompany contactCompany = findOrCreateContactCompany(oldCompanies, dto.getId(), contact);
             contactCompany.setCompany(company);
             contactCompany.setJobTitle(jobTitle);
-            contactCompany.setIsCurrent(dto.isCurrent());
+            contactCompany.setIsCurrent(dto.getIsCurrent());
             contact.addCompany(contactCompany);
         });
         log.debug("Обновлено компаний контакта с ID: {}. Новое количество: {}", contact.getId(), companyDtos.size());
@@ -396,7 +382,7 @@ public class ContactManagementServiceImpl implements ContactManagementService {
 
     private void validateContactCompanies(List<ContactCompanyUpdateDto> companyDtos) {
         long currentCount = companyDtos.stream()
-                .filter(ContactCompanyUpdateDto::isCurrent)
+                .filter(ContactCompanyUpdateDto::getIsCurrent)
                 .count();
 
         if (currentCount > 1) {

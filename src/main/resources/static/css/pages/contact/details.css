@@ -720,3 +720,85 @@
         margin-bottom: var(--space-2);
     }
 }
+
+/* ===== КОМПАНИИ — ЕДИНЫЙ СТИЛЬ С ОСТАЛЬНЫМИ СЕКЦИЯМИ ===== */
+.companies-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.company-item {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+    background: var(--gray-50);
+    border: var(--gray-200);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    transition: var(--transition);
+    margin-bottom: var(--space-3);
+}
+
+.company-item:hover {
+    background: var(--gray-100);
+    border-color: var(--gray-300);
+}
+
+.company-info {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    flex: 1;
+}
+
+.company-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+}
+
+.company-name {
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.company-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.company-item:hover .company-actions {
+    opacity: 1;
+}
+
+.company-edit-form,
+.company-form-container {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    transition: all 0.3s ease;
+}
+
+.company-form-container {
+    margin-bottom: var(--space-6);
+}
+
+.social-profile-meta,
+.event-meta,
+.note-meta,
+.company-meta {
+    align-self: start;
+    margin-top: 0.125rem;
+}
+
+.actions,
+.social-actions,
+.event-actions,
+.note-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}

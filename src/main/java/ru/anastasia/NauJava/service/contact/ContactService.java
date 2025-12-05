@@ -89,13 +89,6 @@ public interface ContactService {
     void removeFromFavorites(Long contactId);
 
     /**
-     * Получить избранные контакты
-     *
-     * @return Список контактов
-     */
-    List<Contact> findFavorites();
-
-    /**
      * Получить контакты по имени и фамилии
      *
      * @param firstName Имя

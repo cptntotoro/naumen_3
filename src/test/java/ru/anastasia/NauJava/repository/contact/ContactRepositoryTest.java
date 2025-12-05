@@ -54,31 +54,4 @@ class ContactRepositoryTest {
 
         Assertions.assertNotNull(contacts);
     }
-
-    @Test
-    void testFindByIsFavoriteTrue() {
-        Contact favoriteContact = Contact.builder()
-                .firstName("Favorite")
-                .lastName("Contact")
-                .isFavorite(true)
-                .build();
-
-        contactRepository.save(favoriteContact);
-
-        Contact regularContact = Contact.builder()
-                .firstName("Regular")
-                .lastName("Contact")
-                .isFavorite(false)
-                .build();
-
-        contactRepository.save(regularContact);
-
-        List<Contact> favorites = contactRepository.findByIsFavoriteTrue();
-
-        Assertions.assertNotNull(favorites);
-        Assertions.assertFalse(favorites.isEmpty());
-        favorites.forEach(contact ->
-                Assertions.assertTrue(contact.getIsFavorite())
-        );
-    }
 }
