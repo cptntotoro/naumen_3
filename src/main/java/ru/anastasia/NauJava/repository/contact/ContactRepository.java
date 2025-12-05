@@ -27,13 +27,6 @@ public interface ContactRepository extends JpaRepository<Contact, Long>, Contact
     List<Contact> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
 
     /**
-     * Получить избранные контакты
-     *
-     * @return Список контактов
-     */
-    List<Contact> findByIsFavoriteTrue();
-
-    /**
      * Получить контакты по названию тега
      *
      * @param tagName Название тега
