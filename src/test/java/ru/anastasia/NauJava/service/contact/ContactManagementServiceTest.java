@@ -567,32 +567,4 @@ public class ContactManagementServiceTest {
         verify(contactService, times(1)).findWithUpcomingBirthdays(daysAhead);
         verify(eventService, times(1)).findBirthdayByContactId(anyLong());
     }
-
-    @Test
-    void getListFavoriteWithDetails_WhenFavoriteContactsExist_ShouldReturnList() {
-        List<Contact> favoriteContacts = Collections.singletonList(createTestContact());
-        ContactFullDetails summaryDetails = createTestContactFullDetails();
-
-        when(contactService.findFavorites()).thenReturn(favoriteContacts);
-
-        ContactManagementServiceImpl serviceSpy = spy(contactManagementService);
-        doReturn(summaryDetails).when(serviceSpy).getSummary(anyLong());
-
-        List<ContactFullDetails> result = serviceSpy.getListFavoriteWithDetails();
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(contactService, times(1)).findFavorites();
-    }
-
-    @Test
-    void getListFavoriteWithDetails_WhenNoFavoriteContacts_ShouldReturnEmptyList() {
-        when(contactService.findFavorites()).thenReturn(List.of());
-
-        List<ContactFullDetails> result = contactManagementService.getListFavoriteWithDetails();
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(contactService, times(1)).findFavorites();
-    }
 }

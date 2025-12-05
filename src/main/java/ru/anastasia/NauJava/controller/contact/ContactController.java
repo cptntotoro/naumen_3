@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ru.anastasia.NauJava.dto.company.ContactCompanyCreateDto;
 import ru.anastasia.NauJava.dto.contact.ContactCreateDto;
 import ru.anastasia.NauJava.dto.contact.ContactUpdateDto;
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
@@ -231,6 +232,10 @@ public class ContactController {
 
         ContactFullDetails contactDetails = contactManagementService.getWithAllDetails(id);
         model.addAttribute("contactDetails", contactDetails);
+
+        model.addAttribute("contactCompanyDto", new ContactCompanyCreateDto());
+        model.addAttribute("allCompanies", companyService.findAll());
+        model.addAttribute("allJobTitles", jobTitleService.findAll());
 
         EventCreateDto eventDto = new EventCreateDto();
         eventDto.setContactId(id);

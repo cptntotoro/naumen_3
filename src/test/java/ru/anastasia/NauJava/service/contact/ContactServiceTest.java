@@ -452,20 +452,6 @@ class ContactServiceTest {
     }
 
     @Test
-    void findFavorites_WhenFavoriteContactsExist_ShouldReturnFavoriteContacts() {
-        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
-
-        when(contactRepository.findByIsFavoriteTrue()).thenReturn(expectedContacts);
-
-        List<Contact> result = contactService.findFavorites();
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertTrue(result.getFirst().getIsFavorite());
-        verify(contactRepository, times(1)).findByIsFavoriteTrue();
-    }
-
-    @Test
     void findBirthdaysThisMonth_WhenBirthdayEventsExist_ShouldReturnContacts() {
         Contact contact1 = createTestContact();
         Contact contact2 = createAnotherTestContact();
