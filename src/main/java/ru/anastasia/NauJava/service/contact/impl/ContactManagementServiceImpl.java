@@ -11,6 +11,7 @@ import ru.anastasia.NauJava.dto.contact.ContactDetailCreateDto;
 import ru.anastasia.NauJava.dto.contact.ContactUpdateDto;
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
 import ru.anastasia.NauJava.dto.event.EventUpdateDto;
+import ru.anastasia.NauJava.dto.note.NoteCreateDto;
 import ru.anastasia.NauJava.dto.note.NoteUpdateDto;
 import ru.anastasia.NauJava.dto.socialprofile.SocialProfileCreateDto;
 import ru.anastasia.NauJava.dto.socialprofile.SocialProfileUpdateDto;
@@ -119,6 +120,8 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         addCompaniesToContact(contact, contactCreateDto.getContactCompanyCreateDtos());
         addContactDetailsToContact(contact, contactCreateDto.getContactDetailCreateDtos());
         addSocialProfilesToContact(contact, contactCreateDto.getSocialProfileCreateDtos());
+        addEventsToContact(contact, contactCreateDto.getEventCreateDtos());
+        addNotesToContact(contact, contactCreateDto.getNoteCreateDtos());
         addTagsToContact(contact, contactCreateDto.getTagIds());
 
         Contact savedContact = contactService.save(contact);
@@ -255,6 +258,36 @@ public class ContactManagementServiceImpl implements ContactManagementService {
 
         log.debug("Найдено {} контактов с предстоящими днями рождения", result.size());
         return result;
+    }
+
+    private void addEventsToContact(Contact contact, List<EventCreateDto> eventDtos) {
+        if (eventDtos.isEmpty()) {
+            log.trace("Нет событий для добавления к контакту");
+            return;
+        }
+
+        log.debug("Добавление {} событий к контакту", eventDtos.size());
+        eventDtos.forEach(dto -> contact.addEvent(Event.builder()
+                .contact(contact)
+                .eventType(dto.getEventType())
+                .customEventName(dto.getCustomEventName())
+                .eventDate(dto.getEventDate())
+                .notes(dto.getNotes())
+                .yearlyRecurrence(dto.getYearlyRecurrence())
+                .build()));
+    }
+
+    private void addNotesToContact(Contact contact, List<NoteCreateDto> noteDtos) {
+        if (noteDtos.isEmpty()) {
+            log.trace("Нет заметок для добавления к контакту");
+            return;
+        }
+
+        log.debug("Добавление {} заметок к контакту", noteDtos.size());
+        noteDtos.forEach(dto -> contact.addNote(Note.builder()
+                .contact(contact)
+                .content(dto.getContent())
+                .build()));
     }
 
     private Contact buildContactFromCreateDto(ContactCreateDto dto) {
