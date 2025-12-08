@@ -117,11 +117,11 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         contact = contactService.save(contact);
         log.debug("Базовый контакт создан с ID: {}", contact.getId());
 
-        addCompaniesToContact(contact, contactCreateDto.getContactCompanyCreateDtos());
-        addContactDetailsToContact(contact, contactCreateDto.getContactDetailCreateDtos());
-        addSocialProfilesToContact(contact, contactCreateDto.getSocialProfileCreateDtos());
-        addEventsToContact(contact, contactCreateDto.getEventCreateDtos());
-        addNotesToContact(contact, contactCreateDto.getNoteCreateDtos());
+        addCompaniesToContact(contact, contactCreateDto.getCompanies());
+        addContactDetailsToContact(contact, contactCreateDto.getContactDetails());
+        addSocialProfilesToContact(contact, contactCreateDto.getSocialProfiles());
+        addEventsToContact(contact, contactCreateDto.getEvents());
+        addNotesToContact(contact, contactCreateDto.getNotes());
         addTagsToContact(contact, contactCreateDto.getTagIds());
 
         Contact savedContact = contactService.save(contact);
