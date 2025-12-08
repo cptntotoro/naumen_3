@@ -55,19 +55,19 @@ public class ContactCreateDto {
      * Список компаний
      */
     @Builder.Default
-    private List<ContactCompanyCreateDto> contactCompanyCreateDtos = new ArrayList<>();
+    private List<ContactCompanyCreateDto> companies = new ArrayList<>();
 
     /**
      * Список способов связи
      */
     @Builder.Default
-    private List<ContactDetailCreateDto> contactDetailCreateDtos = new ArrayList<>();
+    private List<ContactDetailCreateDto> contactDetails = new ArrayList<>();
 
     /**
      * Список социальных сетей
      */
     @Builder.Default
-    private List<SocialProfileCreateDto> socialProfileCreateDtos = new ArrayList<>();
+    private List<SocialProfileCreateDto> socialProfiles = new ArrayList<>();
 
     /**
      * Идентификаторы тегов
@@ -79,11 +79,11 @@ public class ContactCreateDto {
      * Список событий
      */
     @Builder.Default
-    private List<EventCreateDto> eventCreateDtos = new ArrayList<>();
+    private List<EventCreateDto> events = new ArrayList<>();
 
     /**
      * Список заметок
      */
     @Builder.Default
-    private List<NoteCreateDto> noteCreateDtos = new ArrayList<>();
+    private List<NoteCreateDto> notes = new ArrayList<>();
 }
