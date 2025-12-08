@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="contact-info-section(contactDetails)">
+    <!-- Контактная информация -->
+    <div class="card h-full">
+        <div class="card-header">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-address-book text-primary me-2"></i>Контактная информация
+            </h3>
+            <a th:href="@{/contact-details/new?contactId={id}(id=${contactDetails.contact.id})}"
+               class="btn btn-outline-primary text-sm">
+                <i class="fas fa-plus mr-1"></i>Добавить
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="card-body">
+                <div th:each="detail : ${contactDetails.contactDetails}">
+                    <div class="d-flex row gap-2 align-items-center border-bottom py-2">
+                        <div class="row align-items-center gap-4">
+                            <i th:class="'fas fa-' +
+                               ${detail.detailType.name() == 'EMAIL' ? 'envelope' :
+                                 detail.detailType.name() == 'PHONE' ? 'phone' :
+                                 detail.detailType.name() == 'ADDRESS' ? 'map-marker-alt' :
+                                 'globe'} +
+                               ' text-primary'"></i>
+                            <div>
+                                <strong th:text="${detail.detailType.name()}"></strong>
+                                <small class="text-muted d-block"
+                                       th:text="'(' + ${detail.label.name()} + ')'"></small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <!-- Для телефонов -->
+                            <span th:if="${detail.detailType.name() == 'PHONE'}">
+                                <a th:href="'tel:' + ${detail.value}"
+                                   class="fw-semibold text-decoration-none link-primary"
+                                   th:text="${detail.value}"></a>
+                            </span>
+
+                            <!-- Для email -->
+                            <span th:if="${detail.detailType.name() == 'EMAIL'}">
+                                <a th:href="'mailto:' + ${detail.value}"
+                                   class="fw-semibold text-decoration-none link-primary"
+                                   th:text="${detail.value}"></a>
+                            </span>
+
+                            <!-- Для вебсайтов -->
+                            <span th:if="${detail.detailType.name() == 'WEBSITE'}">
+                                <a th:href="${#strings.startsWith(detail.value, 'http') ? detail.value : 'https://' + detail.value}"
+                                   class="fw-semibold text-decoration-none link-primary"
+                                   target="_blank"
+                                   th:text="${detail.value}"></a>
+                            </span>
+
+                            <!-- Для остальных -->
+                            <span th:if="${detail.detailType.name() != 'PHONE' and
+                             detail.detailType.name() != 'EMAIL' and
+                             detail.detailType.name() != 'WEBSITE'}">
+                                <span class="fw-semibold" th:text="${detail.value}"></span>
+                            </span>
+
+                            <i th:if="${detail.isPrimary}"
+                               class="fas fa-star text-warning ms-2"
+                               title="Основной способ связи"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${contactDetails.contactDetails.isEmpty()}" class="empty-state py-12">
+                    <i class="fas fa-address-book empty-state__icon text-primary"></i>
+                    <div class="empty-state__title">Контактная информация отсутствует</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

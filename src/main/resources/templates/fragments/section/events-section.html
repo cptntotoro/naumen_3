@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="events-section(contactDetails, eventTypes)">
+    <!-- События (дни рождения, юбилеи и т.д.) -->
+    <div class="card h-full">
+        <div class="card-header flex-between">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-calendar text-primary me-2"></i>События
+            </h3>
+            <button type="button"
+                    class="btn btn-outline-primary text-sm"
+                    onclick="toggleEventForm()">
+                <i class="fas fa-plus mr-1"></i>Добавить
+            </button>
+        </div>
+        <div class="card-body">
+            <!-- Форма добавления нового события (скрыта по умолчанию) -->
+            <div class="event-form-container mb-6" id="eventFormContainer" style="display: none;">
+                <form th:action="@{/events}" th:object="${eventDto}" method="post" class="event-form" id="eventForm">
+                    <input type="hidden" th:field="*{contactId}" th:value="${contactDetails.contact.id}"/>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="eventType" class="form-label fw-semibold">Тип события <span
+                                        class="text-danger">*</span></label>
+                                <select th:field="*{eventType}"
+                                        class="form-select"
+                                        id="eventType"
+                                        required
+                                        onchange="toggleCustomEventName()">
+                                    <option value="" disabled>Выберите тип события</option>
+                                    <option th:each="type : ${eventTypes}"
+                                            th:value="${type}"
+                                            th:text="${type}">
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('eventType')}"
+                                     th:errors="*{eventType}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6" id="customEventNameContainer" style="display: none;">
+                            <div class="form-group">
+                                <label for="customEventName" class="form-label fw-semibold">Кастомное имя
+                                    события</label>
+                                <input th:field="*{customEventName}"
+                                       type="text"
+                                       class="form-control"
+                                       id="customEventName"
+                                       placeholder="Введите название события">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('customEventName')}"
+                                     th:errors="*{customEventName}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="eventDate" class="form-label fw-semibold">Дата события <span
+                                        class="text-danger">*</span></label>
+                                <input th:field="*{eventDate}"
+                                       type="date"
+                                       class="form-control"
+                                       id="eventDate"
+                                       required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('eventDate')}"
+                                     th:errors="*{eventDate}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="eventNotes" class="form-label fw-semibold">Заметки</label>
+                                <textarea th:field="*{notes}"
+                                          class="form-control"
+                                          id="eventNotes"
+                                          rows="2"
+                                          placeholder="Дополнительные заметки о событии... (Ctrl+Enter для сохранения)"></textarea>
+                                <div class="hotkey-hint">Ctrl+Enter для быстрого сохранения</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('notes')}"
+                                     th:errors="*{notes}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input th:field="*{yearlyRecurrence}"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       id="yearlyRecurrence">
+                                <label class="form-check-label fw-semibold" for="yearlyRecurrence">
+                                    Ежегодное повторение события
+                                </label>
+                                <div class="form-text">Событие будет отмечаться каждый год автоматически</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions d-flex justify-content-end gap-3 mt-4">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                onclick="hideEventForm()"
+                                id="cancelEventForm">
+                            <i class="fas fa-times me-1"></i>Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i>Сохранить событие
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Список существующих событий -->
+            <div class="events-grid">
+                <div th:each="event : ${contactDetails.events}" class="event-item">
+                    <!-- Отображение события -->
+                    <div class="event-view" th:id="'event-view-' + ${event.id}">
+                        <div class="event-info">
+                            <i class="fas fa-calendar event-icon"></i>
+                            <div class="event-details">
+                                <div class="event-header">
+                                    <span class="event-type" th:text="${event.eventType.name()}"></span>
+                                    <span th:if="${event.eventType == T(ru.anastasia.NauJava.entity.enums.EventType).CUSTOM}
+                                    and ${!#strings.isEmpty(event.customEventName)}"
+                                          class="event-custom-name"
+                                          th:text="'(' + ${event.customEventName} + ')'">
+                                    </span>
+                                </div>
+                                <div class="event-date"
+                                     th:text="${#temporals.format(event.eventDate, 'dd.MM.yyyy')}"></div>
+                                <div th:if="${event.notes}"
+                                     class="event-notes"
+                                     th:text="${event.notes}"></div>
+                            </div>
+                        </div>
+                        <div class="event-meta">
+                            <i th:if="${event.yearlyRecurrence}"
+                               class="fas fa-sync-alt recurrence-icon"
+                               title="Повторяется ежегодно"></i>
+                            <div class="event-actions">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'editEvent(' + ${event.id} + ')'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form th:action="@{/events/{id}/delete(id=${event.id})}"
+                                      method="post"
+                                      class="inline ms-1"
+                                      onsubmit="return confirm('Удалить событие?')">
+                                    <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Форма редактирования события (по умолчанию скрыта) -->
+                    <form th:action="@{/events/{id}/update(id=${event.id})}"
+                          method="post"
+                          class="event-edit-form"
+                          th:id="'edit-event-form-' + ${event.id}"
+                          style="display: none;">
+                        <input type="hidden" name="id" th:value="${event.id}"/>
+                        <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group mb-2">
+                                    <label for="edit-event-type-${event.id}" class="form-label fw-semibold mb-1">Тип
+                                        события</label>
+                                    <select name="eventType"
+                                            class="form-select form-select-sm"
+                                            id="edit-event-type-${event.id}"
+                                            required
+                                            onchange="toggleEditCustomEventName(${event.id})">
+                                        <option value="" disabled>Тип события</option>
+                                        <option th:each="type : ${eventTypes}"
+                                                th:value="${type}"
+                                                th:text="${type}"
+                                                th:selected="${event.eventType == type}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4" th:id="'edit-custom-container-' + ${event.id}"
+                                 th:style="${event.eventType == T(ru.anastasia.NauJava.entity.enums.EventType).CUSTOM} ? 'display: block;' : 'display: none;'">
+                                <div class="form-group mb-2">
+                                    <label for="edit-custom-event-name-${event.id}" class="form-label fw-semibold mb-1">Название
+                                        события</label>
+                                    <input type="text"
+                                           name="customEventName"
+                                           class="form-control form-control-sm"
+                                           id="edit-custom-event-name-${event.id}"
+                                           th:value="${event.customEventName}"
+                                           placeholder="Название события">
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group mb-2">
+                                    <label for="edit-event-date-${event.id}" class="form-label fw-semibold mb-1">Дата
+                                        события</label>
+                                    <input type="date"
+                                           name="eventDate"
+                                           class="form-control form-control-sm"
+                                           id="edit-event-date-${event.id}"
+                                           th:value="${#temporals.format(event.eventDate, 'yyyy-MM-dd')}"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group mb-2">
+                                    <label for="edit-event-notes-${event.id}" class="form-label fw-semibold mb-1">Заметки</label>
+                                    <textarea name="notes"
+                                              class="form-control form-control-sm event-edit-notes"
+                                              id="edit-event-notes-${event.id}"
+                                              rows="2"
+                                              th:attr="data-event-id=${event.id}"
+                                              th:text="${event.notes}"
+                                              placeholder="Заметки..."></textarea>
+                                    <div class="hotkey-hint text-end">Ctrl+Enter для сохранения</div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="yearlyRecurrence"
+                                           id="edit-event-recurrence-${event.id}"
+                                           th:checked="${event.yearlyRecurrence}">
+                                    <label class="form-check-label text-sm" for="edit-event-recurrence-${event.id}">Ежегодное
+                                        повторение</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    th:onclick="'cancelEventEdit(' + ${event.id} + ')'">
+                                Отмена
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                Сохранить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div th:if="${contactDetails.events.isEmpty()}" class="empty-state py-12">
+                <i class="fas fa-calendar empty-state__icon text-primary"></i>
+                <div class="empty-state__title">События не добавлены</div>
+                <div class="empty-state__description">Нажмите кнопку "Добавить" чтобы создать первое событие</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

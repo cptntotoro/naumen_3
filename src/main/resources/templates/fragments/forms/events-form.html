@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="events-form(eventTypes)">
+    <!-- События -->
+    <div class="card form-section shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-calendar me-2 text-primary"></i>События
+            </h3>
+            <button type="button" class="btn btn-primary add-field-btn" onclick="window.addEvent()">
+                <i class="fas fa-plus me-2"></i>Добавить событие
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="eventsContainer" class="dynamic-fields-container">
+                <!-- Существующие поля для создания и редактирования -->
+                <div th:each="event, stat : *{events}" class="dynamic-field">
+                    <input type="hidden" th:field="*{events[__${stat.index}__].id}" th:if="${isEdit}"/>
+                    <div class="contact-detail-grid">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Тип события</label>
+                            <select class="form-select" th:field="*{events[__${stat.index}__].eventType}" required>
+                                <option value="" disabled>Выберите тип</option>
+                                <option th:each="type : ${eventTypes}" th:value="${type.name()}" th:text="${type}"
+                                        th:selected="${event.eventType.name() == type.name()}"></option>
+                            </select>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('events[__${stat.index}__].eventType')}">
+                                Тип обязателен
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Кастомное имя</label>
+                            <input type="text" class="form-control"
+                                   th:field="*{events[__${stat.index}__].customEventName}"
+                                   placeholder="Если CUSTOM">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Дата события <span
+                                    class="text-danger">*</span></label>
+                            <input type="date" class="form-control"
+                                   th:field="*{events[__${stat.index}__].eventDate}" required>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('events[__${stat.index}__].eventDate')}">
+                                Дата обязательна
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Заметки</label>
+                            <textarea class="form-control" th:field="*{events[__${stat.index}__].notes}"></textarea>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Ежегодное повторение</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox"
+                                       th:field="*{events[__${stat.index}__].yearlyRecurrence}">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm mt-3"
+                            onclick="window.removeFormField(this)">
+                        <i class="fas fa-trash me-1"></i>Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
