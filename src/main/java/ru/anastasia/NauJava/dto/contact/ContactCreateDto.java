@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.anastasia.NauJava.dto.company.ContactCompanyCreateDto;
+import ru.anastasia.NauJava.dto.event.EventCreateDto;
+import ru.anastasia.NauJava.dto.note.NoteCreateDto;
 import ru.anastasia.NauJava.dto.socialprofile.SocialProfileCreateDto;
 
 import java.util.ArrayList;
@@ -72,4 +74,16 @@ public class ContactCreateDto {
      */
     @Builder.Default
     private Set<Long> tagIds = new HashSet<>();
+
+    /**
+     * Список событий
+     */
+    @Builder.Default
+    private List<EventCreateDto> eventCreateDtos = new ArrayList<>();
+
+    /**
+     * Список заметок
+     */
+    @Builder.Default
+    private List<NoteCreateDto> noteCreateDtos = new ArrayList<>();
 }

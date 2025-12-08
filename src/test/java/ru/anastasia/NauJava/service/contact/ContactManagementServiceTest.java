@@ -361,7 +361,6 @@ public class ContactManagementServiceTest {
         Contact contact = createTestContact();
         Company company = createTestCompany();
         JobTitle jobTitle = createTestJobTitle();
-        Tag tag = createTestTag();
 
         when(contactService.findById(1L)).thenReturn(contact);
         when(companyService.findById(2L)).thenReturn(company);

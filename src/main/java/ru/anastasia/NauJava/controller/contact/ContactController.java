@@ -123,7 +123,6 @@ public class ContactController {
     @GetMapping("/new")
     public String newContactForm(Model model) {
         log.debug("GET /contacts/new - форма создания контакта");
-        // TODO: нет ивентов
         model.addAttribute("contactCreateDto", new ContactCreateDto());
         model.addAttribute("allTags", tagService.findAll());
         model.addAttribute("allCompanies", companyService.findAll());
@@ -131,6 +130,7 @@ public class ContactController {
         model.addAttribute("platforms", SocialPlatform.values());
         model.addAttribute("detailTypes", DetailType.values());
         model.addAttribute("detailLabels", DetailLabel.values());
+        model.addAttribute("eventTypes", EventType.values());
         return "contact/form";
     }
 
