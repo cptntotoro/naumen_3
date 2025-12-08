@@ -123,7 +123,10 @@ public class ContactController {
     @GetMapping("/new")
     public String newContactForm(Model model) {
         log.debug("GET /contacts/new - форма создания контакта");
-        model.addAttribute("contactCreateDto", new ContactCreateDto());
+
+        model.addAttribute("isEdit", false);
+
+        model.addAttribute("contactDto", new ContactCreateDto());
         model.addAttribute("allTags", tagService.findAll());
         model.addAttribute("allCompanies", companyService.findAll());
         model.addAttribute("allJobTitles", jobTitleService.findAll());
@@ -135,7 +138,7 @@ public class ContactController {
     }
 
     @PostMapping
-    public String createContact(@Valid @ModelAttribute("contactCreateDto") ContactCreateDto contactCreateDto,
+    public String createContact(@Valid @ModelAttribute("contactDto") ContactCreateDto contactCreateDto,
                                 BindingResult bindingResult,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
@@ -144,8 +147,9 @@ public class ContactController {
 
         if (bindingResult.hasErrors()) {
             log.warn("Ошибки валидации при создании контакта: {}", bindingResult.getAllErrors());
-            model.addAttribute("org.springframework.validation.BindingResult.contactCreateDto", bindingResult);
+            model.addAttribute("org.springframework.validation.BindingResult.contactDto", bindingResult);
             newContactForm(model);
+            model.addAttribute("isEdit", false);
             return "contact/form";
         }
 
@@ -161,7 +165,7 @@ public class ContactController {
             log.error("Ошибка при создании контакта [имя: {} {}]",
                     contactCreateDto.getFirstName(), contactCreateDto.getLastName(), e);
             newContactForm(model);
-            model.addAttribute("contactCreateDto", contactCreateDto);
+            model.addAttribute("contactDto", contactCreateDto);
             model.addAttribute("error", e.getMessage());
             return "contact/form";
         }
@@ -178,6 +182,8 @@ public class ContactController {
             return "redirect:/contacts";
         }
 
+        model.addAttribute("isEdit", true);
+
         model.addAttribute("allTags", tagService.findAll());
         model.addAttribute("allCompanies", companyService.findAll());
         model.addAttribute("allJobTitles", jobTitleService.findAll());
@@ -187,16 +193,16 @@ public class ContactController {
         model.addAttribute("eventTypes", EventType.values());
 
         ContactUpdateDto contactUpdateDto = contactManagementMapper.contactFullDetailsToContactUpdateDto(contactDetails);
-        model.addAttribute("contactUpdateDto", contactUpdateDto);
+        model.addAttribute("contactDto", contactUpdateDto);
 
         log.debug("Данные для редактирования контакта подготовлены [ID: {}, имя: {}]",
                 id, contactDetails.getFullName());
 
-        return "contact/editform";
+        return "contact/form";
     }
 
     @PostMapping("/{id}/edit")
-    public String updateContact(@Valid @ModelAttribute("contactUpdateDto") ContactUpdateDto contactUpdateDto,
+    public String updateContact(@Valid @ModelAttribute("contactDto") ContactUpdateDto contactUpdateDto,
                                 BindingResult bindingResult,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
@@ -205,9 +211,10 @@ public class ContactController {
         if (bindingResult.hasErrors()) {
             log.warn("Ошибки валидации при обновлении контакта [ID: {}]: {}",
                     contactUpdateDto.getId(), bindingResult.getAllErrors());
-            model.addAttribute("org.springframework.validation.BindingResult.contactUpdateDto", bindingResult);
+            model.addAttribute("org.springframework.validation.BindingResult.contactDto", bindingResult);
+            model.addAttribute("isEdit", true);
             editContactForm(contactUpdateDto.getId(), model);
-            return "contact/editform";
+            return "contact/form";
         }
 
         try {
@@ -222,7 +229,7 @@ public class ContactController {
             log.error("Ошибка при обновлении контакта [ID: {}]", contactUpdateDto.getId(), e);
             model.addAttribute("error", e.getMessage());
             editContactForm(contactUpdateDto.getId(), model);
-            return "contact/editform";
+            return "contact/form";
         }
     }
 

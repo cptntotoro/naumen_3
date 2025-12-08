@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<!-- Фрагмент базовой информации контакта -->
+<div th:fragment="basic-info" class="card form-section shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h3 class="h5 fw-bold mb-0 section-header">
+            <i class="fas fa-user me-2 text-primary"></i>Основная информация
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="contact-form-grid">
+            <div class="contact-form-column">
+                <label for="firstName" class="form-label fw-semibold">
+                    Имя <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control form-control-lg" id="firstName"
+                       th:field="*{firstName}" required placeholder="Введите имя">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}"
+                     th:errors="*{firstName}"></div>
+            </div>
+            <div class="contact-form-column">
+                <label for="lastName" class="form-label fw-semibold">
+                    Фамилия <span class="text-danger">*</span>
+                </label>
+                <input type="text" class="form-control form-control-lg" id="lastName"
+                       th:field="*{lastName}" required placeholder="Введите фамилию">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}"
+                     th:errors="*{lastName}"></div>
+            </div>
+            <div class="contact-form-column">
+                <label for="displayName" class="form-label fw-semibold">Отображаемое имя</label>
+                <input type="text" class="form-control" id="displayName"
+                       th:field="*{displayName}" placeholder="Имя для отображения">
+            </div>
+            <div class="contact-form-column">
+                <label for="avatarUrl" class="form-label fw-semibold">URL аватара</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="avatarUrl"
+                           th:field="*{avatarUrl}" placeholder="https://example.com/avatar.jpg">
+                </div>
+            </div>
+            <div class="contact-form-full-width">
+                <div class="favorite-toggle">
+                    <input type="checkbox" id="isFavorite"
+                           th:field="*{isFavorite}"
+                           class="favorite-checkbox" hidden
+                           onchange="updateFavoriteText(this)">
+                    <label for="isFavorite" class="favorite-label">
+                        <i class="favorite-icon far fa-star"></i>
+                        <span class="favorite-text">Добавить в избранное</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="all-templates">
+    <!-- Шаблон способов связи (ContactDetail) - создание и редактирование -->
+    <div id="contactDetailTemplate" class="dynamic-field" style="display: none;">
+        <div class="contact-detail-grid">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Тип</label>
+                <select class="form-select" name="contactDetails[INDEX].detailType" required>
+                    <option value="" disabled selected>Выберите тип</option>
+                    <option th:each="type : ${detailTypes}" th:value="${type.name()}" th:text="${type}"></option>
+                </select>
+                <div class="invalid-feedback">Тип обязателен</div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Метка</label>
+                <select class="form-select" name="contactDetails[INDEX].label" required>
+                    <option value="" disabled selected>Выберите метку</option>
+                    <option th:each="label : ${detailLabels}" th:value="${label.name()}" th:text="${label}"></option>
+                </select>
+                <div class="invalid-feedback">Метка обязательна</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Значение <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="contactDetails[INDEX].value" required>
+                <div class="invalid-feedback">Значение обязательно</div>
+            </div>
+            <div class="contact-form-full-width">
+                <div class="primary-toggle">
+                    <input type="checkbox" name="contactDetails[INDEX].isPrimary"
+                           class="primary-checkbox" hidden
+                           onchange="updatePrimaryText(this)">
+                    <label class="primary-label" onclick="togglePrimaryCheckbox(this)">
+                        <i class="primary-icon far fa-circle"></i>
+                        <span class="primary-text">Сделать основным</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-danger btn-sm mt-3" onclick="window.removeFormField(this)">
+            <i class="fas fa-trash me-1"></i>Удалить
+        </button>
+    </div>
+
+    <!-- Шаблон профилей в социальных сетях (SocialProfile) - создание и редактирование -->
+    <div id="socialProfileTemplate" class="dynamic-field" style="display: none;">
+        <div class="contact-form-grid">
+            <div class="contact-form-column">
+                <label class="form-label fw-semibold">Платформа</label>
+                <select class="form-select" name="socialProfiles[INDEX].platform" required>
+                    <option value="" disabled selected>Выберите платформу</option>
+                    <option th:each="platform : ${platforms}" th:value="${platform.name()}"
+                            th:text="${platform}"></option>
+                </select>
+                <div class="invalid-feedback">Платформа обязательна</div>
+            </div>
+            <div class="contact-form-column">
+                <label class="form-label fw-semibold">Кастомная платформа</label>
+                <input type="text" class="form-control" name="socialProfiles[INDEX].customPlatformName"
+                       placeholder="Если выбрано CUSTOM">
+            </div>
+            <div class="contact-form-column">
+                <label class="form-label fw-semibold">Имя пользователя <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="socialProfiles[INDEX].username" required>
+                <div class="invalid-feedback">Имя пользователя обязательно</div>
+            </div>
+            <div class="contact-form-column">
+                <label class="form-label fw-semibold">URL профиля</label>
+                <input type="url" class="form-control" name="socialProfiles[INDEX].profileUrl">
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-danger btn-sm mt-3" onclick="window.removeFormField(this)">
+            <i class="fas fa-trash me-1"></i>Удалить
+        </button>
+    </div>
+
+    <!-- Шаблон компании и должности ContactCompany - создание и редактирование -->
+    <div id="companyJobTitleTemplate" class="dynamic-field" style="display: none;">
+        <div class="contact-detail-grid">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Компания</label>
+                <select class="form-select" name="companies[INDEX].companyId">
+                    <option value="" disabled selected>Выберите компанию</option>
+                    <option th:each="comp : ${allCompanies}" th:value="${comp.id}" th:text="${comp.name}"></option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Должность</label>
+                <select class="form-select" name="companies[INDEX].jobTitleId">
+                    <option value="" disabled selected>Выберите должность</option>
+                    <option th:each="job : ${allJobTitles}" th:value="${job.id}" th:text="${job.title}"></option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <div class="current-job-toggle mt-4">
+                    <input type="checkbox" name="companies[INDEX].isCurrent"
+                           class="current-checkbox"
+                           hidden
+                           onchange="updateCurrentText(this)">
+                    <label class="current-label" onclick="toggleCurrentCheckbox(this)">
+                        <i class="current-icon far fa-circle"></i>
+                        <span class="current-text">Текущее место работы</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-danger btn-sm mt-3" onclick="window.removeFormField(this)">
+            <i class="fas fa-trash me-1"></i>Удалить
+        </button>
+    </div>
+
+    <!-- Шаблон событий (Event) - создание и редактирование -->
+    <div id="eventTemplate" class="dynamic-field" style="display: none;">
+        <div class="contact-detail-grid">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Тип события</label>
+                <select class="form-select" name="events[INDEX].eventType" required>
+                    <option value="" disabled selected>Выберите тип</option>
+                    <option th:each="type : ${eventTypes}" th:value="${type.name()}" th:text="${type}"></option>
+                </select>
+                <div class="invalid-feedback">Тип обязателен</div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Кастомное имя</label>
+                <input type="text" class="form-control" name="events[INDEX].customEventName"
+                       placeholder="Если CUSTOM">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Дата события <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" name="events[INDEX].eventDate" required>
+                <div class="invalid-feedback">Дата обязательна</div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Заметки</label>
+                <textarea class="form-control" name="events[INDEX].notes"></textarea>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Ежегодное повторение</label>
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" name="events[INDEX].yearlyRecurrence">
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-danger btn-sm mt-3" onclick="window.removeFormField(this)">
+            <i class="fas fa-trash me-1"></i>Удалить
+        </button>
+    </div>
+
+    <!-- Шаблон заметок (Note) - создание и редактирование -->
+    <div id="noteTemplate" class="dynamic-field" style="display: none;">
+        <div class="contact-detail-grid">
+            <div class="col-12">
+                <label class="form-label fw-semibold">Содержимое <span class="text-danger">*</span></label>
+                <textarea class="form-control" name="notes[INDEX].content" required></textarea>
+                <div class="invalid-feedback">Содержимое обязательно</div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-danger btn-sm mt-3" onclick="window.removeFormField(this)">
+            <i class="fas fa-trash me-1"></i>Удалить
+        </button>
+    </div>
+</div>
+
+</body>
+</html>
