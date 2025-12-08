@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="notes-form">
+    <!-- Заметки -->
+    <div class="card form-section shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-note-sticky me-2 text-primary"></i>Заметки
+            </h3>
+            <button type="button" class="btn btn-primary add-field-btn" onclick="window.addNote()">
+                <i class="fas fa-plus me-2"></i>Добавить заметку
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="notesContainer" class="dynamic-fields-container">
+                <!-- Существующие поля для создания и редактирования -->
+                <div th:each="note, stat : *{notes}" class="dynamic-field">
+                    <input type="hidden" th:field="*{notes[__${stat.index}__].id}" th:if="${isEdit}"/>
+                    <div class="contact-detail-grid">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Содержимое <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" th:field="*{notes[__${stat.index}__].content}"
+                                      required></textarea>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('notes[__${stat.index}__].content')}">
+                                Содержимое обязательно
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm mt-3"
+                            onclick="window.removeFormField(this)">
+                        <i class="fas fa-trash me-1"></i>Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -10,7 +10,13 @@
 <th:block th:fragment="page-scripts(page)">
     <th:block th:switch="${page}">
         <th:block th:case="'contact-forms'">
-            <script th:src="@{/js/contact/forms.js}"></script>
+            <script th:src="@{/js/contact/forms-refactored.js}"></script>
+            <script th:src="@{/js/contact/details-common.js}"></script>
+        </th:block>
+        <th:block th:case="'details'">
+            <script th:src="@{/js/contact/details-functions.js}"></script>
+            <script th:src="@{/js/contact/details.js}"></script>
+            <script th:src="@{/js/contact/details-init.js}"></script>
         </th:block>
     </th:block>
 </th:block>

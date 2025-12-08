@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="social-profiles-section(contactDetails, platforms)">
+    <!-- Социальные сети -->
+    <div class="card h-full">
+        <div class="card-header flex-between">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-share-alt text-primary me-2"></i>Социальные сети
+            </h3>
+            <button type="button"
+                    class="btn btn-outline-primary text-sm"
+                    onclick="toggleSocialProfileForm()">
+                <i class="fas fa-plus mr-1"></i>Добавить
+            </button>
+        </div>
+        <div class="card-body">
+            <!-- Форма добавления нового социального профиля (скрыта по умолчанию) -->
+            <div class="social-form-container mb-6" id="socialFormContainer" style="display: none;">
+                <form th:action="@{/social-profiles/new}" th:object="${socialProfileDto}" method="post"
+                      class="social-form" id="socialForm">
+                    <input type="hidden" th:field="*{contactId}"/>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="platform" class="form-label fw-semibold">Платформа <span
+                                        class="text-danger">*</span></label>
+                                <select th:field="*{platform}"
+                                        class="form-select"
+                                        id="platform"
+                                        required
+                                        onchange="toggleCustomPlatformName()">
+                                    <option value="" disabled>Выберите платформу</option>
+                                    <option th:each="platform : ${platforms}"
+                                            th:value="${platform}"
+                                            th:text="${platform}">
+                                    </option>
+                                </select>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('platform')}"
+                                     th:errors="*{platform}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6" id="customPlatformContainer" style="display: none;">
+                            <div class="form-group">
+                                <label for="customPlatformName" class="form-label fw-semibold">Название
+                                    платформы</label>
+                                <input th:field="*{customPlatformName}"
+                                       type="text"
+                                       class="form-control"
+                                       id="customPlatformName"
+                                       placeholder="Введите название социальной сети">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('customPlatformName')}"
+                                     th:errors="*{customPlatformName}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="username" class="form-label fw-semibold">Имя пользователя <span
+                                        class="text-danger">*</span></label>
+                                <input th:field="*{username}"
+                                       type="text"
+                                       class="form-control"
+                                       id="username"
+                                       required
+                                       placeholder="Введите имя пользователя">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}"
+                                     th:errors="*{username}"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="profileUrl" class="form-label fw-semibold">URL профиля</label>
+                                <input th:field="*{profileUrl}"
+                                       type="url"
+                                       class="form-control"
+                                       id="profileUrl"
+                                       placeholder="https://example.com/profile">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('profileUrl')}"
+                                     th:errors="*{profileUrl}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions d-flex justify-content-end gap-3 mt-4">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                onclick="hideSocialProfileForm()"
+                                id="cancelSocialForm">
+                            <i class="fas fa-times me-1"></i>Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i>Сохранить профиль
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Список существующих социальных профилей -->
+            <div class="social-profiles-grid">
+                <div th:each="profile : ${contactDetails.socialProfiles}" class="social-profile-item">
+                    <!-- Отображение профиля -->
+                    <div class="social-profile-view" th:id="'social-profile-view-' + ${profile.id}">
+                        <div class="social-profile-info">
+                            <i class="fas fa-share-alt social-icon"></i>
+                            <div class="social-details">
+                                <div class="social-header">
+                                    <span class="social-platform" th:text="${profile.platform.name()}"></span>
+                                    <span th:if="${profile.platform == T(ru.anastasia.NauJava.entity.enums.SocialPlatform).CUSTOM}
+                                and ${!#strings.isEmpty(profile.customPlatformName)}"
+                                          class="social-custom-name"
+                                          th:text="'(' + ${profile.customPlatformName} + ')'">
+                                    </span>
+                                </div>
+                                <div class="social-username fw-semibold" th:text="${profile.username}"></div>
+                                <a th:if="${!#strings.isEmpty(profile.profileUrl)}"
+                                   th:href="${profile.profileUrl}"
+                                   class="social-url text-sm text-primary text-decoration-none"
+                                   target="_blank"
+                                   th:text="${profile.profileUrl}"></a>
+                            </div>
+                        </div>
+                        <div class="social-profile-meta">
+                            <div class="social-actions">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'editSocialProfile(' + ${profile.id} + ')'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form th:action="@{/social-profiles/{id}/delete(id=${profile.id})}"
+                                      method="post"
+                                      class="inline ms-1"
+                                      onsubmit="return confirm('Удалить социальный профиль?')">
+                                    <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Форма редактирования (по умолчанию скрыта) -->
+                    <form th:action="@{/social-profiles/{id}/update(id=${profile.id})}"
+                          method="post"
+                          class="social-edit-form"
+                          th:id="'edit-social-form-' + ${profile.id}"
+                          style="display: none;">
+                        <input type="hidden" name="id" th:value="${profile.id}"/>
+                        <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group mb-2">
+                                    <label for="edit-platform-${profile.id}" class="form-label fw-semibold mb-1">Платформа</label>
+                                    <select name="platform"
+                                            class="form-select form-select-sm"
+                                            id="edit-platform-${profile.id}"
+                                            required
+                                            onchange="toggleEditCustomPlatformName(${profile.id})">
+                                        <option value="" disabled>Платформа</option>
+                                        <option th:each="platform : ${platforms}"
+                                                th:value="${platform}"
+                                                th:text="${platform}"
+                                                th:selected="${profile.platform == platform}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4" th:id="'edit-custom-platform-container-' + ${profile.id}"
+                                 th:style="${profile.platform == T(ru.anastasia.NauJava.entity.enums.SocialPlatform).CUSTOM} ? 'display: block;' : 'display: none;'">
+                                <div class="form-group mb-2">
+                                    <label for="edit-custom-platform-name-${profile.id}"
+                                           class="form-label fw-semibold mb-1">Название платформы</label>
+                                    <input type="text"
+                                           name="customPlatformName"
+                                           class="form-control form-control-sm"
+                                           id="edit-custom-platform-name-${profile.id}"
+                                           th:value="${profile.customPlatformName}"
+                                           placeholder="Название платформы">
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group mb-2">
+                                    <label for="edit-username-${profile.id}" class="form-label fw-semibold mb-1">Имя
+                                        пользователя</label>
+                                    <input type="text"
+                                           name="username"
+                                           class="form-control form-control-sm"
+                                           id="edit-username-${profile.id}"
+                                           th:value="${profile.username}"
+                                           required
+                                           placeholder="Имя пользователя">
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group mb-2">
+                                    <label for="edit-profile-url-${profile.id}" class="form-label fw-semibold mb-1">URL
+                                        профиля</label>
+                                    <input type="url"
+                                           name="profileUrl"
+                                           class="form-control form-control-sm"
+                                           id="edit-profile-url-${profile.id}"
+                                           th:value="${profile.profileUrl}"
+                                           placeholder="URL профиля">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    th:onclick="'cancelSocialProfileEdit(' + ${profile.id} + ')'">
+                                Отмена
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                Сохранить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div th:if="${contactDetails.socialProfiles.isEmpty()}" class="empty-state py-12">
+                <i class="fas fa-share-alt empty-state__icon text-primary"></i>
+                <div class="empty-state__title">Социальные профили не указаны</div>
+                <div class="empty-state__description">Нажмите кнопку "Добавить" чтобы создать первый профиль</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

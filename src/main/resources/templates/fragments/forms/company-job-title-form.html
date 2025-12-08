@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="company-job-title-form(allCompanies, allJobTitles)">
+    <!-- Компания и должность -->
+    <div class="card form-section shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-building me-2 text-primary"></i>Компания и должность
+            </h3>
+            <button type="button" class="btn btn-primary add-field-btn" onclick="window.addCompanyJobTitle()">
+                <i class="fas fa-plus me-2"></i>Добавить компанию и должность
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="companyJobTitleContainer" class="dynamic-fields-container">
+                <!-- Существующие поля для создания и редактирования -->
+                <div th:each="company, stat : *{companies}" class="dynamic-field">
+                    <input type="hidden" th:field="*{companies[__${stat.index}__].id}" th:if="${isEdit}"/>
+                    <div class="contact-detail-grid">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Компания</label>
+                            <select class="form-select" th:field="*{companies[__${stat.index}__].companyId}">
+                                <option value="" disabled>Выберите компанию</option>
+                                <option th:each="comp : ${allCompanies}" th:value="${comp.id}"
+                                        th:text="${comp.name}"
+                                        th:selected="${company.companyId == comp.id}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Должность</label>
+                            <select class="form-select" th:field="*{companies[__${stat.index}__].jobTitleId}">
+                                <option value="" disabled>Выберите должность</option>
+                                <option th:each="job : ${allJobTitles}" th:value="${job.id}" th:text="${job.title}"
+                                        th:selected="${company.jobTitleId == job.id}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="current-job-toggle mt-4">
+                                <input type="checkbox"
+                                       th:field="*{companies[__${stat.index}__].isCurrent}"
+                                       class="current-checkbox"
+                                       hidden
+                                       onchange="updateCurrentText(this)">
+                                <label class="current-label" onclick="toggleCurrentCheckbox(this)">
+                                    <i class="current-icon"
+                                       th:classappend="${company.isCurrent} ? 'fas fa-check-circle text-success' : 'far fa-circle'"></i>
+                                    <span class="current-text">Текущее место работы</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm mt-3"
+                            onclick="window.removeFormField(this)">
+                        <i class="fas fa-trash me-1"></i>Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
