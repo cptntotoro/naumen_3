@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="contact-details-form(detailTypes, detailLabels)">
+    <!-- Способы связи -->
+    <div class="card form-section shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-address-book me-2 text-primary"></i>Способы связи
+            </h3>
+            <button type="button" class="btn btn-primary add-field-btn" onclick="window.addContactDetail()">
+                <i class="fas fa-plus me-2"></i>Добавить способ связи
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="contactDetailsContainer" class="dynamic-fields-container">
+                <!-- Существующие поля для создания и редактирования -->
+                <div th:each="detail, stat : *{contactDetails}" class="dynamic-field">
+                    <input type="hidden" th:field="*{contactDetails[__${stat.index}__].id}" th:if="${isEdit}"/>
+                    <div class="contact-detail-grid">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Тип</label>
+                            <select class="form-select" th:field="*{contactDetails[__${stat.index}__].detailType}"
+                                    required>
+                                <option value="" disabled>Выберите тип</option>
+                                <option th:each="type : ${detailTypes}" th:value="${type.name()}" th:text="${type}"
+                                        th:selected="${detail.detailType.name() == type.name()}"></option>
+                            </select>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('contactDetails[__${stat.index}__].detailType')}">
+                                Тип обязателен
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Метка</label>
+                            <select class="form-select" th:field="*{contactDetails[__${stat.index}__].label}"
+                                    required>
+                                <option value="" disabled>Выберите метку</option>
+                                <option th:each="label : ${detailLabels}" th:value="${label.name()}"
+                                        th:text="${label}"
+                                        th:selected="${detail.label.name() == label.name()}"></option>
+                            </select>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('contactDetails[__${stat.index}__].label')}">
+                                Метка обязательна
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Значение <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control"
+                                   th:field="*{contactDetails[__${stat.index}__].value}" required>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('contactDetails[__${stat.index}__].value')}">
+                                Значение обязательно
+                            </div>
+                        </div>
+                        <div class="contact-form-full-width">
+                            <div class="primary-toggle">
+                                <input type="checkbox"
+                                       th:field="*{contactDetails[__${stat.index}__].isPrimary}"
+                                       class="primary-checkbox" hidden
+                                       onchange="updatePrimaryText(this)">
+                                <label class="primary-label" onclick="togglePrimaryCheckbox(this)">
+                                    <i class="primary-icon far fa-circle"></i>
+                                    <span class="primary-text">Сделать основным</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm mt-3"
+                            onclick="window.removeFormField(this)">
+                        <i class="fas fa-trash me-1"></i>Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

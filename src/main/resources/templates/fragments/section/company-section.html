@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="company-section(contactDetails, allCompanies, allJobTitles)">
+    <!-- Компании -->
+    <div class="card">
+        <div class="card-header flex-between">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-building text-primary me-2"></i>Компании
+            </h3>
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleCompanyForm()">
+                <i class="fas fa-plus me-1"></i>Добавить
+            </button>
+        </div>
+
+        <div class="card-body">
+            <!-- Форма добавления компании -->
+            <div id="companyFormContainer" class="company-form-container" style="display: none;">
+                <form th:action="@{/contact-companies}" method="post">
+                    <input type="hidden" name="contactId" th:value="${contactDetails?.contact?.id}"/>
+                    <div class="row g-4">
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold">Компания <span class="text-danger">*</span></label>
+                            <select name="companyId" class="form-select" required>
+                                <option value="" disabled selected>Выберите компанию</option>
+                                <option th:each="company : ${allCompanies}"
+                                        th:value="${company.id}"
+                                        th:text="${company.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold">Должность</label>
+                            <select name="jobTitleId" class="form-select">
+                                <option value="">— Без должности —</option>
+                                <option th:each="jt : ${allJobTitles}"
+                                        th:value="${jt.id}"
+                                        th:text="${jt.title}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                <input name="isCurrent" class="form-check-input" type="checkbox" id="newIsCurrent">
+                                <label class="form-check-label small" for="newIsCurrent">Текущее</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-3 mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="hideCompanyForm()">
+                            Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">Добавить</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Список компаний -->
+            <div class="companies-grid" th:unless="${contactDetails.contact.companies.isEmpty()}">
+                <div class="company-item"
+                     th:each="entry : ${contactDetails.contact.companies}"
+                     th:data-id="${entry.id}">
+
+                    <!-- Просмотр -->
+                    <div class="company-view d-flex justify-content-between align-items-start w-100 gap-4">
+                        <div class="d-flex align-items-start gap-4 flex-1">
+                            <i class="fas fa-building text-primary mt-1 fs-5"></i>
+                            <div class="company-details">
+                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                                    <strong class="company-name" th:text="${entry.company.name}"></strong>
+                                    <span th:if="${entry.isCurrent}"
+                                          class="badge badge-success small px-2 py-1">
+                                        <i class="fas fa-check me-1"></i>Текущее место
+                                    </span>
+                                </div>
+                                <div class="text-muted small" th:if="${entry.jobTitle != null}"
+                                     th:text="${entry.jobTitle.title}"></div>
+                            </div>
+                        </div>
+
+                        <div class="company-meta">
+                            <div class="actions">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'editCompany(' + ${entry.id} + ')'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+
+                                <form th:action="@{|/contact-companies/${entry.id}/delete|}"
+                                      method="post"
+                                      class="d-inline"
+                                      onclick="return confirm('Удалить место работы?')">
+                                    <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Удалить
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Форма редактирования (скрыта по умолчанию) -->
+                    <div class="company-edit-form mt-4" style="display: none;">
+                        <form th:action="@{'/contact-companies/' + ${entry.id}}"
+                              method="post">
+                            <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+
+                            <div class="row g-4">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold">Компания *</label>
+                                    <select name="companyId" class="form-select" required>
+                                        <option th:each="c : ${allCompanies}"
+                                                th:value="${c.id}"
+                                                th:selected="${c.id == entry.company.id}"
+                                                th:text="${c.name}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold">Должность *</label>
+                                    <select name="jobTitleId" class="form-select" required>
+                                        <option th:each="jt : ${allJobTitles}"
+                                                th:value="${jt.id}"
+                                                th:selected="${jt.id == entry.jobTitle.id}"
+                                                th:text="${jt.title}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <div class="form-check form-switch">
+                                        <input name="isCurrent" class="form-check-input" type="checkbox"
+                                               th:id="'current_' + ${entry.id}"
+                                               th:checked="${entry.isCurrent}">
+                                        <label class="form-check-label small fw-semibold"
+                                               th:for="'current_' + ${entry.id}">Текущее</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-3 mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        th:onclick="'cancelEditCompany(' + ${entry.id} + ')'">Отмена
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-sm">Сохранить</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Пустое состояние -->
+            <div class="empty-state py-8" th:if="${contactDetails.contact.companies.isEmpty()}">
+                <i class="fas fa-building empty-state__icon text-primary"></i>
+                <h4 class="empty-state__title">Нет компаний</h4>
+                <p class="empty-state__description">Добавьте место работы контакта</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

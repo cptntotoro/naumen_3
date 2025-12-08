@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="social-profiles-form(platforms)">
+    <!-- Социальные профили -->
+    <div class="card form-section shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-globe me-2 text-primary"></i>Социальные профили
+            </h3>
+            <button type="button" class="btn btn-primary add-field-btn" onclick="window.addSocialProfile()">
+                <i class="fas fa-plus me-2"></i>Добавить профиль
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="socialProfilesContainer" class="dynamic-fields-container">
+                <!-- Существующие поля для создания и редактирования -->
+                <div th:each="profile, stat : *{socialProfiles}" class="dynamic-field">
+                    <input type="hidden" th:field="*{socialProfiles[__${stat.index}__].id}" th:if="${isEdit}"/>
+                    <div class="contact-detail-grid">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Платформа</label>
+                            <select class="form-select" th:field="*{socialProfiles[__${stat.index}__].platform}"
+                                    required>
+                                <option value="" disabled>Выберите платформу</option>
+                                <option th:each="platform : ${platforms}" th:value="${platform.name()}"
+                                        th:text="${platform}"
+                                        th:selected="${profile.platform.name() == platform.name()}"></option>
+                            </select>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('socialProfiles[__${stat.index}__].platform')}">
+                                Платформа обязательна
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Кастомная платформа</label>
+                            <input type="text" class="form-control"
+                                   th:field="*{socialProfiles[__${stat.index}__].customPlatformName}"
+                                   placeholder="Если выбрано CUSTOM">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Имя пользователя <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control"
+                                   th:field="*{socialProfiles[__${stat.index}__].username}" required>
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors('socialProfiles[__${stat.index}__].username')}">
+                                Имя пользователя обязательно
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">URL профиля</label>
+                            <input type="url" class="form-control"
+                                   th:field="*{socialProfiles[__${stat.index}__].profileUrl}">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm mt-3"
+                            onclick="window.removeFormField(this)">
+                        <i class="fas fa-trash me-1"></i>Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

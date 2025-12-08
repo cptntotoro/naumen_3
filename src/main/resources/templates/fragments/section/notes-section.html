@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+
+<div th:fragment="notes-section(contactDetails)">
+    <!-- Заметки -->
+    <div class="card h-full">
+        <div class="card-header flex-between">
+            <h3 class="h5 fw-bold mb-0 section-header">
+                <i class="fas fa-sticky-note text-primary me-2"></i>Заметки
+            </h3>
+            <button type="button"
+                    class="btn btn-outline-primary text-sm"
+                    onclick="toggleNoteForm()">
+                <i class="fas fa-plus mr-1"></i>Добавить
+            </button>
+        </div>
+        <div class="card-body">
+            <!-- Форма добавления новой заметки (скрыта по умолчанию) -->
+            <div class="note-form-container mb-6" id="noteFormContainer" style="display: none;">
+                <form th:action="@{/notes}" th:object="${noteDto}" method="post" class="note-form" id="noteForm">
+                    <input type="hidden" th:field="*{contactId}"/>
+
+                    <div class="form-group">
+                        <label for="noteContent" class="form-label fw-semibold">Новая заметка</label>
+                        <textarea th:field="*{content}"
+                                  class="form-control"
+                                  id="noteContent"
+                                  rows="3"
+                                  placeholder="Введите текст заметки... (Ctrl+Enter для сохранения)"
+                                  required></textarea>
+                        <div class="hotkey-hint">Ctrl+Enter для быстрого сохранения</div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('content')}"
+                             th:errors="*{content}"></div>
+                    </div>
+
+                    <div class="form-actions d-flex justify-content-end gap-3 mt-3">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                onclick="hideNoteForm()"
+                                id="cancelNoteForm">
+                            <i class="fas fa-times me-1"></i>Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i>Сохранить заметку
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Список существующих заметок -->
+            <div class="notes-grid">
+                <div th:each="note : ${contactDetails.notes}" class="note-item" th:id="'note-' + ${note.id}">
+                    <!-- Форма редактирования заметки (скрыта по умолчанию) -->
+                    <form th:action="@{/notes/{id}/update(id=${note.id})}"
+                          method="post"
+                          class="note-edit-form"
+                          th:id="'edit-form-' + ${note.id}"
+                          style="display: none;">
+                        <input type="hidden" name="id" th:value="${note.id}"/>
+                        <input type="hidden" name="contactId" th:value="${contactDetails.contact.id}"/>
+
+                        <div class="form-group mb-3">
+                            <label for="edit-note-content-${note.id}" class="form-label fw-semibold mb-1">Содержимое
+                                заметки</label>
+                            <textarea name="content"
+                                      class="form-control note-edit-textarea"
+                                      id="edit-note-content-${note.id}"
+                                      rows="3"
+                                      th:attr="data-note-id=${note.id}"
+                                      th:text="${note.content}"
+                                      placeholder="Введите текст заметки..."></textarea>
+                            <div class="hotkey-hint">Ctrl+Enter для сохранения</div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    th:onclick="'cancelEdit(' + ${note.id} + ')'">
+                                Отмена
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                Сохранить
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Отображение заметки (по умолчанию видно) -->
+                    <div class="note-view" th:id="'view-' + ${note.id}">
+                        <div class="note-header">
+                            <div class="note-date"
+                                 th:text="${#temporals.format(note.createdAt, 'dd.MM.yyyy HH:mm')}"></div>
+                            <div class="note-actions">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        th:onclick="'editNote(' + ${note.id} + ')'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form th:action="@{/notes/{id}/delete(id=${note.id})}"
+                                      method="post"
+                                      class="inline"
+                                      onsubmit="return confirm('Удалить заметку?')">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="note-content" th:text="${note.content}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${contactDetails.notes.isEmpty()}" class="empty-state py-8">
+                <i class="fas fa-sticky-note empty-state__icon text-primary"></i>
+                <div class="empty-state__title">Заметок пока нет</div>
+                <div class="empty-state__description">Нажмите кнопку "Добавить" чтобы создать первую заметку</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
