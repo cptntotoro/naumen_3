@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<div th:fragment="tags-selector(tags, fieldName, selectedTagIds)">
+    <div class="tags-selector-container">
+        <div class="tags-selector">
+            <!-- Для каждого тега создаем скрытый чекбокс и видимую плашку -->
+            <div th:each="tag : ${tags}" class="d-inline-block">
+                <!-- Скрытый чекбокс -->
+                <input type="checkbox"
+                       th:id="${'tag-' + tag.id}"
+                       th:name="${fieldName}"
+                       th:value="${tag.id}"
+                       th:checked="${selectedTagIds != null and selectedTagIds.contains(tag.id)}"
+                       class="tag-checkbox-hidden">
+
+                <!-- Плашка тега (видимая часть, кликабельная) -->
+                <label th:for="${'tag-' + tag.id}"
+                       class="tag-chip"
+                       th:title="${tag.description ?: tag.name}">
+                    <!-- Кружок с цветом тега -->
+                    <span class="tag-chip__color"
+                          th:style="${tag.color != null} ? 'background-color: ' + ${tag.color} : ''"></span>
+                    <!-- Название тега -->
+                    <span class="tag-chip__title" th:text="${tag.name}"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Информационное сообщение -->
+        <div class="text-muted small mt-2">
+            <i class="fas fa-info-circle me-1"></i>
+            Кликните на тег, чтобы добавить/удалить его
+        </div>
+    </div>
+</div>
+</body>
+</html>
