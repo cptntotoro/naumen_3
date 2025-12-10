@@ -414,8 +414,12 @@ public class ContactManagementServiceImpl implements ContactManagementService {
     }
 
     private void validateContactCompanies(List<ContactCompanyUpdateDto> companyDtos) {
+        if (companyDtos == null) {
+            return;
+        }
+
         long currentCount = companyDtos.stream()
-                .filter(ContactCompanyUpdateDto::getIsCurrent)
+                .filter(dto -> dto.getIsCurrent() != null && dto.getIsCurrent())
                 .count();
 
         if (currentCount > 1) {

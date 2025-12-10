@@ -173,33 +173,32 @@ public class ContactController {
 
     @GetMapping("/{id}/edit")
     public String editContactForm(@PathVariable Long id, Model model) {
-        log.debug("GET /contacts/{}/edit - форма редактирования контакта", id);
+        log.info("GET /contacts/{}/edit - форма редактирования контакта", id);
 
-        ContactFullDetails contactDetails = contactManagementService.getWithAllDetails(id);
+        try {
+            ContactFullDetails contactDetails = contactManagementService.getWithAllDetails(id);
 
-        if (contactDetails == null) {
-            log.warn("Контакт не найден при редактировании [ID: {}]", id);
+            ContactUpdateDto contactUpdateDto = contactManagementMapper.contactFullDetailsToContactUpdateDto(contactDetails);
+
+            model.addAttribute("contactDto", contactUpdateDto);
+            model.addAttribute("isEdit", true);
+
+            model.addAttribute("allCompanies", companyService.findAll());
+            model.addAttribute("allJobTitles", jobTitleService.findAll());
+            model.addAttribute("allTags", tagService.findAll());
+            model.addAttribute("detailTypes", DetailType.values());
+            model.addAttribute("detailLabels", DetailLabel.values());
+            model.addAttribute("platforms", SocialPlatform.values());
+            model.addAttribute("eventTypes", EventType.values());
+
+            return "contact/form";
+        } catch (Exception e) {
+            log.error("Ошибка при загрузке формы редактирования контакта [ID: {}]", id, e);
             return "redirect:/contacts";
         }
-
-        model.addAttribute("isEdit", true);
-
-        model.addAttribute("allTags", tagService.findAll());
-        model.addAttribute("allCompanies", companyService.findAll());
-        model.addAttribute("allJobTitles", jobTitleService.findAll());
-        model.addAttribute("platforms", SocialPlatform.values());
-        model.addAttribute("detailTypes", DetailType.values());
-        model.addAttribute("detailLabels", DetailLabel.values());
-        model.addAttribute("eventTypes", EventType.values());
-
-        ContactUpdateDto contactUpdateDto = contactManagementMapper.contactFullDetailsToContactUpdateDto(contactDetails);
-        model.addAttribute("contactDto", contactUpdateDto);
-
-        log.debug("Данные для редактирования контакта подготовлены [ID: {}, имя: {}]",
-                id, contactDetails.getFullName());
-
-        return "contact/form";
     }
+
+
 
     @PostMapping("/{id}/edit")
     public String updateContact(@Valid @ModelAttribute("contactDto") ContactUpdateDto contactUpdateDto,

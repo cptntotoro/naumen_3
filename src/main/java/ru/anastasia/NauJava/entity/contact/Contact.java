@@ -25,8 +25,8 @@ import ru.anastasia.NauJava.entity.socialprofile.SocialProfile;
 import ru.anastasia.NauJava.entity.tag.ContactTag;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Контакт
@@ -99,7 +99,7 @@ public class Contact {
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Setter(AccessLevel.NONE)
-    private Set<ContactCompany> companies = new HashSet<>();
+    private List<ContactCompany> companies = new ArrayList<>();
 
     /**
      * Способы связи
@@ -107,7 +107,7 @@ public class Contact {
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Setter(AccessLevel.NONE)
-    private Set<ContactDetail> contactDetails = new HashSet<>();
+    private List<ContactDetail> contactDetails = new ArrayList<>();
 
     /**
      * Профили в соцсетях
@@ -115,7 +115,7 @@ public class Contact {
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Setter(AccessLevel.NONE)
-    private Set<SocialProfile> socialProfiles = new HashSet<>();
+    private List<SocialProfile> socialProfiles = new ArrayList<>();
 
     /**
      * События
@@ -123,7 +123,7 @@ public class Contact {
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Setter(AccessLevel.NONE)
-    private Set<Event> events = new HashSet<>();
+    private List<Event> events = new ArrayList<>();
 
     /**
      * Заметки
@@ -131,7 +131,7 @@ public class Contact {
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Setter(AccessLevel.NONE)
-    private Set<Note> notes = new HashSet<>();
+    private List<Note> notes = new ArrayList<>();
 
     /**
      * Теги
@@ -139,7 +139,7 @@ public class Contact {
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     @Setter(AccessLevel.NONE)
-    private Set<ContactTag> contactTags = new HashSet<>();
+    private List<ContactTag> contactTags = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
