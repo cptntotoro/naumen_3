@@ -120,9 +120,9 @@ public class ContactManagementServiceTest {
                 .displayName("Иван Иванов")
                 .avatarUrl("https://example.com/avatar.jpg")
                 .isFavorite(true)
-                .contactCompanyCreateDtos(Collections.singletonList(createTestContactCompanyCreateDto()))
-                .contactDetailCreateDtos(Collections.singletonList(createTestContactDetailCreateDto()))
-                .socialProfileCreateDtos(Collections.singletonList(createTestSocialProfileCreateDto()))
+                .companies(Collections.singletonList(createTestContactCompanyCreateDto()))
+                .contactDetails(Collections.singletonList(createTestContactDetailCreateDto()))
+                .socialProfiles(Collections.singletonList(createTestSocialProfileCreateDto()))
                 .tagIds(new HashSet<>(Arrays.asList(1L, 2L)))
                 .build();
     }
@@ -337,9 +337,9 @@ public class ContactManagementServiceTest {
         ContactCreateDto createDto = ContactCreateDto.builder()
                 .firstName("Иван")
                 .lastName("Иванов")
-                .contactCompanyCreateDtos(List.of())
-                .contactDetailCreateDtos(List.of())
-                .socialProfileCreateDtos(List.of())
+                .companies(List.of())
+                .contactDetails(List.of())
+                .socialProfiles(List.of())
                 .tagIds(new HashSet<>())
                 .build();
         Contact contact = createTestContact();
