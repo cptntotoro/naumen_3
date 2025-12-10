@@ -2,17 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <body>
 
-<div th:fragment="contact-info-section(contactDetails)">
+<div th:fragment="contact-details-section(contactDetails)">
     <!-- Контактная информация -->
     <div class="card h-full">
         <div class="card-header">
             <h3 class="h5 fw-bold mb-0 section-header">
                 <i class="fas fa-address-book text-primary me-2"></i>Контактная информация
             </h3>
-            <a th:href="@{/contact-details/new?contactId={id}(id=${contactDetails.contact.id})}"
-               class="btn btn-outline-primary text-sm">
-                <i class="fas fa-plus mr-1"></i>Добавить
-            </a>
         </div>
         <div class="card-body">
             <div class="card-body">
