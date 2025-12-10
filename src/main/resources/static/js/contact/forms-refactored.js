@@ -1,5 +1,4 @@
 // Унифицированные функции для работы с формами
-
 window.contactFormIndexes = {
     contactDetails: 0,
     socialProfiles: 0,
@@ -31,46 +30,171 @@ function addDynamicField(type, templateId, containerId, useCloning = false) {
         return;
     }
 
-    const index = window.contactFormIndexes[type]++;
+    // Получаем текущее количество существующих полей
+    const existingFields = container.querySelectorAll('.dynamic-field');
+    const index = existingFields.length;
 
-    if (useCloning) {
-        // Старый подход для совместимости
-        const clone = template.cloneNode(true);
-        clone.removeAttribute('id');
-        clone.style.display = '';
+    // Клонируем шаблон
+    const clone = template.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.style.display = '';
+    clone.classList.add('dynamic-field');
 
-        const elements = clone.querySelectorAll('[name]');
-        elements.forEach(el => {
-            el.name = el.name.replace(/\[INDEX\]/g, `[${index}]`);
-        });
+    // Обновляем индексы в именах полей
+    const elements = clone.querySelectorAll('[name]');
+    elements.forEach(el => {
+        const name = el.getAttribute('name');
+        if (name && name.includes('[INDEX]')) {
+            el.setAttribute('name', name.replace('[INDEX]', `[${index}]`));
+        }
+    });
 
-        container.appendChild(clone);
-    } else {
-        // Новый подход с подстановкой
-        const html = template.innerHTML.replace(/INDEX/g, index);
-        const div = document.createElement('div');
-        div.className = 'dynamic-field';
-        div.innerHTML = html;
-        container.appendChild(div);
-    }
+    container.appendChild(clone);
+    const newField = container.lastElementChild;
+
+    // Заполняем селекты данными
+    populateSelectOptions(newField, type);
 
     // Прокручиваем к добавленному элементу
-    const addedElement = container.lastElementChild;
     setTimeout(() => {
-        addedElement.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        newField.scrollIntoView({behavior: 'smooth', block: 'nearest'});
     }, 10);
 
     // Анимация появления
-    if (!useCloning) {
-        addedElement.style.opacity = '0';
-        addedElement.style.transform = 'translateY(10px)';
-        setTimeout(() => {
-            addedElement.style.transition = 'all 0.3s ease';
-            addedElement.style.opacity = '1';
-            addedElement.style.transform = 'translateY(0)';
-        }, 10);
+    newField.style.opacity = '0';
+    newField.style.transform = 'translateY(10px)';
+    setTimeout(() => {
+        newField.style.transition = 'all 0.3s ease';
+        newField.style.opacity = '1';
+        newField.style.transform = 'translateY(0)';
+    }, 10);
+}
+
+// Функция для заполнения селектов
+function populateSelectOptions(fieldElement, type) {
+    // Глобальные переменные с данными (должны быть установлены в HTML)
+    const globalData = window.contactFormData || {};
+
+    switch (type) {
+        case 'contactDetails':
+            const detailTypeSelect = fieldElement.querySelector('select[name*="detailType"]');
+            const detailLabelSelect = fieldElement.querySelector('select[name*="label"]');
+
+            if (detailTypeSelect && globalData.detailTypes) {
+                populateSelect(detailTypeSelect, globalData.detailTypes);
+            }
+            if (detailLabelSelect && globalData.detailLabels) {
+                populateSelect(detailLabelSelect, globalData.detailLabels);
+            }
+            break;
+
+        case 'socialProfiles':
+            const platformSelect = fieldElement.querySelector('select[name*="platform"]');
+            if (platformSelect && globalData.platforms) {
+                populateSelect(platformSelect, globalData.platforms);
+            }
+            break;
+
+        case 'companies':
+            const companySelect = fieldElement.querySelector('select[name*="companyId"]');
+            const jobTitleSelect = fieldElement.querySelector('select[name*="jobTitleId"]');
+
+            if (companySelect && globalData.companies) {
+                populateSelectWithIds(companySelect, globalData.companies);
+            }
+            if (jobTitleSelect && globalData.jobTitles) {
+                populateSelectWithIds(jobTitleSelect, globalData.jobTitles);
+            }
+            break;
+
+        case 'events':
+            const eventTypeSelect = fieldElement.querySelector('select[name*="eventType"]');
+            if (eventTypeSelect && globalData.eventTypes) {
+                populateSelect(eventTypeSelect, globalData.eventTypes);
+            }
+            break;
     }
 }
+
+// Вспомогательные функции для заполнения селектов
+function populateSelect(selectElement, options) {
+    if (!selectElement || !options || options.length === 0) return;
+
+    // Сохраняем выбранное значение
+    const currentValue = selectElement.value;
+
+    // Очищаем все опции кроме первой (placeholder)
+    while (selectElement.options.length > 1) {
+        selectElement.remove(1);
+    }
+
+    // Добавляем новые опции
+    options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option;
+        opt.textContent = option;
+        selectElement.appendChild(opt);
+    });
+
+    // Восстанавливаем выбранное значение
+    if (currentValue) {
+        selectElement.value = currentValue;
+    }
+}
+
+function populateSelectWithIds(selectElement, items) {
+    if (!selectElement || !items || items.length === 0) return;
+
+    const currentValue = selectElement.value;
+
+    while (selectElement.options.length > 1) {
+        selectElement.remove(1);
+    }
+
+    items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.name || item.title || item.value;
+        selectElement.appendChild(opt);
+    });
+
+    if (currentValue) {
+        selectElement.value = currentValue;
+    }
+}
+
+// В инициализации добавьте получение данных
+document.addEventListener('DOMContentLoaded', function () {
+    // Инициализация индексов
+    initFormIndexes();
+
+    // Сохраняем данные для динамического заполнения
+    const scriptTag = document.querySelector('script[type="application/json"]#contact-form-data');
+    if (scriptTag) {
+        try {
+            window.contactFormData = JSON.parse(scriptTag.textContent);
+        } catch (e) {
+            console.error('Error parsing contact form data:', e);
+        }
+    }
+
+    // Обновление текста чекбоксов
+    document.querySelectorAll('.favorite-checkbox').forEach(cb => updateFavoriteText(cb));
+    document.querySelectorAll('.primary-checkbox').forEach(cb => updatePrimaryText(cb));
+    document.querySelectorAll('.current-checkbox').forEach(cb => updateCurrentText(cb));
+
+    // Валидация формы
+    const form = document.querySelector('form.needs-validation');
+    if (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    }
+});
 
 // Специфичные функции для каждого типа поля
 window.addContactDetail = function () {
