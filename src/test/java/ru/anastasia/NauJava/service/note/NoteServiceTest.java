@@ -17,9 +17,11 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -169,5 +171,187 @@ class NoteServiceTest {
         when(noteRepository.findById(nonExistentId)).thenThrow(NoteNotFoundException.class);
 
         assertThrows(NoteNotFoundException.class, () -> noteService.delete(nonExistentId));
+    }
+
+    @Test
+    void update_WhenValidData_ShouldReturnUpdatedNote() {
+        Long noteId = 1L;
+        Long contactId = 1L;
+        Note existingNote = createTestNote();
+        Note updateData = Note.builder()
+                .id(noteId)
+                .content("Обновленное содержимое заметки")
+                .build();
+        Contact contact = createTestContact();
+        existingNote.setContact(contact);
+
+        when(noteRepository.findById(noteId)).thenReturn(Optional.of(existingNote));
+        when(noteRepository.save(any(Note.class))).thenReturn(updateData);
+
+        Note result = noteService.update(updateData, contactId);
+
+        assertNotNull(result);
+        assertEquals(updateData.getContent(), result.getContent());
+        verify(noteRepository, times(1)).findById(noteId);
+        verify(noteRepository, times(1)).save(any(Note.class));
+    }
+
+    @Test
+    void update_WhenNoteIdIsNull_ShouldThrowIllegalArgumentException() {
+        Long contactId = 1L;
+        Note updateData = Note.builder()
+                .id(null)
+                .content("Обновленное содержимое")
+                .build();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> noteService.update(updateData, contactId)
+        );
+
+        assertTrue(exception.getMessage().contains("ID заметки не может быть null"));
+        verify(noteRepository, never()).findById(anyLong());
+        verify(noteRepository, never()).save(any(Note.class));
+    }
+
+    @Test
+    void update_WhenNoteNotFound_ShouldThrowNoteNotFoundException() {
+        Long noteId = 1L;
+        Long contactId = 1L;
+        Note updateData = Note.builder()
+                .id(noteId)
+                .content("Обновленное содержимое")
+                .build();
+
+        when(noteRepository.findById(noteId)).thenReturn(Optional.empty());
+
+        NoteNotFoundException exception = assertThrows(
+                NoteNotFoundException.class,
+                () -> noteService.update(updateData, contactId)
+        );
+
+        assertTrue(exception.getMessage().contains("Не найдена заметка с id: " + noteId));
+        verify(noteRepository, times(1)).findById(noteId);
+        verify(noteRepository, never()).save(any(Note.class));
+    }
+
+    @Test
+    void update_WhenNoteBelongsToDifferentContact_ShouldThrowIllegalArgumentException() {
+        Long noteId = 1L;
+        Long wrongContactId = 2L;
+        Note existingNote = createTestNote();
+        Contact correctContact = createTestContact();
+        correctContact.setId(1L);
+        existingNote.setContact(correctContact);
+
+        Note updateData = Note.builder()
+                .id(noteId)
+                .content("Обновленное содержимое")
+                .build();
+
+        when(noteRepository.findById(noteId)).thenReturn(Optional.of(existingNote));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> noteService.update(updateData, wrongContactId)
+        );
+
+        assertTrue(exception.getMessage().contains("Заметка не принадлежит указанному контакту"));
+        verify(noteRepository, times(1)).findById(noteId);
+        verify(noteRepository, never()).save(any(Note.class));
+    }
+
+    @Test
+    void update_WhenNoteBelongsToSameContact_ShouldUpdateSuccessfully() {
+        Long noteId = 1L;
+        Long contactId = 1L;
+        Note existingNote = createTestNote();
+        Contact contact = createTestContact();
+        contact.setId(contactId);
+        existingNote.setContact(contact);
+
+        Note updateData = Note.builder()
+                .id(noteId)
+                .content("Полностью обновленное содержимое заметки")
+                .build();
+
+        Note savedNote = Note.builder()
+                .id(noteId)
+                .content("Полностью обновленное содержимое заметки")
+                .contact(contact)
+                .build();
+
+        when(noteRepository.findById(noteId)).thenReturn(Optional.of(existingNote));
+        when(noteRepository.save(any(Note.class))).thenReturn(savedNote);
+
+        Note result = noteService.update(updateData, contactId);
+
+        assertNotNull(result);
+        assertEquals(savedNote.getContent(), result.getContent());
+        assertEquals(contactId, result.getContact().getId());
+        verify(noteRepository, times(1)).findById(noteId);
+        verify(noteRepository, times(1)).save(any(Note.class));
+    }
+
+    @Test
+    void update_WhenContentIsNull_ShouldUpdateWithNullContent() {
+        Long noteId = 1L;
+        Long contactId = 1L;
+        Note existingNote = createTestNote();
+        Contact contact = createTestContact();
+        contact.setId(contactId);
+        existingNote.setContact(contact);
+
+        Note updateData = Note.builder()
+                .id(noteId)
+                .content(null)
+                .build();
+
+        Note savedNote = Note.builder()
+                .id(noteId)
+                .content(null)
+                .contact(contact)
+                .build();
+
+        when(noteRepository.findById(noteId)).thenReturn(Optional.of(existingNote));
+        when(noteRepository.save(any(Note.class))).thenReturn(savedNote);
+
+        Note result = noteService.update(updateData, contactId);
+
+        assertNotNull(result);
+        assertNull(result.getContent());
+        verify(noteRepository, times(1)).findById(noteId);
+        verify(noteRepository, times(1)).save(any(Note.class));
+    }
+
+    @Test
+    void update_WhenContentIsEmpty_ShouldUpdateWithEmptyContent() {
+        Long noteId = 1L;
+        Long contactId = 1L;
+        Note existingNote = createTestNote();
+        Contact contact = createTestContact();
+        contact.setId(contactId);
+        existingNote.setContact(contact);
+
+        Note updateData = Note.builder()
+                .id(noteId)
+                .content("")
+                .build();
+
+        Note savedNote = Note.builder()
+                .id(noteId)
+                .content("")
+                .contact(contact)
+                .build();
+
+        when(noteRepository.findById(noteId)).thenReturn(Optional.of(existingNote));
+        when(noteRepository.save(any(Note.class))).thenReturn(savedNote);
+
+        Note result = noteService.update(updateData, contactId);
+
+        assertNotNull(result);
+        assertEquals("", result.getContent());
+        verify(noteRepository, times(1)).findById(noteId);
+        verify(noteRepository, times(1)).save(any(Note.class));
     }
 }
