@@ -244,6 +244,19 @@ public class EventServiceImpl implements EventService {
             throw new IllegalEventStateException("Событие должно быть связано с контактом");
         }
 
+        if (event.getEventType() == EventType.CUSTOM &&
+                isBlank(event.getCustomEventName())) {
+            log.warn("Ошибка валидации: для кастомного события не указано название");
+            throw new IllegalEventStateException("Для кастомного события должно быть указано название");
+        }
+
+        if (event.getEventType() != EventType.CUSTOM &&
+                isNotBlank(event.getCustomEventName())) {
+            log.warn("Ошибка валидации: название кастомного события указано для стандартного события типа: {}",
+                    event.getEventType());
+            throw new IllegalEventStateException("Название кастомного события должно быть пустым для стандартных событий");
+        }
+
         log.trace("Валидация события ID: {} прошла успешно", event.getId());
     }
 

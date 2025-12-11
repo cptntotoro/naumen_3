@@ -426,4 +426,305 @@ class EventServiceTest {
         assertFalse(result);
         verify(eventRepository, times(1)).existsByContactIdAndEventType(contactId, EventType.BIRTHDAY);
     }
+
+    @Test
+    void saveEvent_WhenValidNewEvent_ShouldReturnSavedEvent() {
+        Event newEvent = Event.builder()
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(LocalDate.now())
+                .notes("Тестовое событие")
+                .yearlyRecurrence(true)
+                .contact(createTestContact())
+                .build();
+
+        Event savedEvent = Event.builder()
+                .id(1L)
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(LocalDate.now())
+                .notes("Тестовое событие")
+                .yearlyRecurrence(true)
+                .contact(createTestContact())
+                .build();
+
+        when(eventRepository.save(newEvent)).thenReturn(savedEvent);
+
+        Event result = eventService.saveEvent(newEvent);
+
+        assertNotNull(result);
+        assertEquals(savedEvent.getId(), result.getId());
+        assertEquals(savedEvent.getEventType(), result.getEventType());
+        assertEquals(savedEvent.getNotes(), result.getNotes());
+        verify(eventRepository, times(1)).save(newEvent);
+    }
+
+    @Test
+    void saveEvent_WhenValidExistingEvent_ShouldReturnUpdatedEvent() {
+        Event existingEvent = createTestEvent();
+        existingEvent.setNotes("Обновленные заметки");
+
+        when(eventRepository.save(existingEvent)).thenReturn(existingEvent);
+
+        Event result = eventService.saveEvent(existingEvent);
+
+        assertNotNull(result);
+        assertEquals(existingEvent.getId(), result.getId());
+        assertEquals("Обновленные заметки", result.getNotes());
+        verify(eventRepository, times(1)).save(existingEvent);
+    }
+
+    @Test
+    void saveEvent_WhenEventTypeIsNull_ShouldThrowIllegalEventStateException() {
+        Event invalidEvent = Event.builder()
+                .eventType(null)
+                .eventDate(LocalDate.now())
+                .contact(createTestContact())
+                .build();
+
+        IllegalEventStateException exception = assertThrows(
+                IllegalEventStateException.class,
+                () -> eventService.saveEvent(invalidEvent)
+        );
+
+        assertTrue(exception.getMessage().contains("Тип события обязателен"));
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void saveEvent_WhenEventDateIsNull_ShouldThrowIllegalEventStateException() {
+        Event invalidEvent = Event.builder()
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(null)
+                .contact(createTestContact())
+                .build();
+
+        IllegalEventStateException exception = assertThrows(
+                IllegalEventStateException.class,
+                () -> eventService.saveEvent(invalidEvent)
+        );
+
+        assertTrue(exception.getMessage().contains("Дата события обязательна"));
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void saveEvent_WhenContactIsNull_ShouldThrowIllegalEventStateException() {
+        Event invalidEvent = Event.builder()
+                .eventType(EventType.BIRTHDAY)
+                .eventDate(LocalDate.now())
+                .contact(null)
+                .build();
+
+        IllegalEventStateException exception = assertThrows(
+                IllegalEventStateException.class,
+                () -> eventService.saveEvent(invalidEvent)
+        );
+
+        assertTrue(exception.getMessage().contains("Событие должно быть связано с контактом"));
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void saveEvent_WhenCustomEventWithoutName_ShouldThrowIllegalEventStateException() {
+        Event invalidEvent = Event.builder()
+                .eventType(EventType.CUSTOM)
+                .customEventName(null)
+                .eventDate(LocalDate.now())
+                .contact(createTestContact())
+                .build();
+
+        IllegalEventStateException exception = assertThrows(
+                IllegalEventStateException.class,
+                () -> eventService.saveEvent(invalidEvent)
+        );
+
+        assertTrue(exception.getMessage().contains("Для кастомного события должно быть указано название"));
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void saveEvent_WhenStandardEventWithCustomName_ShouldThrowIllegalEventStateException() {
+        Event invalidEvent = Event.builder()
+                .eventType(EventType.BIRTHDAY)
+                .customEventName("Кастомное название")
+                .eventDate(LocalDate.now())
+                .contact(createTestContact())
+                .build();
+
+        IllegalEventStateException exception = assertThrows(
+                IllegalEventStateException.class,
+                () -> eventService.saveEvent(invalidEvent)
+        );
+
+        assertTrue(exception.getMessage().contains("Название кастомного события должно быть пустым для стандартных событий"));
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void saveEvent_WhenValidCustomEventWithName_ShouldReturnSavedEvent() {
+        Event customEvent = Event.builder()
+                .eventType(EventType.CUSTOM)
+                .customEventName("Встреча")
+                .eventDate(LocalDate.now().plusDays(5))
+                .notes("Важная встреча")
+                .yearlyRecurrence(false)
+                .contact(createTestContact())
+                .build();
+
+        Event savedEvent = Event.builder()
+                .id(3L)
+                .eventType(EventType.CUSTOM)
+                .customEventName("Встреча")
+                .eventDate(LocalDate.now().plusDays(5))
+                .notes("Важная встреча")
+                .yearlyRecurrence(false)
+                .contact(createTestContact())
+                .build();
+
+        when(eventRepository.save(customEvent)).thenReturn(savedEvent);
+
+        Event result = eventService.saveEvent(customEvent);
+
+        assertNotNull(result);
+        assertEquals(savedEvent.getId(), result.getId());
+        assertEquals("Встреча", result.getCustomEventName());
+        verify(eventRepository, times(1)).save(customEvent);
+    }
+
+    @Test
+    void saveEvent_WhenValidStandardEventWithoutCustomName_ShouldReturnSavedEvent() {
+        Event standardEvent = Event.builder()
+                .eventType(EventType.ANNIVERSARY)
+                .customEventName(null)
+                .eventDate(LocalDate.now().plusDays(7))
+                .notes("Годовщина")
+                .yearlyRecurrence(true)
+                .contact(createTestContact())
+                .build();
+
+        Event savedEvent = Event.builder()
+                .id(4L)
+                .eventType(EventType.ANNIVERSARY)
+                .customEventName(null)
+                .eventDate(LocalDate.now().plusDays(7))
+                .notes("Годовщина")
+                .yearlyRecurrence(true)
+                .contact(createTestContact())
+                .build();
+
+        when(eventRepository.save(standardEvent)).thenReturn(savedEvent);
+
+        Event result = eventService.saveEvent(standardEvent);
+
+        assertNotNull(result);
+        assertEquals(savedEvent.getId(), result.getId());
+        assertEquals(EventType.ANNIVERSARY, result.getEventType());
+        assertNull(result.getCustomEventName());
+        verify(eventRepository, times(1)).save(standardEvent);
+    }
+
+    @Test
+    void hasOtherBirthday_WhenOtherBirthdayExists_ShouldReturnTrue() {
+        Long contactId = 1L;
+        Long excludedEventId = 1L;
+
+        when(eventRepository.existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId))
+                .thenReturn(true);
+
+        boolean result = eventService.hasOtherBirthday(contactId, excludedEventId);
+
+        assertTrue(result);
+        verify(eventRepository, times(1))
+                .existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId);
+    }
+
+    @Test
+    void hasOtherBirthday_WhenNoOtherBirthdayExists_ShouldReturnFalse() {
+        Long contactId = 1L;
+        Long excludedEventId = 1L;
+
+        when(eventRepository.existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId))
+                .thenReturn(false);
+
+        boolean result = eventService.hasOtherBirthday(contactId, excludedEventId);
+
+        assertFalse(result);
+        verify(eventRepository, times(1))
+                .existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId);
+    }
+
+    @Test
+    void hasOtherBirthday_WhenExcludedEventIdIsNull_ShouldCallRepositoryWithNull() {
+        Long contactId = 1L;
+        Long excludedEventId = null;
+
+        when(eventRepository.existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId))
+                .thenReturn(false);
+
+        boolean result = eventService.hasOtherBirthday(contactId, excludedEventId);
+
+        assertFalse(result);
+        verify(eventRepository, times(1))
+                .existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId);
+    }
+
+    @Test
+    void hasOtherBirthday_WhenOnlyOneBirthdayExists_ShouldReturnFalse() {
+        Long contactId = 1L;
+        Long existingEventId = 1L;
+
+        when(eventRepository.existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, existingEventId))
+                .thenReturn(false);
+
+        boolean result = eventService.hasOtherBirthday(contactId, existingEventId);
+
+        assertFalse(result);
+        verify(eventRepository, times(1))
+                .existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, existingEventId);
+    }
+
+    @Test
+    void hasOtherBirthday_WhenMultipleBirthdaysExist_ShouldReturnTrue() {
+        Long contactId = 1L;
+        Long excludedEventId = 1L;
+
+        when(eventRepository.existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId))
+                .thenReturn(true);
+
+        boolean result = eventService.hasOtherBirthday(contactId, excludedEventId);
+
+        assertTrue(result);
+        verify(eventRepository, times(1))
+                .existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId);
+    }
+
+    @Test
+    void hasOtherBirthday_WhenContactHasNoBirthday_ShouldReturnFalse() {
+        Long contactId = 999L;
+        Long excludedEventId = 1L;
+
+        when(eventRepository.existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId))
+                .thenReturn(false);
+
+        boolean result = eventService.hasOtherBirthday(contactId, excludedEventId);
+
+        assertFalse(result);
+        verify(eventRepository, times(1))
+                .existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, excludedEventId);
+    }
+
+    @Test
+    void hasOtherBirthday_WhenCheckingSameEvent_ShouldReturnFalse() {
+        Long contactId = 1L;
+        Long eventId = 1L;
+
+        // Контакт имеет день рождения с ID=1, но мы исключаем этот же ID
+        when(eventRepository.existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, eventId))
+                .thenReturn(false);
+
+        boolean result = eventService.hasOtherBirthday(contactId, eventId);
+
+        assertFalse(result);
+        verify(eventRepository, times(1))
+                .existsByContactIdAndEventTypeAndIdNot(contactId, EventType.BIRTHDAY, eventId);
+    }
 }

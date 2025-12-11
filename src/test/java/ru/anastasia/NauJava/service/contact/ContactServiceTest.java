@@ -5,6 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.anastasia.NauJava.config.AppConfig;
 import ru.anastasia.NauJava.entity.contact.Contact;
 import ru.anastasia.NauJava.entity.enums.EventType;
@@ -26,6 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -480,5 +487,253 @@ class ContactServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
         verify(eventService, times(1)).findByEventTypeAndEventDateBetween(any(), any(), any());
+    }
+
+    @Test
+    void searchContacts_WhenNoFilters_ShouldReturnAllContactsPage() {
+        String searchTerm = "";
+        String companyName = "";
+        String tagName = "";
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Contact> contacts = Arrays.asList(createTestContact(), createAnotherTestContact());
+        Page<Contact> expectedPage = new PageImpl<>(contacts, pageable, contacts.size());
+
+        when(contactRepository.findAll(pageable)).thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.searchContacts(searchTerm, companyName, tagName, pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getContent().size());
+        assertEquals(contacts, result.getContent());
+        verify(contactRepository, times(1)).findAll(pageable);
+        verify(contactRepository, never()).searchWithFilters(any(), any(), any(), any());
+    }
+
+    @Test
+    void searchContacts_WithSearchTermOnly_ShouldUseSearchWithFilters() {
+        String searchTerm = "Иван";
+        String companyName = "";
+        String tagName = "";
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Contact> contacts = Collections.singletonList(createTestContact());
+        Page<Contact> expectedPage = new PageImpl<>(contacts, pageable, contacts.size());
+
+        when(contactRepository.searchWithFilters(eq(searchTerm.trim()), isNull(), isNull(), eq(pageable)))
+                .thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.searchContacts(searchTerm, companyName, tagName, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals(contacts, result.getContent());
+        verify(contactRepository, times(1)).searchWithFilters(eq(searchTerm.trim()), isNull(), isNull(), eq(pageable));
+        verify(contactRepository, never()).findAll(pageable);
+    }
+
+    @Test
+    void searchContacts_WithCompanyNameOnly_ShouldUseSearchWithFilters() {
+        String searchTerm = "";
+        String companyName = "ООО Рога и Копыта";
+        String tagName = "";
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Contact> contacts = Collections.singletonList(createTestContact());
+        Page<Contact> expectedPage = new PageImpl<>(contacts, pageable, contacts.size());
+
+        when(contactRepository.searchWithFilters(isNull(), eq(companyName.trim()), isNull(), eq(pageable)))
+                .thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.searchContacts(searchTerm, companyName, tagName, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        verify(contactRepository, times(1)).searchWithFilters(isNull(), eq(companyName.trim()), isNull(), eq(pageable));
+    }
+
+    @Test
+    void searchContacts_WithTagNameOnly_ShouldUseSearchWithFilters() {
+        String searchTerm = "";
+        String companyName = "";
+        String tagName = "друзья";
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Contact> contacts = Collections.singletonList(createTestContact());
+        Page<Contact> expectedPage = new PageImpl<>(contacts, pageable, contacts.size());
+
+        when(contactRepository.searchWithFilters(isNull(), isNull(), eq(tagName.trim()), eq(pageable)))
+                .thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.searchContacts(searchTerm, companyName, tagName, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        verify(contactRepository, times(1)).searchWithFilters(isNull(), isNull(), eq(tagName.trim()), eq(pageable));
+    }
+
+    @Test
+    void searchContacts_WithAllFilters_ShouldUseSearchWithFilters() {
+        String searchTerm = "Иван";
+        String companyName = "Компания";
+        String tagName = "друзья";
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Contact> contacts = Collections.singletonList(createTestContact());
+        Page<Contact> expectedPage = new PageImpl<>(contacts, pageable, contacts.size());
+
+        when(contactRepository.searchWithFilters(
+                eq(searchTerm.trim()),
+                eq(companyName.trim()),
+                eq(tagName.trim()),
+                eq(pageable)))
+                .thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.searchContacts(searchTerm, companyName, tagName, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        verify(contactRepository, times(1)).searchWithFilters(
+                eq(searchTerm.trim()),
+                eq(companyName.trim()),
+                eq(tagName.trim()),
+                eq(pageable));
+    }
+
+    @Test
+    void findAll_WithPageable_ShouldReturnPageOfContacts() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Contact> contacts = Arrays.asList(createTestContact(), createAnotherTestContact());
+        Page<Contact> expectedPage = new PageImpl<>(contacts, pageable, contacts.size());
+
+        when(contactRepository.findAll(pageable)).thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.findAll(pageable);
+
+        assertNotNull(result);
+        assertEquals(2, result.getContent().size());
+        assertEquals(contacts, result.getContent());
+        verify(contactRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void findAll_WithEmptyPage_ShouldReturnEmptyPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Contact> expectedPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(contactRepository.findAll(pageable)).thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.findAll(pageable);
+
+        assertNotNull(result);
+        assertTrue(result.getContent().isEmpty());
+        assertEquals(0, result.getTotalElements());
+        verify(contactRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void findFavorites_WithPageable_ShouldReturnPageOfFavoriteContacts() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<Contact> favoriteContacts = Collections.singletonList(createTestContact());
+        Page<Contact> expectedPage = new PageImpl<>(favoriteContacts, pageable, favoriteContacts.size());
+
+        when(contactRepository.findByIsFavoriteTrue(pageable)).thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.findFavorites(pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertTrue(result.getContent().get(0).getIsFavorite());
+        verify(contactRepository, times(1)).findByIsFavoriteTrue(pageable);
+    }
+
+    @Test
+    void findFavorites_WhenNoFavorites_ShouldReturnEmptyPage() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Contact> expectedPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        when(contactRepository.findByIsFavoriteTrue(pageable)).thenReturn(expectedPage);
+
+        Page<Contact> result = contactService.findFavorites(pageable);
+
+        assertNotNull(result);
+        assertTrue(result.getContent().isEmpty());
+        assertEquals(0, result.getTotalElements());
+        verify(contactRepository, times(1)).findByIsFavoriteTrue(pageable);
+    }
+
+    @Test
+    void findWithUpcomingBirthdays_WithinSameYear_ShouldCallFindBirthdaysInRange() {
+        int daysAhead = 7;
+        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
+
+        when(contactRepository.findBirthdaysInRange(anyString(), anyString()))
+                .thenReturn(expectedContacts);
+
+        List<Contact> result = contactService.findWithUpcomingBirthdays(daysAhead);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactRepository, times(1)).findBirthdaysInRange(anyString(), anyString());
+        verify(contactRepository, never()).findBirthdaysCrossingYear(anyString(), anyString());
+    }
+
+    @Test
+    void findWithUpcomingBirthdays_CrossingYearBoundary_ShouldCallFindBirthdaysCrossingYear() {
+        int daysAhead = 30;
+        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
+
+        // Предположим, что сегодня 15 декабря, а daysAhead = 30, значит диапазон пересекает новый год
+        when(contactRepository.findBirthdaysCrossingYear(anyString(), anyString()))
+                .thenReturn(expectedContacts);
+
+        List<Contact> result = contactService.findWithUpcomingBirthdays(daysAhead);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(contactRepository, times(1)).findBirthdaysCrossingYear(anyString(), anyString());
+    }
+
+    @Test
+    void findWithUpcomingBirthdays_WhenNoUpcomingBirthdays_ShouldReturnEmptyList() {
+        int daysAhead = 7;
+
+        when(contactRepository.findBirthdaysInRange(anyString(), anyString()))
+                .thenReturn(Collections.emptyList());
+
+        List<Contact> result = contactService.findWithUpcomingBirthdays(daysAhead);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(contactRepository, times(1)).findBirthdaysInRange(anyString(), anyString());
+    }
+
+    @Test
+    void existsById_WhenContactExists_ShouldReturnTrue() {
+        Long contactId = 1L;
+
+        when(contactRepository.existsById(contactId)).thenReturn(true);
+
+        boolean result = contactService.existsById(contactId);
+
+        assertTrue(result);
+        verify(contactRepository, times(1)).existsById(contactId);
+    }
+
+    @Test
+    void existsById_WhenContactDoesNotExist_ShouldReturnFalse() {
+        Long nonExistentId = 999L;
+
+        when(contactRepository.existsById(nonExistentId)).thenReturn(false);
+
+        boolean result = contactService.existsById(nonExistentId);
+
+        assertFalse(result);
+        verify(contactRepository, times(1)).existsById(nonExistentId);
+    }
+
+    @Test
+    void existsById_WhenIdIsNull_ShouldReturnFalse() {
+        when(contactRepository.existsById(null)).thenReturn(false);
+
+        boolean result = contactService.existsById(null);
+
+        assertFalse(result);
+        verify(contactRepository, times(1)).existsById(null);
     }
 }
