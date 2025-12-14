@@ -61,4 +61,12 @@ public interface CompanyService {
      * @return Количество компаний
      */
     Long countTotal();
+
+    /**
+     * Получить список компаний по совпадению части названия
+     *
+     * @param trim Часть названия (поисковый запрос)
+     * @return Список компаний
+     */
+    List<Company> findByNameContaining(String trim);
 }

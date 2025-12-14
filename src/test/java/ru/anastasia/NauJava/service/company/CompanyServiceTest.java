@@ -270,4 +270,174 @@ class CompanyServiceTest {
         assertEquals(0L, result);
         verify(companyRepository, times(1)).count();
     }
+
+    @Test
+    void findByNameContaining_WhenNamePartExists_ShouldReturnMatchingCompanies() {
+        String namePart = "Тест";
+        Company testCompany1 = createTestCompany();
+        Company testCompany2 = createAnotherTestCompany();
+        List<Company> expectedCompanies = Arrays.asList(testCompany1, testCompany2);
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(expectedCompanies, result);
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenMultipleCompaniesMatch_ShouldReturnAllMatches() {
+        String namePart = "компания";
+        Company testCompany1 = Company.builder()
+                .id(1L)
+                .name("Тестовая компания")
+                .build();
+        Company testCompany2 = Company.builder()
+                .id(2L)
+                .name("Лучшая компания")
+                .build();
+        Company testCompany3 = Company.builder()
+                .id(3L)
+                .name("Другая компания")
+                .build();
+        List<Company> expectedCompanies = Arrays.asList(testCompany1, testCompany2, testCompany3);
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertTrue(result.stream().allMatch(c -> c.getName().toLowerCase().contains(namePart.toLowerCase())));
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenNoCompaniesMatch_ShouldReturnEmptyList() {
+        String namePart = "несуществующая";
+        List<Company> expectedCompanies = List.of();
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenSearchIsCaseInsensitive_ShouldFindCompanies() {
+        String namePart = "ТЕСТОВАЯ";
+        Company testCompany = createTestCompany();
+        List<Company> expectedCompanies = List.of(testCompany);
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(testCompany, result.getFirst());
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenNamePartIsEmpty_ShouldReturnAllCompanies() {
+        String namePart = "";
+        Company testCompany1 = createTestCompany();
+        Company testCompany2 = createAnotherTestCompany();
+        List<Company> expectedCompanies = Arrays.asList(testCompany1, testCompany2);
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenNamePartIsBlank_ShouldReturnAllCompanies() {
+        String namePart = "   ";
+        Company testCompany1 = createTestCompany();
+        Company testCompany2 = createAnotherTestCompany();
+        List<Company> expectedCompanies = Arrays.asList(testCompany1, testCompany2);
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenNamePartIsNull_ShouldHandleGracefully() {
+        String namePart = null;
+        Company testCompany1 = createTestCompany();
+        Company testCompany2 = createAnotherTestCompany();
+        List<Company> expectedCompanies = Arrays.asList(testCompany1, testCompany2);
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenPartialMatch_ShouldReturnCompanies() {
+        String namePart = "тест";
+        Company testCompany1 = createTestCompany();
+        List<Company> expectedCompanies = List.of(testCompany1);
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(testCompany1, result.getFirst());
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenSpecialCharactersInName_ShouldHandleCorrectly() {
+        String namePart = "ООО";
+        Company testCompany = Company.builder()
+                .id(1L)
+                .name("ООО \"Тестовая компания\"")
+                .build();
+        List<Company> expectedCompanies = List.of(testCompany);
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(expectedCompanies);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(testCompany, result.getFirst());
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
+
+    @Test
+    void findByNameContaining_WhenRepositoryReturnsNull_ShouldReturnEmptyList() {
+        String namePart = "тест";
+
+        when(companyRepository.findByNameContainingIgnoreCase(namePart)).thenReturn(null);
+
+        List<Company> result = companyService.findByNameContaining(namePart);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(companyRepository, times(1)).findByNameContainingIgnoreCase(namePart);
+    }
 }

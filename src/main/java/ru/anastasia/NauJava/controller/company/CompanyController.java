@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.anastasia.NauJava.dto.company.CompanyFormDto;
+import ru.anastasia.NauJava.dto.company.CompanySearchDto;
 import ru.anastasia.NauJava.entity.company.Company;
 import ru.anastasia.NauJava.entity.tag.Tag;
 import ru.anastasia.NauJava.mapper.company.CompanyMapper;
@@ -41,16 +43,28 @@ public class CompanyController {
     private final TagService tagService;
 
     @GetMapping
-    public String listCompanies(Model model) {
-        log.debug("GET /companies - список компаний");
+    public String listCompanies(@RequestParam(value = "search", required = false) String search,
+                                Model model) {
+        log.debug("GET /companies - список компаний [поиск: {}]", search);
 
-        List<Company> companies = companyService.findAll();
+        List<Company> companies;
+        if (search != null && !search.trim().isEmpty()) {
+            companies = companyService.findByNameContaining(search.trim());
+            log.debug("Поиск компаний по запросу '{}': найдено {}", search, companies.size());
+        } else {
+            companies = companyService.findAll();
+            log.debug("Загружены все компании: {}", companies.size());
+        }
+
         List<Tag> tags = tagService.findAll();
+
+        CompanySearchDto searchDto = new CompanySearchDto();
+        searchDto.setSearch(search);
 
         model.addAttribute("companies", companies);
         model.addAttribute("tags", tags);
-
-        log.debug("Загружено компаний: {}, тегов: {}", companies.size(), tags.size());
+        model.addAttribute("searchDto", searchDto);
+        model.addAttribute("searchParam", search);
 
         return "company/list";
     }
@@ -133,5 +147,19 @@ public class CompanyController {
         }
 
         return "redirect:/companies";
+    }
+
+    @PostMapping("/search")
+    public String searchCompanies(@Valid @ModelAttribute("searchDto") CompanySearchDto searchDto,
+                                  BindingResult bindingResult) {
+        log.info("POST /companies/search - поиск компаний [запрос: {}]", searchDto.getSearch());
+
+        if (bindingResult.hasErrors()) {
+            log.warn("Ошибки валидации при поиске компаний: {}", bindingResult.getAllErrors());
+            return "redirect:/companies";
+        }
+
+        return "redirect:/companies?search=" +
+                (searchDto.getSearch() != null ? searchDto.getSearch().trim() : "");
     }
 }
