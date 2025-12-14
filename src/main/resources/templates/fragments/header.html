@@ -55,13 +55,15 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/contacts/favorites}">
+                        <a class="nav-link" th:href="@{/contacts/favorites}"
+                           th:classappend="${currentPage == 'favorites'} ? 'active'">
                             <i class="fas fa-star nav-icon"></i>
                             <span class="nav-text">Избранные</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/contacts/birthdays}">
+                        <a class="nav-link" th:href="@{/contacts/birthdays}"
+                           th:classappend="${currentPage == 'birthdays'} ? 'active'">
                             <i class="fas fa-birthday-cake nav-icon"></i>
                             <span class="nav-text">Дни рождения</span>
                         </a>

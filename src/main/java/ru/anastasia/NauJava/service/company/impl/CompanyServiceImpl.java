@@ -11,6 +11,7 @@ import ru.anastasia.NauJava.exception.company.IllegalCompanyStateException;
 import ru.anastasia.NauJava.repository.company.CompanyRepository;
 import ru.anastasia.NauJava.service.company.CompanyService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -128,5 +129,21 @@ public class CompanyServiceImpl implements CompanyService {
         Long count = companyRepository.count();
         log.debug("Общее количество компаний: {}", count);
         return count;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Company> findByNameContaining(String namePart) {
+        log.debug("Поиск компаний по части названия: {}", namePart);
+
+        List<Company> companies = companyRepository.findByNameContainingIgnoreCase(namePart);
+
+        if (companies == null) {
+            log.debug("Компании по поисковому запросу не найдены");
+            return Collections.emptyList();
+        }
+
+        log.debug("Найдено компаний: {}", companies.size());
+        return companies;
     }
 }
