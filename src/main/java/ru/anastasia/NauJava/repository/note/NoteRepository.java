@@ -19,12 +19,4 @@ public interface NoteRepository extends CrudRepository<Note, Long> {
      * @return Список заметок
      */
     List<Note> findByContactId(Long contactId);
-
-    /**
-     * Получить заметки, содержащие текст
-     *
-     * @param contentPart Фрагмент содержимого заметки
-     * @return Cписок заметок
-     */
-    List<Note> findByContentContainingIgnoreCase(String contentPart);
 }

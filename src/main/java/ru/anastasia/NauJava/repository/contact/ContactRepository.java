@@ -45,35 +45,6 @@ public interface ContactRepository extends JpaRepository<Contact, Long>, Contact
     List<Contact> findByFirstNameAndLastName(String firstName, String lastName);
 
     /**
-     * Получить коллег по названию компании
-     *
-     * @param companyName Название компании
-     * @return Список контактов
-     */
-    @Query("SELECT cc.contact FROM ContactCompany cc WHERE cc.company.name = :companyName")
-    List<Contact> findColleaguesByCompany(@Param("companyName") String companyName);
-
-    /**
-     * Получить коллег по названию компании и должности
-     *
-     * @param companyName Название компании
-     * @param jobTitle    Название должности
-     * @return Список контактов
-     */
-    @Query("SELECT cc.contact FROM ContactCompany cc WHERE cc.company.name = :companyName AND cc.jobTitle.title = :jobTitle")
-    List<Contact> findColleaguesByCompanyAndJobTitle(@Param("companyName") String companyName,
-                                                     @Param("jobTitle") String jobTitle);
-
-    /**
-     * Получить контакты по должности
-     *
-     * @param jobTitle Название должности
-     * @return Список контактов
-     */
-    @Query("SELECT cc.contact FROM ContactCompany cc WHERE cc.jobTitle.title = :jobTitle")
-    List<Contact> findByJobTitle(@Param("jobTitle") String jobTitle);
-
-    /**
      * Получить контакты по имени, фамилии или отображаемому имени (без учёта регистра)
      *
      * @param firstName   Имя

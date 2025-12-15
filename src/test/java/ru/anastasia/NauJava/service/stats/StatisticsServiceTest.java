@@ -41,7 +41,7 @@ public class StatisticsServiceTest {
         when(contactService.countTotal()).thenReturn(150L);
         when(companyService.countTotal()).thenReturn(25L);
         when(contactService.countFavorites()).thenReturn(30L);
-        when(eventService.countUpcomingBirthdays(30)).thenReturn(5L); // Исправлено с 14 на 30
+        when(eventService.countUpcomingBirthdays(30)).thenReturn(5L);
 
         UserDashboardStats result = statisticsService.getUserDashboardStats();
 
@@ -106,50 +106,6 @@ public class StatisticsServiceTest {
     }
 
     @Test
-    void getUpcomingBirthdaysCountSuccess() {
-        int daysAhead = 7;
-        when(eventService.countUpcomingBirthdays(daysAhead)).thenReturn(3L);
-
-        long result = statisticsService.getUpcomingBirthdaysCount(daysAhead);
-
-        assertEquals(3L, result);
-        verify(eventService, times(1)).countUpcomingBirthdays(daysAhead);
-    }
-
-    @Test
-    void getUpcomingBirthdaysCountWithZeroDays() {
-        int daysAhead = 0;
-        when(eventService.countUpcomingBirthdays(daysAhead)).thenReturn(0L);
-
-        long result = statisticsService.getUpcomingBirthdaysCount(daysAhead);
-
-        assertEquals(0L, result);
-        verify(eventService, times(1)).countUpcomingBirthdays(daysAhead);
-    }
-
-    @Test
-    void getUpcomingBirthdaysCountWithNegativeDays() {
-        int daysAhead = -5;
-        when(eventService.countUpcomingBirthdays(daysAhead)).thenReturn(0L);
-
-        long result = statisticsService.getUpcomingBirthdaysCount(daysAhead);
-
-        assertEquals(0L, result);
-        verify(eventService, times(1)).countUpcomingBirthdays(daysAhead);
-    }
-
-    @Test
-    void getUpcomingBirthdaysCountWithLargeValue() {
-        int daysAhead = 365;
-        when(eventService.countUpcomingBirthdays(daysAhead)).thenReturn(150L);
-
-        long result = statisticsService.getUpcomingBirthdaysCount(daysAhead);
-
-        assertEquals(150L, result);
-        verify(eventService, times(1)).countUpcomingBirthdays(daysAhead);
-    }
-
-    @Test
     void getUserDashboardStatsWhenServicesReturnNull() {
         when(contactService.countTotal()).thenReturn(null);
         when(companyService.countTotal()).thenReturn(null);
@@ -177,16 +133,5 @@ public class StatisticsServiceTest {
         assertEquals(0L, result.getUsersCount());
         assertEquals(0L, result.getContactsCount());
         assertEquals(0L, result.getCompaniesCount());
-    }
-
-    @Test
-    void getUpcomingBirthdaysCountWhenServiceReturnsNull() {
-        int daysAhead = 7;
-        when(eventService.countUpcomingBirthdays(daysAhead)).thenReturn(null);
-
-        long result = statisticsService.getUpcomingBirthdaysCount(daysAhead);
-
-        assertEquals(0L, result);
-        verify(eventService, times(1)).countUpcomingBirthdays(daysAhead);
     }
 }

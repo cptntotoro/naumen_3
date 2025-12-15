@@ -100,9 +100,8 @@ public class ContactController {
         List<Tag> tags = tagService.findAll();
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Contact> contactPage;
 
-        contactPage = contactService.searchContacts(search, companyName, tagName, pageable);
+        Page<Contact> contactPage = contactService.searchContacts(search, companyName, tagName, pageable);
         log.debug("Найдено контактов: {} из {}", contactPage.getNumberOfElements(), contactPage.getTotalElements());
 
         model.addAttribute("contacts", contactPage.getContent());
@@ -328,7 +327,6 @@ public class ContactController {
         return "redirect:/contacts";
     }
 
-    // TODO Метод для добавления/удаления из избранного тоже нужен (если есть в UI)
     @PostMapping("/{id}/favorite")
     public String toggleFavorite(@PathVariable Long id,
                                  @RequestParam(value = "action", defaultValue = "add") String action,

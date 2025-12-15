@@ -21,12 +21,4 @@ public interface StatisticsService {
      * @return Статистика администратора
      */
     AdminDashboardStats getAdminDashboardStats();
-
-    /**
-     * Получить статистику дней рождения на указанное количество дней вперед
-     *
-     * @param daysAhead Количество дней для поиска дней рождения
-     * @return Количество дней рождения
-     */
-    long getUpcomingBirthdaysCount(int daysAhead);
 }

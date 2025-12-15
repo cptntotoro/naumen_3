@@ -48,15 +48,6 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional(readOnly = true)
-    public Company findByName(String name) {
-        log.debug("Поиск компании по названию: {}", name);
-
-        return companyRepository.findByName(name)
-                .orElse(null);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<Company> findAll() {
         log.debug("Получение списка всех компаний");
 

@@ -1,25 +1,14 @@
 package ru.anastasia.NauJava.service.event;
 
 import ru.anastasia.NauJava.dto.event.EventCreateDto;
-import ru.anastasia.NauJava.entity.enums.EventType;
 import ru.anastasia.NauJava.entity.event.Event;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Сервис событий контактов
  */
 public interface EventService {
-
-    /**
-     * Получить предстоящие события
-     *
-     * @param daysAhead Количество дней вперед
-     * @return Карта событий по датам
-     */
-    Map<LocalDate, List<Event>> getUpcomingEvents(int daysAhead);
 
     /**
      * Получить события контакта
@@ -52,16 +41,6 @@ public interface EventService {
      * @return Число предстоящих дней рождения
      */
     Long countUpcomingBirthdays(int daysAhead);
-
-    /**
-     * Получить события по типу и диапазону дат
-     *
-     * @param type  Тип события
-     * @param start Начальная дата
-     * @param end   Конечная дата
-     * @return Список событий
-     */
-    List<Event> findByEventTypeAndEventDateBetween(EventType type, LocalDate start, LocalDate end);
 
     /**
      * Создать событие для контакта

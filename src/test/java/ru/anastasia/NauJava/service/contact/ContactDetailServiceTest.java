@@ -96,22 +96,6 @@ class ContactDetailServiceTest {
     }
 
     @Test
-    void findByDetailType_WhenDetailsExist_ShouldReturnList() {
-        DetailType detailType = DetailType.EMAIL;
-        List<ContactDetail> expectedDetails = Collections.singletonList(createTestContactDetail());
-
-        when(contactDetailRepository.findByDetailTypeAndValueContainingIgnoreCase(detailType, ""))
-                .thenReturn(expectedDetails);
-
-        List<ContactDetail> result = contactDetailService.findByDetailType(detailType);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(contactDetailRepository, times(1))
-                .findByDetailTypeAndValueContainingIgnoreCase(detailType, "");
-    }
-
-    @Test
     void findPrimaryByContactId_WhenPrimaryDetailsExist_ShouldReturnList() {
         Long contactId = 1L;
         List<ContactDetail> expectedDetails = Collections.singletonList(createTestContactDetail());
@@ -130,7 +114,6 @@ class ContactDetailServiceTest {
 
     @Test
     void create_WhenValidContactDetail_ShouldReturnSavedDetail() {
-        // Создаем тестовый контакт
         Contact testContact = Contact.builder()
                 .id(1L)
                 .firstName("Test")
@@ -246,53 +229,6 @@ class ContactDetailServiceTest {
 
         assertTrue(exception.getMessage().contains("Не найден способ связи с id: " + nonExistentId));
         verify(contactDetailRepository, times(1)).findById(nonExistentId);
-    }
-
-    @Test
-    void findByDetailTypeAndLabel_WithValidStringLabel_ShouldReturnList() {
-        DetailType detailType = DetailType.EMAIL;
-        String label = "MAIN";
-        List<ContactDetail> expectedDetails = Collections.singletonList(createTestContactDetail());
-
-        when(contactDetailRepository.findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, DetailLabel.MAIN))
-                .thenReturn(expectedDetails);
-
-        List<ContactDetail> result = contactDetailService.findByDetailTypeAndLabel(detailType, label);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(contactDetailRepository, times(1))
-                .findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, DetailLabel.MAIN);
-    }
-
-    @Test
-    void findByDetailTypeAndLabel_WithInvalidStringLabel_ShouldReturnEmptyList() {
-        DetailType detailType = DetailType.EMAIL;
-        String invalidLabel = "INVALID_LABEL";
-
-        List<ContactDetail> result = contactDetailService.findByDetailTypeAndLabel(detailType, invalidLabel);
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(contactDetailRepository, never())
-                .findByDetailTypeAndIsPrimaryTrueOrLabel(any(), any());
-    }
-
-    @Test
-    void findByDetailTypeAndLabel_WithDetailLabel_ShouldReturnList() {
-        DetailType detailType = DetailType.PHONE;
-        DetailLabel label = DetailLabel.WORK;
-        List<ContactDetail> expectedDetails = Collections.singletonList(createAnotherTestContactDetail());
-
-        when(contactDetailRepository.findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, label))
-                .thenReturn(expectedDetails);
-
-        List<ContactDetail> result = contactDetailService.findByDetailTypeAndLabel(detailType, label);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(contactDetailRepository, times(1))
-                .findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, label);
     }
 
     @Test

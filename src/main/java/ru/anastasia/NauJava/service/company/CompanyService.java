@@ -18,14 +18,6 @@ public interface CompanyService {
     Company create(Company company);
 
     /**
-     * Получить компанию по названию
-     *
-     * @param name Название
-     * @return Компания
-     */
-    Company findByName(String name);
-
-    /**
      * Получить все компании
      *
      * @return Список компаний

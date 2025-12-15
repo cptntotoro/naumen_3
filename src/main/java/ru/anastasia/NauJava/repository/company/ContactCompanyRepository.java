@@ -21,30 +21,15 @@ public interface ContactCompanyRepository extends CrudRepository<ContactCompany,
     List<ContactCompany> findByContactId(Long contactId);
 
     /**
-     * Найти связь контакт-компания по ID контакта и компании
-     */
-    Optional<ContactCompany> findByContactIdAndCompanyId(Long contactId, Long companyId);
-
-    /**
-     * Проверить, существует ли связь
-     */
-    boolean existsByContactIdAndCompanyId(Long contactId, Long companyId);
-
-    /**
      * Найти текущее место работы контакта
      */
     @Query("SELECT cc FROM ContactCompany cc WHERE cc.contact.id = :contactId AND cc.isCurrent = true")
     Optional<ContactCompany> findCurrentByContactId(@Param("contactId") Long contactId);
 
     /**
-     * Подсчитать количество контактов в компании
+     * Получить количество контактов в компании
      */
     Long countByCompanyId(Long companyId);
-
-    /**
-     * Найти все связи по ID компании
-     */
-    List<ContactCompany> findByCompanyId(Long companyId);
 
     /**
      * Удалить все связи контакта

@@ -164,10 +164,7 @@ public class ReportServiceTest {
 
         CompletableFuture<Void> future = reportService.generateReportAsync(reportId);
 
-        ExecutionException exception = assertThrows(
-                ExecutionException.class,
-                future::get
-        );
+        assertThrows(ExecutionException.class, future::get);
 
         assertEquals(ReportStatus.ERROR, report.getStatus());
         assertTrue(report.getContent().contains("Ошибка при формировании отчёта"));
@@ -188,10 +185,7 @@ public class ReportServiceTest {
 
         CompletableFuture<Void> future = reportService.generateReportAsync(reportId);
 
-        ExecutionException exception = assertThrows(
-                ExecutionException.class,
-                future::get
-        );
+        assertThrows(ExecutionException.class, future::get);
 
         assertEquals(ReportStatus.ERROR, report.getStatus());
         assertTrue(report.getContent().contains("Ошибка при формировании отчёта"));
@@ -214,10 +208,7 @@ public class ReportServiceTest {
 
         CompletableFuture<Void> future = reportService.generateReportAsync(reportId);
 
-        ExecutionException exception = assertThrows(
-                ExecutionException.class,
-                future::get
-        );
+        assertThrows(ExecutionException.class, future::get);
 
         assertEquals(ReportStatus.ERROR, report.getStatus());
         assertTrue(report.getContent().contains("Ошибка при формировании отчёта"));

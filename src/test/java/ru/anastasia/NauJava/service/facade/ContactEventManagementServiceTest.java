@@ -440,8 +440,8 @@ public class ContactEventManagementServiceTest {
 
         when(contactService.findById(contactId)).thenReturn(contact);
         when(eventService.create(eq(contactId), any(EventCreateDto.class)))
-                .thenReturn(event1) // Первый вызов создает день рождения
-                .thenThrow(new IllegalEventStateException("У контакта уже есть день рождения")); // Второй вызов бросает исключение
+                .thenReturn(event1)
+                .thenThrow(new IllegalEventStateException("У контакта уже есть день рождения"));
 
         assertThrows(
                 IllegalEventStateException.class,

@@ -21,14 +21,6 @@ public interface ContactRepositoryCustom {
     List<Contact> findContactsByComplexCriteria(String firstName, String lastName, String company, String jobTitle);
 
     /**
-     * Получить контакты с близящимися событиями
-     *
-     * @param daysAhead Дней до события
-     * @return Список контактов
-     */
-    List<Contact> findContactsWithUpcomingEvents(int daysAhead);
-
-    /**
      * Получить контакты по критериям
      *
      * @param firstName   Имя

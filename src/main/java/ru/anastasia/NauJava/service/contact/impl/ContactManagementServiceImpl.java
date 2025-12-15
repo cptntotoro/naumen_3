@@ -150,14 +150,6 @@ public class ContactManagementServiceImpl implements ContactManagementService {
         return updatedContact;
     }
 
-    @Override
-    @Transactional
-    public void delete(Long contactId) {
-        log.info("Удаление контакта с ID: {}", contactId);
-        contactService.deleteById(contactId);
-        log.info("Контакт с ID: {} успешно удален", contactId);
-    }
-
     @Transactional(readOnly = true)
     @Override
     public ContactFullDetails getWithAllDetails(Long contactId) {

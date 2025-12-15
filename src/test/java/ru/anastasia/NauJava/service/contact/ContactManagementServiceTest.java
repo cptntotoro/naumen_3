@@ -33,9 +33,6 @@ import ru.anastasia.NauJava.service.company.CompanyService;
 import ru.anastasia.NauJava.service.company.JobTitleService;
 import ru.anastasia.NauJava.service.contact.impl.ContactManagementServiceImpl;
 import ru.anastasia.NauJava.service.event.EventService;
-import ru.anastasia.NauJava.service.facade.ContactDetailFacadeService;
-import ru.anastasia.NauJava.service.facade.ContactEventViewService;
-import ru.anastasia.NauJava.service.facade.ContactTagFacadeService;
 import ru.anastasia.NauJava.service.facade.dto.ContactFullDetails;
 import ru.anastasia.NauJava.service.note.NoteService;
 import ru.anastasia.NauJava.service.socialprofile.SocialProfileService;
@@ -55,7 +52,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -84,15 +80,6 @@ public class ContactManagementServiceTest {
     private ContactService contactService;
 
     @Mock
-    private ContactEventViewService eventFacade;
-
-    @Mock
-    private ContactTagFacadeService tagFacade;
-
-    @Mock
-    private ContactDetailFacadeService detailFacade;
-
-    @Mock
     private CompanyService companyService;
 
     @Mock
@@ -101,7 +88,6 @@ public class ContactManagementServiceTest {
     @InjectMocks
     private ContactManagementServiceImpl contactManagementService;
 
-    // Тестовые данные
     private Contact createTestContact() {
         return Contact.builder()
                 .id(1L)
@@ -403,17 +389,6 @@ public class ContactManagementServiceTest {
         assertTrue(exception.getMessage().contains("Не найден контакт с id: 1"));
         verify(contactService, times(1)).findById(1L);
         verify(contactService, never()).save(any(Contact.class));
-    }
-
-    @Test
-    void delete_WhenValidContactId_ShouldCallServiceDelete() {
-        Long contactId = 1L;
-
-        doNothing().when(contactService).deleteById(contactId);
-
-        contactManagementService.delete(contactId);
-
-        verify(contactService, times(1)).deleteById(contactId);
     }
 
     @Test

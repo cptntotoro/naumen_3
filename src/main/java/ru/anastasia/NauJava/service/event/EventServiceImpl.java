@@ -15,8 +15,6 @@ import ru.anastasia.NauJava.repository.event.EventRepository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -151,24 +149,6 @@ public class EventServiceImpl implements EventService {
         return birthday;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Map<LocalDate, List<Event>> getUpcomingEvents(int daysAhead) {
-        log.debug("Получение предстоящих событий на {} дней вперед", daysAhead);
-
-        LocalDate start = LocalDate.now();
-        LocalDate end = start.plusDays(daysAhead);
-        List<Event> events = eventRepository.findByEventDateBetween(start, end);
-
-        Map<LocalDate, List<Event>> result = events.stream()
-                .collect(Collectors.groupingBy(Event::getEventDate));
-
-        log.debug("Найдено {} событий на период с {} по {}",
-                events.size(), start, end);
-
-        return result;
-    }
-
     @Transactional(readOnly = true)
     @Override
     public List<Event> findByContactId(Long contactId) {
@@ -207,17 +187,6 @@ public class EventServiceImpl implements EventService {
         log.debug("Найдено {} дней рождения на период с {} по {}", count, start, end);
 
         return count;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Event> findByEventTypeAndEventDateBetween(EventType type, LocalDate start, LocalDate end) {
-        log.debug("Поиск событий типа {} в период с {} по {}", type, start, end);
-
-        List<Event> events = eventRepository.findByEventTypeAndEventDateBetween(type, start, end);
-        log.debug("Найдено {} событий типа {} за указанный период", events.size(), type);
-
-        return events;
     }
 
     public boolean hasBirthday(Long contactId) {
