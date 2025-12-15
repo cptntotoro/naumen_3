@@ -57,26 +57,4 @@ public interface ContactCompanyService {
      */
     void delete(Long id);
 
-    /**
-     * Получить текущее место работы контакта
-     *
-     * @param contactId Идентификатор контакта
-     * @return Компания контакта
-     */
-    ContactCompany findCurrentByContactId(Long contactId);
-
-    /**
-     * Получить число контактов в компании
-     *
-     * @param companyId Идентификатор компании
-     * @return Число контактов в компании
-     */
-    Long countContactsInCompany(Long companyId);
-
-    /**
-     * Удалить все компании контакта
-     *
-     * @param contactId Идентификатор компании
-     */
-    void deleteByContactId(Long contactId);
 }

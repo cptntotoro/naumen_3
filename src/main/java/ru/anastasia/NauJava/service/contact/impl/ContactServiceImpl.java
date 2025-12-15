@@ -10,18 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import ru.anastasia.NauJava.config.AppConfig;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.enums.EventType;
-import ru.anastasia.NauJava.entity.event.Event;
 import ru.anastasia.NauJava.exception.contact.ContactNotFoundException;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
 import ru.anastasia.NauJava.service.contact.ContactService;
-import ru.anastasia.NauJava.service.event.EventService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,11 +28,6 @@ public class ContactServiceImpl implements ContactService {
      * Репозиторий контактов
      */
     private final ContactRepository contactRepository;
-
-    /**
-     * Сервис событий
-     */
-    private final EventService eventService;
 
     /**
      * Конфигурация приложения
@@ -133,24 +124,6 @@ public class ContactServiceImpl implements ContactService {
         return contacts;
     }
 
-    @Transactional(readOnly = true)
-    @Override
-    public List<Contact> findAllByFullName(String firstName, String lastName) {
-        log.debug("Поиск контактов по полному имени: {} {}", firstName, lastName);
-        List<Contact> contacts = contactRepository.findByFirstNameAndLastName(firstName, lastName);
-        log.debug("Найдено {} контактов с именем {} {}", contacts.size(), firstName, lastName);
-        return contacts;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Contact> findByTag(String tagName) {
-        log.debug("Поиск контактов по тегу: '{}'", tagName);
-        List<Contact> contacts = contactRepository.findContactsByTagName(tagName);
-        log.debug("Найдено {} контактов с тегом '{}'", contacts.size(), tagName);
-        return contacts;
-    }
-
     @Override
     public Contact updateAvatar(Long contactId, String avatarUrl) {
         log.info("Обновление аватара контакта с ID: {}", contactId);
@@ -163,19 +136,6 @@ public class ContactServiceImpl implements ContactService {
         Contact updatedContact = contactRepository.save(contact);
         log.info("Аватар контакта с ID: {} обновлен", contactId);
         return updatedContact;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Contact> search(String searchTerm) {
-        log.debug("Поиск контактов по строке: '{}'", searchTerm);
-        if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            log.debug("Пустой поисковый запрос, возвращены все контакты");
-            return findAll();
-        }
-        List<Contact> contacts = contactRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm);
-        log.debug("Поиск по '{}' вернул {} контактов", searchTerm, contacts.size());
-        return contacts;
     }
 
     @Override
@@ -226,27 +186,6 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Contact> findBirthdaysThisMonth() {
-        log.debug("Поиск контактов с днями рождения в текущем месяце");
-        LocalDate now = LocalDate.now();
-        LocalDate startOfMonth = now.withDayOfMonth(1);
-        LocalDate endOfMonth = now.withDayOfMonth(now.lengthOfMonth());
-
-        List<Event> birthdayEvents = eventService.findByEventTypeAndEventDateBetween(
-                EventType.BIRTHDAY, startOfMonth, endOfMonth);
-
-        List<Contact> contacts = birthdayEvents.stream()
-                .map(Event::getContact)
-                .distinct()
-                .collect(Collectors.toList());
-
-        log.debug("Найдено {} контактов с днями рождения в текущем месяце", contacts.size());
-        return contacts;
-    }
-
-    // TODO: Искать по названиям вместо id - очень дорого. Мб отрефакторить
-    @Override
-    @Transactional(readOnly = true)
     public Page<Contact> searchContacts(String searchTerm, String companyName, String tagName, Pageable pageable) {
         log.debug("Расширенный поиск контактов. Поиск: '{}', компания: '{}', тег: '{}', страница: {}",
                 searchTerm, companyName, tagName, pageable.getPageNumber());
@@ -269,16 +208,6 @@ public class ContactServiceImpl implements ContactService {
 
         log.debug("Расширенный поиск вернул {} контактов на странице {}", result.getContent().size(), pageable.getPageNumber());
         return result;
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Page<Contact> findAll(Pageable pageable) {
-        log.debug("Получение страницы контактов: {}", pageable.getPageNumber());
-        Page<Contact> page = contactRepository.findAll(pageable);
-        log.debug("Загружена страница {} с {} контактами (всего: {})",
-                pageable.getPageNumber(), page.getContent().size(), page.getTotalElements());
-        return page;
     }
 
     @Override

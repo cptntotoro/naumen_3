@@ -200,7 +200,6 @@ public class ContactManagementMapperTest {
 
     @Test
     void contactFullDetailsToContactUpdateDto_shouldMapCompanyWithNullJobTitle() {
-        // Given
         ru.anastasia.NauJava.entity.company.ContactCompany contactCompany =
                 ru.anastasia.NauJava.entity.company.ContactCompany.builder()
                         .id(1L)

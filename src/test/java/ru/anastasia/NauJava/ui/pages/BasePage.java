@@ -28,12 +28,4 @@ public abstract class BasePage {
             return "complete".equals(js.executeScript("return document.readyState"));
         });
     }
-
-    public String getCurrentUrl() {
-        return driver.getCurrentUrl();
-    }
-
-    public String getPageTitle() {
-        return driver.getTitle();
-    }
 }

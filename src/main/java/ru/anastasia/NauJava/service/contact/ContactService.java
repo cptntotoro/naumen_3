@@ -89,23 +89,6 @@ public interface ContactService {
     void removeFromFavorites(Long contactId);
 
     /**
-     * Получить контакты по имени и фамилии
-     *
-     * @param firstName Имя
-     * @param lastName  Фамилия
-     * @return Список контактов
-     */
-    List<Contact> findAllByFullName(String firstName, String lastName);
-
-    /**
-     * Получить контакты по тегу
-     *
-     * @param tagName Название тега
-     * @return Список контактов
-     */
-    List<Contact> findByTag(String tagName);
-
-    /**
      * Обновить аватар контакта
      *
      * @param contactId Идентификатор контакта
@@ -113,21 +96,6 @@ public interface ContactService {
      * @return Контакт
      */
     Contact updateAvatar(Long contactId, String avatarUrl);
-
-    /**
-     * Получить контакты с днями рождения в этом месяце
-     *
-     * @return Список контактов
-     */
-    List<Contact> findBirthdaysThisMonth();
-
-    /**
-     * Поиск контактов по строке поиска
-     *
-     * @param searchTerm Строка поиска (имя или фамилия)
-     * @return Список контактов
-     */
-    List<Contact> search(String searchTerm);
 
     /**
      * Сохранить контакт
@@ -161,14 +129,6 @@ public interface ContactService {
      * @return Страница контактов
      */
     Page<Contact> searchContacts(String searchTerm, String companyName, String tagName, Pageable pageable);
-
-    /**
-     * Получить страницу контактов
-     *
-     * @param pageable Страница
-     * @return Страница контактов
-     */
-    Page<Contact> findAll(Pageable pageable);
 
     /**
      * Получить страницу избранных контактов

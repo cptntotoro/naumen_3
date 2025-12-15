@@ -4,15 +4,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.event.Event;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,27 +47,6 @@ public class ContactRepositoryCustomImpl implements ContactRepositoryCustom {
 
         query.where(predicates.toArray(new Predicate[0]));
         query.orderBy(cb.asc(contact.get("firstName")), cb.asc(contact.get("lastName")));
-
-        return entityManager.createQuery(query).getResultList();
-    }
-
-    @Override
-    public List<Contact> findContactsWithUpcomingEvents(int daysAhead) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Contact> query = cb.createQuery(Contact.class);
-        Root<Contact> contact = query.from(Contact.class);
-
-        Join<Contact, Event> events = contact.join("events", JoinType.INNER);
-
-        List<Predicate> predicates = new ArrayList<>();
-
-        LocalDate today = LocalDate.now();
-        LocalDate futureDate = today.plusDays(daysAhead);
-        predicates.add(cb.between(events.get("eventDate"), today, futureDate));
-        predicates.add(cb.isTrue(events.get("yearlyRecurrence")));
-
-        query.where(predicates.toArray(new Predicate[0]));
-        query.distinct(true);
 
         return entityManager.createQuery(query).getResultList();
     }

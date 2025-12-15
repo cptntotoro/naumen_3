@@ -9,7 +9,6 @@ import ru.anastasia.NauJava.entity.note.Note;
 import ru.anastasia.NauJava.repository.note.NoteRepository;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -60,49 +59,6 @@ class NoteRepositoryTest {
         contactRepository.save(contact);
 
         List<Note> notes = noteRepository.findByContactId(contact.getId());
-
-        assertTrue(notes.isEmpty());
-    }
-
-    @Test
-    void testFindByContentContainingIgnoreCase_Success() {
-        Contact contact = Contact.builder()
-                .firstName("Иван")
-                .lastName("Иванов")
-                .build();
-
-        contactRepository.save(contact);
-
-        Note note = Note.builder()
-                .contact(contact)
-                .content("Заметка о встрече" + UUID.randomUUID())
-                .build();
-
-        noteRepository.save(note);
-
-        List<Note> notes = noteRepository.findByContentContainingIgnoreCase("встрече");
-
-        assertFalse(notes.isEmpty());
-        assertTrue(notes.getFirst().getContent().contains("Заметка о встрече"));
-    }
-
-    @Test
-    void testFindByContentContainingIgnoreCase_NoMatches() {
-        Contact contact = Contact.builder()
-                .firstName("Иван")
-                .lastName("Иванов")
-                .build();
-
-        contactRepository.save(contact);
-
-        Note note = Note.builder()
-                .contact(contact)
-                .content("Заметка о встрече" + UUID.randomUUID())
-                .build();
-
-        noteRepository.save(note);
-
-        List<Note> notes = noteRepository.findByContentContainingIgnoreCase("несуществующий текст");
 
         assertTrue(notes.isEmpty());
     }

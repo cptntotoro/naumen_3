@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -288,45 +287,6 @@ class EventServiceTest {
     }
 
     @Test
-    void getUpcomingEvents_WhenEventsExist_ShouldReturnGroupedEvents() {
-        int daysAhead = 7;
-        LocalDate today = LocalDate.now();
-        Event event1 = createTestEvent();
-        event1.setEventDate(today.plusDays(1));
-        Event event2 = createCustomEvent();
-        event2.setEventDate(today.plusDays(1));
-        Event event3 = createTestEvent();
-        event3.setEventDate(today.plusDays(3));
-
-        List<Event> events = Arrays.asList(event1, event2, event3);
-
-        when(eventRepository.findByEventDateBetween(today, today.plusDays(daysAhead))).thenReturn(events);
-
-        Map<LocalDate, List<Event>> result = eventService.getUpcomingEvents(daysAhead);
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertTrue(result.containsKey(today.plusDays(1)));
-        assertTrue(result.containsKey(today.plusDays(3)));
-        assertEquals(2, result.get(today.plusDays(1)).size());
-        verify(eventRepository, times(1)).findByEventDateBetween(today, today.plusDays(daysAhead));
-    }
-
-    @Test
-    void getUpcomingEvents_WhenNoEvents_ShouldReturnEmptyMap() {
-        int daysAhead = 7;
-
-        when(eventRepository.findByEventDateBetween(any(LocalDate.class), any(LocalDate.class)))
-                .thenReturn(List.of());
-
-        Map<LocalDate, List<Event>> result = eventService.getUpcomingEvents(daysAhead);
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(eventRepository, times(1)).findByEventDateBetween(any(LocalDate.class), any(LocalDate.class));
-    }
-
-    @Test
     void findByContactId_WhenEventsExist_ShouldReturnEventsList() {
         Long contactId = 1L;
         List<Event> expectedEvents = Arrays.asList(createTestEvent(), createCustomEvent());
@@ -384,23 +344,6 @@ class EventServiceTest {
 
         assertEquals(expectedCount, result);
         verify(eventRepository, times(1)).countByEventTypeAndEventDateBetween(EventType.BIRTHDAY, start, end);
-    }
-
-    @Test
-    void findByEventTypeAndEventDateBetween_WhenEventsExist_ShouldReturnEventsList() {
-        EventType eventType = EventType.ANNIVERSARY;
-        LocalDate startDate = LocalDate.now();
-        LocalDate endDate = startDate.plusDays(30);
-        List<Event> expectedEvents = Arrays.asList(createTestEvent(), createTestEvent());
-
-        when(eventRepository.findByEventTypeAndEventDateBetween(eventType, startDate, endDate))
-                .thenReturn(expectedEvents);
-
-        List<Event> result = eventService.findByEventTypeAndEventDateBetween(eventType, startDate, endDate);
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(eventRepository, times(1)).findByEventTypeAndEventDateBetween(eventType, startDate, endDate);
     }
 
     @Test

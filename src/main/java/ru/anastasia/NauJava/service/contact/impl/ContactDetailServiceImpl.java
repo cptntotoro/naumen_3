@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.anastasia.NauJava.entity.contact.ContactDetail;
-import ru.anastasia.NauJava.entity.enums.DetailLabel;
-import ru.anastasia.NauJava.entity.enums.DetailType;
 import ru.anastasia.NauJava.exception.contact.ContactDetailNotFoundException;
 import ru.anastasia.NauJava.repository.contact.ContactDetailRepository;
 import ru.anastasia.NauJava.service.contact.ContactDetailService;
@@ -31,15 +29,6 @@ public class ContactDetailServiceImpl implements ContactDetailService {
         log.debug("Поиск способов связи для контакта с ID: {}", contactId);
         List<ContactDetail> details = contactDetailRepository.findByContactId(contactId);
         log.debug("Найдено {} способов связи для контакта с ID: {}", details.size(), contactId);
-        return details;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ContactDetail> findByDetailType(DetailType detailType) {
-        log.debug("Поиск способов связи по типу: {}", detailType);
-        List<ContactDetail> details = contactDetailRepository.findByDetailTypeAndValueContainingIgnoreCase(detailType, "");
-        log.debug("Найдено {} способов связи типа: {}", details.size(), detailType);
         return details;
     }
 
@@ -100,30 +89,6 @@ public class ContactDetailServiceImpl implements ContactDetailService {
                     log.warn("Способ связи с ID: {} не найден", id);
                     return new ContactDetailNotFoundException("Не найден способ связи с id: " + id);
                 });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ContactDetail> findByDetailTypeAndLabel(DetailType detailType, String label) {
-        log.debug("Поиск способов связи по типу {} и метке '{}'", detailType, label);
-        try {
-            DetailLabel detailLabel = DetailLabel.valueOf(label.toUpperCase());
-            List<ContactDetail> details = contactDetailRepository.findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, detailLabel);
-            log.debug("Найдено {} способов связи по типу {} и метке '{}'", details.size(), detailType, label);
-            return details;
-        } catch (IllegalArgumentException e) {
-            log.warn("Некорректная метка '{}' для типа {}. Возвращен пустой список", label, detailType);
-            return List.of();
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ContactDetail> findByDetailTypeAndLabel(DetailType detailType, DetailLabel label) {
-        log.debug("Поиск способов связи по типу {} и метке {}", detailType, label);
-        List<ContactDetail> details = contactDetailRepository.findByDetailTypeAndIsPrimaryTrueOrLabel(detailType, label);
-        log.debug("Найдено {} способов связи по типу {} и метке {}", details.size(), detailType, label);
-        return details;
     }
 
     @Override

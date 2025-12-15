@@ -68,19 +68,4 @@ public class ContactTagFacadeServiceImpl implements ContactTagFacadeService {
 
         return createdTags;
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ContactTag> getContactTags(Long contactId) {
-        log.debug("Получение тегов для контакта ID: {}", contactId);
-
-        Contact contact = contactService.findById(contactId);
-        log.debug("Контакт найден: ID: {}, имя: {}", contactId, contact.getFullName());
-
-        List<ContactTag> contactTags = tagService.findContactTagsByContactId(contactId);
-
-        log.debug("Найдено {} тегов для контакта ID: {}", contactTags.size(), contactId);
-
-        return contactTags;
-    }
 }

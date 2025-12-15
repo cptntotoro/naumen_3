@@ -18,7 +18,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,33 +83,6 @@ class CompanyServiceTest {
         assertTrue(exception.getMessage().contains("Не удалось создать компанию"));
         assertTrue(exception.getMessage().contains("Компания с таким именем уже существует"));
         verify(companyRepository, times(1)).save(testCompany);
-    }
-
-    @Test
-    void findByName_WhenCompanyExists_ShouldReturnCompany() {
-        Company testCompany = createTestCompany();
-        String companyName = "Тестовая компания";
-
-        when(companyRepository.findByName(companyName)).thenReturn(Optional.of(testCompany));
-
-        Company result = companyService.findByName(companyName);
-
-        assertNotNull(result);
-        assertEquals(testCompany.getId(), result.getId());
-        assertEquals(testCompany.getName(), result.getName());
-        verify(companyRepository, times(1)).findByName(companyName);
-    }
-
-    @Test
-    void findByName_WhenCompanyNotExists_ShouldReturnNull() {
-        String nonExistentCompanyName = "Несуществующая компания";
-
-        when(companyRepository.findByName(nonExistentCompanyName)).thenReturn(Optional.empty());
-
-        Company result = companyService.findByName(nonExistentCompanyName);
-
-        assertNull(result);
-        verify(companyRepository, times(1)).findByName(nonExistentCompanyName);
     }
 
     @Test

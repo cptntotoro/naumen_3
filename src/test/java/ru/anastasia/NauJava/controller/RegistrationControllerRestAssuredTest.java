@@ -137,7 +137,7 @@ public class RegistrationControllerRestAssuredTest {
     public void testPostRegistration_WithSpecialCharactersInUsername_ShouldHandleAppropriately() {
         given()
                 .contentType(ContentType.URLENC)
-                .param("username", "user@#$%") // Специальные символы
+                .param("username", "user@#$%")
                 .param("password", "password123")
                 .param("firstName", "Test")
                 .param("lastName", "User")

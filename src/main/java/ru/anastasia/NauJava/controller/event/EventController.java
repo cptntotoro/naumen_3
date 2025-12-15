@@ -46,7 +46,6 @@ public class EventController {
         try {
             contactEventManagementService.createEventForContact(contactId, eventCreateDto);
             log.info("Событие успешно создано [контакт: {}, тип: {}]", contactId, eventCreateDto.getEventType());
-            // TODO: Проверить всплывашки. Сейчас отображается: "Событие успешно добавлено"
             redirectAttributes.addFlashAttribute("successMessage",
                     "Событие '" + eventCreateDto.getEventType().name() + "' успешно создано");
             redirectAttributes.addAttribute("success", "event_created");

@@ -17,12 +17,4 @@ public interface ContactTagFacadeService {
      * @return Список тегов контакта
      */
     List<ContactTag> addTagsToContact(Long contactId, List<String> tagNames);
-
-    /**
-     * Получить все теги контакта
-     *
-     * @param contactId Идентификатор контакта
-     * @return Список тегов контакта
-     */
-    List<ContactTag> getContactTags(Long contactId);
 }

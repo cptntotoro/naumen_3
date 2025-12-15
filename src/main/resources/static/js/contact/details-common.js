@@ -1,5 +1,4 @@
 // Общие функции для страницы details.html
-
 // Вспомогательные функции для работы с формами
 function toggleForm(formId, show) {
     const form = document.getElementById(formId);

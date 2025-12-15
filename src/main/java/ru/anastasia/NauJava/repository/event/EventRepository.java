@@ -23,14 +23,6 @@ public interface EventRepository extends CrudRepository<Event, Long> {
     List<Event> findByContactId(Long contactId);
 
     /**
-     * Получить события по типу
-     *
-     * @param eventType Тип события
-     * @return Список событий
-     */
-    List<Event> findByEventType(EventType eventType);
-
-    /**
      * Получить события в дипазоне дат
      *
      * @param startDate Дата начала (включительно)

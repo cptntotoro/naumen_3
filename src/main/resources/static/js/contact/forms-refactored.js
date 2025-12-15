@@ -163,7 +163,6 @@ function populateSelectWithIds(selectElement, items) {
     }
 }
 
-// В инициализации добавьте получение данных
 document.addEventListener('DOMContentLoaded', function () {
     // Инициализация индексов
     initFormIndexes();

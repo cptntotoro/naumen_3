@@ -11,14 +11,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.anastasia.NauJava.config.AppConfig;
 import ru.anastasia.NauJava.entity.contact.Contact;
-import ru.anastasia.NauJava.entity.enums.EventType;
-import ru.anastasia.NauJava.entity.event.Event;
 import ru.anastasia.NauJava.exception.contact.ContactNotFoundException;
 import ru.anastasia.NauJava.repository.contact.ContactRepository;
 import ru.anastasia.NauJava.service.contact.impl.ContactServiceImpl;
-import ru.anastasia.NauJava.service.event.EventService;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -46,9 +42,6 @@ class ContactServiceTest {
     private ContactRepository contactRepository;
 
     @Mock
-    private EventService eventService;
-
-    @Mock
     private AppConfig appConfig;
 
     @InjectMocks
@@ -73,15 +66,6 @@ class ContactServiceTest {
                 .displayName("Петр Петров")
                 .avatarUrl("https://example.com/avatar2.jpg")
                 .isFavorite(false)
-                .build();
-    }
-
-    private Event createBirthdayEvent(Contact contact) {
-        return Event.builder()
-                .id(1L)
-                .eventType(EventType.BIRTHDAY)
-                .eventDate(LocalDate.now())
-                .contact(contact)
                 .build();
     }
 
@@ -263,36 +247,6 @@ class ContactServiceTest {
     }
 
     @Test
-    void findAllByFullName_WhenContactsExist_ShouldReturnMatchingContacts() {
-        String firstName = "Иван";
-        String lastName = "Иванов";
-        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
-
-        when(contactRepository.findByFirstNameAndLastName(firstName, lastName))
-                .thenReturn(expectedContacts);
-
-        List<Contact> result = contactService.findAllByFullName(firstName, lastName);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(contactRepository, times(1)).findByFirstNameAndLastName(firstName, lastName);
-    }
-
-    @Test
-    void findByTag_WhenContactsExist_ShouldReturnMatchingContacts() {
-        String tagName = "друзья";
-        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
-
-        when(contactRepository.findContactsByTagName(tagName)).thenReturn(expectedContacts);
-
-        List<Contact> result = contactService.findByTag(tagName);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(contactRepository, times(1)).findContactsByTagName(tagName);
-    }
-
-    @Test
     void updateAvatar_WhenValidData_ShouldReturnUpdatedContact() {
         Long contactId = 1L;
         String newAvatarUrl = "https://new-avatar.jpg";
@@ -326,54 +280,6 @@ class ContactServiceTest {
         assertTrue(exception.getMessage().contains("Не найден контакт с id: " + nonExistentId));
         verify(contactRepository, times(1)).findById(nonExistentId);
         verify(contactRepository, never()).save(any(Contact.class));
-    }
-
-    @Test
-    void search_WithSearchTerm_ShouldReturnMatchingContacts() {
-        String searchTerm = "Иван";
-        List<Contact> expectedContacts = Collections.singletonList(createTestContact());
-
-        when(contactRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm))
-                .thenReturn(expectedContacts);
-
-        List<Contact> result = contactService.search(searchTerm);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(contactRepository, times(1))
-                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm);
-    }
-
-    @Test
-    void search_WithEmptySearchTerm_ShouldReturnAllContacts() {
-        List<Contact> expectedContacts = Arrays.asList(
-                createTestContact(),
-                createAnotherTestContact()
-        );
-
-        when(contactRepository.findAll()).thenReturn(expectedContacts);
-
-        List<Contact> result = contactService.search("");
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(contactRepository, times(1)).findAll();
-    }
-
-    @Test
-    void search_WithNullSearchTerm_ShouldReturnAllContacts() {
-        List<Contact> expectedContacts = Arrays.asList(
-                createTestContact(),
-                createAnotherTestContact()
-        );
-
-        when(contactRepository.findAll()).thenReturn(expectedContacts);
-
-        List<Contact> result = contactService.search(null);
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(contactRepository, times(1)).findAll();
     }
 
     @Test
@@ -456,37 +362,6 @@ class ContactServiceTest {
         assertFalse(contact.getIsFavorite());
         verify(contactRepository, times(1)).findById(contactId);
         verify(contactRepository, times(1)).save(contact);
-    }
-
-    @Test
-    void findBirthdaysThisMonth_WhenBirthdayEventsExist_ShouldReturnContacts() {
-        Contact contact1 = createTestContact();
-        Contact contact2 = createAnotherTestContact();
-        List<Event> birthdayEvents = Arrays.asList(
-                createBirthdayEvent(contact1),
-                createBirthdayEvent(contact2)
-        );
-
-        when(eventService.findByEventTypeAndEventDateBetween(any(), any(), any()))
-                .thenReturn(birthdayEvents);
-
-        List<Contact> result = contactService.findBirthdaysThisMonth();
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        verify(eventService, times(1)).findByEventTypeAndEventDateBetween(any(), any(), any());
-    }
-
-    @Test
-    void findBirthdaysThisMonth_WhenNoBirthdayEvents_ShouldReturnEmptyList() {
-        when(eventService.findByEventTypeAndEventDateBetween(any(), any(), any()))
-                .thenReturn(List.of());
-
-        List<Contact> result = contactService.findBirthdaysThisMonth();
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(eventService, times(1)).findByEventTypeAndEventDateBetween(any(), any(), any());
     }
 
     @Test
@@ -596,37 +471,6 @@ class ContactServiceTest {
     }
 
     @Test
-    void findAll_WithPageable_ShouldReturnPageOfContacts() {
-        Pageable pageable = PageRequest.of(0, 10);
-        List<Contact> contacts = Arrays.asList(createTestContact(), createAnotherTestContact());
-        Page<Contact> expectedPage = new PageImpl<>(contacts, pageable, contacts.size());
-
-        when(contactRepository.findAll(pageable)).thenReturn(expectedPage);
-
-        Page<Contact> result = contactService.findAll(pageable);
-
-        assertNotNull(result);
-        assertEquals(2, result.getContent().size());
-        assertEquals(contacts, result.getContent());
-        verify(contactRepository, times(1)).findAll(pageable);
-    }
-
-    @Test
-    void findAll_WithEmptyPage_ShouldReturnEmptyPage() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Contact> expectedPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-
-        when(contactRepository.findAll(pageable)).thenReturn(expectedPage);
-
-        Page<Contact> result = contactService.findAll(pageable);
-
-        assertNotNull(result);
-        assertTrue(result.getContent().isEmpty());
-        assertEquals(0, result.getTotalElements());
-        verify(contactRepository, times(1)).findAll(pageable);
-    }
-
-    @Test
     void findFavorites_WithPageable_ShouldReturnPageOfFavoriteContacts() {
         Pageable pageable = PageRequest.of(0, 10);
         List<Contact> favoriteContacts = Collections.singletonList(createTestContact());
@@ -638,7 +482,7 @@ class ContactServiceTest {
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
-        assertTrue(result.getContent().get(0).getIsFavorite());
+        assertTrue(result.getContent().getFirst().getIsFavorite());
         verify(contactRepository, times(1)).findByIsFavoriteTrue(pageable);
     }
 

@@ -1,5 +1,4 @@
 // Инициализация для страницы details
-
 document.addEventListener('DOMContentLoaded', function () {
     // Настройка авто-высоты для textarea
     document.querySelectorAll('.note-edit-textarea').forEach(textarea => {

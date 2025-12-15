@@ -135,35 +135,6 @@ public class ContactCompanyServiceImpl implements ContactCompanyService {
         }
     }
 
-    @Transactional(readOnly = true)
-    @Override
-    public ContactCompany findCurrentByContactId(Long contactId) {
-        log.debug("Поиск текущего места работы для контакта: {}", contactId);
-
-        return contactCompanyRepository.findCurrentByContactId(contactId).orElse(null);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Long countContactsInCompany(Long companyId) {
-        log.debug("Подсчет контактов в компании: {}", companyId);
-
-        Long count = contactCompanyRepository.countByCompanyId(companyId);
-        log.debug("В компании {} найдено {} контактов", companyId, count);
-
-        return count;
-    }
-
-    @Transactional
-    @Override
-    public void deleteByContactId(Long contactId) {
-        log.info("Удаление всех связей контакт-компания для контакта: {}", contactId);
-
-        int deletedCount = contactCompanyRepository.findByContactId(contactId).size();
-        contactCompanyRepository.deleteByContactId(contactId);
-        log.info("Удалено {} связей для контакта {}", deletedCount, contactId);
-    }
-
     /**
      * Сбрасывает флаг текущего места работы у всех записей контакта
      */

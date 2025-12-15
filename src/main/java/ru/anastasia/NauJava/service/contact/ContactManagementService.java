@@ -13,13 +13,6 @@ import java.util.List;
 public interface ContactManagementService {
 
     /**
-     * Удалить контакт
-     *
-     * @param contactId Идентификатор контакта
-     */
-    void delete(Long contactId);
-
-    /**
      * Получить контакт со всеми связанными сущностями
      *
      * @param contactId Идентификатор контакта

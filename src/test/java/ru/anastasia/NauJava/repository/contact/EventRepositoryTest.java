@@ -68,37 +68,4 @@ class EventRepositoryTest {
         Assertions.assertEquals(1, foundEvents.size());
         Assertions.assertEquals(middleDate, foundEvents.getFirst().getEventDate());
     }
-
-    @Test
-    void testFindByEventType() {
-        Contact contact = Contact.builder()
-                .firstName("Type")
-                .lastName("Test")
-                .build();
-
-        Contact savedContact = contactRepository.save(contact);
-
-        Event birthdayEvent = Event.builder()
-                .contact(savedContact)
-                .eventType(EventType.BIRTHDAY)
-                .eventDate(LocalDate.now())
-                .build();
-
-        eventRepository.save(birthdayEvent);
-
-        Event anniversaryEvent = Event.builder()
-                .contact(savedContact)
-                .eventType(EventType.ANNIVERSARY)
-                .eventDate(LocalDate.now())
-                .build();
-
-        eventRepository.save(anniversaryEvent);
-
-        List<Event> birthdayEvents = eventRepository.findByEventType(EventType.BIRTHDAY);
-
-        Assertions.assertNotNull(birthdayEvents);
-        birthdayEvents.forEach(event ->
-                Assertions.assertEquals(EventType.BIRTHDAY, event.getEventType())
-        );
-    }
 }

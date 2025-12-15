@@ -110,29 +110,4 @@ public class StatisticsServiceImpl implements StatisticsService {
             throw e;
         }
     }
-
-    @Override
-    public long getUpcomingBirthdaysCount(int daysAhead) {
-        log.debug("Получение количества предстоящих дней рождения на {} дней вперед", daysAhead);
-
-        long startTime = System.currentTimeMillis();
-
-        try {
-            Long result = eventService.countUpcomingBirthdays(daysAhead);
-            long count = result != null ? result : 0L;
-
-            long executionTime = System.currentTimeMillis() - startTime;
-
-            log.debug("Количество дней рождения на {} дней вперед: {}, время выполнения: {} мс",
-                    daysAhead, count, executionTime);
-
-            return count;
-
-        } catch (Exception e) {
-            long errorTime = System.currentTimeMillis() - startTime;
-            log.error("Ошибка при получении количества дней рождения на {} дней вперед. Время выполнения: {} мс. Причина: {}",
-                    daysAhead, errorTime, e.getMessage(), e);
-            throw e;
-        }
-    }
 }
